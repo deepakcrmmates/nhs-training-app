@@ -1,0 +1,992 @@
+<template>
+    <div>
+        <div class="form-header">
+            <h2> Application Form </h2>
+        </div>
+
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+        </template>
+        <template if:false={isLoading}>
+            <lightning-quick-action-panel header="">
+                <div class="slds-is-relative agent-offer-form">
+                    <!-- SECTION 3: Property Information -->
+                    <div class="section-container">
+                        <h2 class="section-header">House Builder DETAILS</h2>
+
+                        <table class="slds-table " style="background-color:#f3f3f3; imp!;">
+                            <tbody>
+                                <!-- First row with 2 columns -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Name of House Builder</label>
+									<c-custom-lookup-lwc class="input" label="House Builder"
+											selected-icon-name="standard:account" object-label="Account"
+											object-api-name="Account" field-api-name="Name"
+											other-field-api-name="Industry" selected-record-id ={housebuilderId}  disabled={isReadOnly}
+
+											onvalueselected={handleValueSelectedOnAccount}></c-custom-lookup-lwc>
+
+                                        <!-- <lightning-input type="text" variant="standard" placeholder="type here..."
+                                            value={name} disabled class="input-width"></lightning-input> -->
+                                    </td>
+                                    <td rowspan="3" class="slds-text-align_center">
+                                        <template if:true={logoUrl}>
+                                            <img src={logoUrl} alt="House Builder Logo" style="width: 250px; position: relative;  bottom: 22px; border-radius: 5px; box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);" />
+                                        </template>
+                                        <template if:false={logoUrl}>
+                                            <p>No logo available</p>
+                                        </template>
+                                    </td>
+                                </tr>
+                                <!-- Second row with 1 column -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Region</label>
+                                        <lightning-input disabled type="text" variant="standard" name="Region"
+                                            value={region} onchange={handleApplicationChange} class="input-width">
+                                        </lightning-input>
+                                    </td>
+                                </tr>
+                                <!-- Third row with 1 column -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Development Name</label>
+                                        <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                            name="development" value={formData.Application.development}
+                                            placeholder="type here..." onchange={handleApplicationChange}
+                                            class="input-width"></lightning-input>
+                                    </td>
+                                </tr>
+                                <!-- Fourth row with 2 columns -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Plot Number / House Type</label>
+                                        <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                            name="plot" value={formData.Application.plot} placeholder="type here..."
+                                            onchange={handleApplicationChange} class="input-width"></lightning-input>
+                                    </td>
+                                    <td>
+                                        <label class="label-class">Development Email Address</label>
+                                        <lightning-input type="text" variant="standard" placeholder="type here..."
+                                            value={email} disabled class="input-width"></lightning-input>
+                                    </td>
+                                </tr>
+                                <!-- Fifth row with 2 columns -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Plot Purchase Price</label>
+                                        <lightning-input disabled={isReadOnly} type="number" variant="standard"
+                                            name="PurchasePrice" formatter="currency" step=".01"
+                                            value={formData.Application.PurchasePrice} placeholder="type here..."
+                                            onchange={handleApplicationChange} class="input-width"></lightning-input>
+                                    </td>
+                                    <td>
+                                        <label class="label-class">Development Telephone Number</label>
+                                        <lightning-input type="text" variant="standard" placeholder="type here..."
+                                            value={phone} disabled class="input-width"></lightning-input>
+                                    </td>
+                                </tr>
+                                <!-- Sixth row with 2 columns -->
+                                <tr>
+                                    <td>
+                                        <label class="label-class">Sales Advisor Name</label>
+                                        <lightning-input name="salesAdvisor" value={formData.Application.salesAdvisor}
+                                            disabled={isReadOnly} onchange={handleApplicationChange}
+                                            class="input-width"></lightning-input>
+                                    </td>
+                                    <td>
+                                        <label class="label-class">Date of Enquiry</label>
+                                        <lightning-input disabled={isReadOnly} type="date"
+                                            name="dateOfApplicationReceived"
+                                            value={formData.Application.dateOfApplicationReceived}
+                                            onchange={handleApplicationChange} class="input-width"></lightning-input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <!-- SECTION 4: ETA Completion Date -->
+                    <div class="section-container">
+                        <h2 class="section-header">ETA Completion Date</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Start Date -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="buying-position">Start Date</label>
+                                <template if:false={isReadOnly}>
+                                    <input class="1" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="startDateInput" label ="Start Date" disabled = {isReadOnly} onchange={handleApplicationChange}>
+                                </template>
+                                <template if:true={isReadOnly}>
+                                    <lightning-input type="text" variant="standard" value={startDateInputs}
+                                        disabled={isReadOnly}></lightning-input>
+
+                                </template>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="buying-position">End Date</label>
+                                <template if:false={isReadOnly}>
+                                    <input class="2" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="endDateInput" label ="Start Date" disabled = {isReadOnly} onchange={handleApplicationChange}>
+                                </template>
+                                <template if:true={isReadOnly}>
+                                    <lightning-input type="text" variant="standard" value={endDateInputs}
+                                        disabled={isReadOnly}></lightning-input>
+
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 1: Search Property -->
+                    <template if:false={isReadOnly}>
+                        <div class="section-container">
+                            <h2 class="section-header">Search Property</h2>
+                            <div class="slds-grid slds-gutters custom-gap">
+                                <!-- Property -->
+                                <div class="slds-col slds-size_2-of-2">
+                                    <!-- <label class="label-class" for="property">Search Property</label> -->
+                                    <c-idealaddresslookup selected-icon-name="standard:account" object-label="Property"
+                                        object-api-name="NHS_Property__c" field-api-name="Name"
+                                        other-field-api-name="Industry" onvalueselected={handleValueSelectedOnAccounts}>
+                                    </c-idealaddresslookup>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- SECTION 2: Property Details -->
+                    <div class="section-container">
+                        <h2 class="section-header">Property Details</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Agent Name -->
+                            <div class="slds-col slds-size_2-of-2">
+
+                                <div style="width:96%; font-size:16px;">
+                                    <template if:false={isReadOnly}>
+                                        <lightning-record-edit-form object-api-name="NHS_Property__c" record-id=""
+                                            onsuccess={handleSuccess}>
+                                            <template for:each={mapData} for:item="keyValue">
+                                                <div class="slds-section slds-is-open slds-m-around_medium"
+                                                    key={keyValue.key}>
+                                                    <!-- <div style="     padding-bottom: 30px;">
+                                                    <h3 class="slds-section__title slds-theme_shade">
+                                                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">{keyValue.key}</span>
+                                                    </h3>
+                                                </div> -->
+                                                    <div class="slds-section__content">
+                                                        <div class="slds-grid slds-form__row">
+                                                            <template for:each={keyValue.value} for:item="field">
+                                                                <lightning-input-field key={field.fieldPath}
+                                                                    field-name={field.fieldPath} value={field.value}
+                                                                    data-field-name={field.fieldPath} disabled
+                                                                    class="slds-col slds-size_1-of-2">
+                                                                </lightning-input-field>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </lightning-record-edit-form>
+                                    </template>
+                                    <template if:true={isReadOnly}>
+                                        {propertAddress}
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- SECTION 5: Vendor Details -->
+                    <div class="section-container">
+                        <h2 class="section-header">Vendor Details</h2>
+                        <div class="slds-p-around_medium">
+
+                            <table class="vendor-table">
+                                <thead>
+                                    <tr class="slds-line-height_reset">
+                                        <th scope="col" colspan="2">
+                                            <label class="Vendor-label-class">New Vendor 1</label>
+                                        </th>
+                                        <th scope="col" colspan="2">
+                                            <label class="Vendor-label-class">New Vendor 2</label>
+                                        </th>
+                                    </tr>
+
+                                    <!-- First Name and Last Name Row -->
+                                    <tr class="slds-line-height_reset">
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">First Name</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Last Name</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">First Name</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Last Name</label>
+                                        </th>
+                                    </tr>
+                                    <tr class="slds-line-height_reset">
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="firstname" value={formData.Vendor.firstname}
+                                                placeholder="type here..." onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="lastname" data-field-name="lastname"
+                                                value={formData.Vendor.lastname} placeholder="type here..."
+                                                onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="firstname1" value={formData.Vendor.firstname1}
+                                                placeholder="type here..." onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="lastname1" value={formData.Vendor.lastname1}
+                                                placeholder="type here..." onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                    </tr>
+
+                                    <!-- Email and Phone Row -->
+                                    <tr class="slds-line-height_reset">
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Email</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Phone</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Email</label>
+                                        </th>
+                                        <th class="propertyLabel" scope="col">
+                                            <label class="custom-class">Phone</label>
+                                        </th>
+                                    </tr>
+                                    <tr class="slds-line-height_reset">
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="email" value={formData.Vendor.email} placeholder="type here..."
+                                                onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="mobilePhone" value={formData.Vendor.mobilePhone}
+                                                placeholder="type here..." onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="email1" value={formData.Vendor.email1} placeholder="type here..."
+                                                onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                        <th class="propertyInputs" scope="col">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="mobilePhone1" value={formData.Vendor.mobilePhone1}
+                                                placeholder="type here..." onchange={handleVendorChange}>
+                                            </lightning-input>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+
+                        </div>
+                    </div>
+
+                    <!-- SECTION 6: Vendor Availability  background-color:#d3d3d3;-->
+
+                    <div class="section-container">
+                        <h2 class="section-header">Client Availability</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+
+                            <div class="slds-col slds-size_2-of-2">
+                                <table class="availability-table"> 
+                                    <tr class="availabilityLabel"> 
+                                        <th>Mon - AM</th>
+                                        <th>Tue - AM</th>
+                                        <th>Wed - AM</th>
+                                        <th>Thu - AM</th>
+                                        <th>Fri - AM</th>
+                                    </tr>
+                                    <tr class="availabilityInputs">
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="monAM" checked={formData.Application.monAM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="tueAM" checked={formData.Application.tueAM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="wedAM" checked={formData.Application.wedAM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="thuAM" checked={formData.Application.thuAM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="friAM" checked={formData.Application.friAM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr class="availabilityLabel">
+                                        <th>Mon - PM</th>
+                                        <th>Tue - PM</th>
+                                        <th>Wed - PM</th>
+                                        <th>Thu - PM</th>
+                                        <th>Fri - PM</th>
+                                    </tr>
+                                    <tr class="availabilityInputs">
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="monPM" checked={formData.Application.monPM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="tuePM" checked={formData.Application.tuePM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="wedPM" checked={formData.Application.wedPM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="thuPM" checked={formData.Application.thuPM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                        <td>
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="friPM" checked={formData.Application.friPM}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Description of Property -->
+                    <div class="section-container slds-p-around_medium">
+                        <h2 class="section-header slds-text-heading_medium slds-m-bottom_medium">Description of Property
+                        </h2>
+
+                        <div class="property-table-container">
+
+                            <table class="property-table" style="width: 100%; line-height: 24px; table-layout: fixed;">
+                                <colgroup>
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                    <col style="width: 12.5%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="propertyLabel">Detached</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Detached" checked={formData.Property.Detached}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Semi Detached</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="SemiDetached" checked={formData.Property.SemiDetached}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">End Terrace</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="EndTerrace" checked={formData.Property.EndTerrace}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Mid Terrace</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="MidTerrace" checked={formData.Property.MidTerrace}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Apartment</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Apartment" checked={formData.Property.Apartment}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Maisonette</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Maisonette" checked={formData.Property.Maisonette}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Studio</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Studio" checked={formData.Property.Studio}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Bungalow</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Bungalow" checked={formData.Property.Bungalow}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Number of Bedrooms</td>
+                                        <td class="propertyInputs">
+                                            <!-- <lightning-input disabled={isReadOnly} type="number" variant="standard"
+                                                name="NumberofBedrooms" value={formData.Property.NumberofBedrooms}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input> -->
+                                            <lightning-combobox name="NumberofBedrooms"
+                                                value={formData.Property.NumberofBedrooms} options={numberOfBedrooms}
+                                                disabled={isReadOnly} onchange={handlePropertChange}>
+                                            </lightning-combobox>
+                                        </td>
+                                        <td class="propertyLabel">Front Garden</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="FrontGarden" checked={formData.Property.FrontGarden}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Back Garden</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="BackGarden" checked={formData.Property.BackGarden}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">No Garden</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="NoGarden" checked={formData.Property.NoGarden}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Parking</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Parking" checked={formData.Property.Parking}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Garage</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Garage" checked={formData.Property.Garage}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Extension</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Extension" checked={formData.Property.Extension}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Conservatory</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Conservatory" checked={formData.Property.Conservatory}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Age of Property</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="AgeofProperty" value={formData.Property.AgeofProperty}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Freehold</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="Freehold" checked={formData.Property.Freehold}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Leasehold</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="LeaseHold" checked={formData.Property.LeaseHold}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Years left of Lease</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="YearsleftofLease" value={formData.Property.YearsleftofLease}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Service Charge PCM</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="number" variant="standard"
+                                                name="ServiceChargePCM" formatter="currency" step=".01"
+                                                value={formData.Property.ServiceChargePCM}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Ground Rent PA</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="number" variant="standard"
+                                                name="GroundRentPA" formatter="currency" step=".01"
+                                                value={formData.Property.GroundRentPA} onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Principle Residence</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="PrincipleResidence" checked={formData.Property.PrincipleResidence}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Second Home/Holiday Let</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="SecondHomeHolidayLet"
+                                                checked={formData.Property.SecondHomeHolidayLet}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="propertyLabel">Type of Heating</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                name="TypeofHeating" value={formData.Property.TypeofHeating}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td class="propertyLabel">Any Extensions/Loft Conversion / solar panels</td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="AnyExtensionssolarpanels"
+                                                checked={formData.Property.AnyExtensionssolarpanels}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                        <td colspan="3" class="propertyLabel">If so, were relevant Building
+                                            Regs/Planning Permission obtained
+                                        </td>
+                                        <td class="propertyInputs">
+                                            <lightning-input disabled={isReadOnly} type="checkbox" variant="standard"
+                                                name="BuildingRegsPlanningPermission"
+                                                checked={formData.Property.BuildingRegsPlanningPermission}
+                                                onchange={handlePropertChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+
+                    <!-- SECTION 7: Additinal Data -->
+                    <div class="section-container">
+                        <h2 class="section-header">Additional Details</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Id Verified -->
+                            <div class="slds-col slds-size_2-of-2">
+                                <label class="label-class" for="id-verified">Notes</label>
+                                <lightning-input disabled={isReadOnly} style="--lwc-heightInput: 75px;" type="text"
+                                    variant="standard" name="notes" placeholder="type here..."
+                                    value={formData.Application.notes} onchange={handleApplicationChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+
+                            <div class="slds-col slds-size_2-of-2">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                    <tr style="line-height: 44px;">
+                                        <td style="font-weight: bold; font-size: 20px;">Clients Estimated Valuation:</td>
+                                        <td style="font-weight: bold; font-size: 20px;">Outstanding Mortgage</td>
+                                        <td style="font-weight: normal; font-size: 20px;"> Qualified by (House builders FA):</td>
+                                    </tr>
+                                    <tr  style="" >
+
+                                        <td style="font-weight: bold; font-size: 23px;">
+                                            <lightning-input style="--lwc-heightInput: 42px;" disabled={isReadOnly} type="number" variant="standard"
+                                                name="ClientsEstimatedValuation" formatter="currency" step=".01"
+                                                value={formData.Application.ClientsEstimatedValuation}
+                                                onchange={handleApplicationChange}></lightning-input>
+                                        </td>
+
+                                        <td style="font-weight: bold; font-size: 23px;">
+                                            <lightning-input style="--lwc-heightInput: 42px;" disabled={isReadOnly} type="number" variant="standard"
+                                                name="OutstandingMortgage" formatter="currency" step=".01"
+                                                value={formData.Application.OutstandingMortgage}
+                                                onchange={handleApplicationChange}>
+                                            </lightning-input>
+                                        </td>
+
+                                        <td style="font-weight: normal; font-size: 20px;">
+                                            <lightning-input style="--lwc-heightInput: 42px;" disabled={isReadOnly} type="text" variant="standard"
+                                                name="OutstandingMortgageQualified"
+                                                value={formData.Application.OutstandingMortgageQualified}
+                                                onchange={handleApplicationChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- SECTION 8: Agent Details -->
+                    <div class="section-container">
+                        <h2 class="section-header">Current Marketing Agent’s Details</h2>
+
+                        <div style="margin-bottom:15px;">
+                            <div class="slds-grid slds-gutters custom-gap">
+
+                                <div class="slds-col slds-size_1-of-2">
+                                    <label class="label-class" for="buying-position">Has your house been recently valued by an agent ?</label>
+                                    <lightning-combobox name="Has_your_house_been_valued_by_an_agent"
+                                        value={formData.Application.Has_your_house_been_valued_by_an_agent}
+                                        placeholder="Select" options={valByAgent} disabled={isReadOnly}
+                                        onchange={handleApplicationChange}></lightning-combobox>
+                                </div>
+
+                            </div>
+                            <template if:true={formData.Application.has_your_house_been_valued_by_an_agents}>
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                    <thead>
+                                        <tr>
+
+                                            <th class="propertyLabel">Agent Name</th>
+                                            <th class="propertyLabel">Agent Phone</th>
+                                            <th class="propertyLabel">Agent Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="propertyInputs">
+                                                <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                    name="agent3Name" placeholder="type here..."
+                                                    value={formData.Agent.agent3Name} onchange={handleAgentChange}>
+                                                </lightning-input>
+                                            </td>
+                                            <td class="propertyInputs">
+                                                <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                    name="agent3Phone" placeholder="type here..."
+                                                    value={formData.Agent.agent3Phone} onchange={handleAgentChange}>
+                                                </lightning-input>
+                                            </td>
+                                            <td class="propertyInputs">
+                                                <lightning-input disabled={isReadOnly} type="text" variant="standard"
+                                                    name="agent3Email" placeholder="type here..."
+                                                    value={formData.Agent.agent3Email} onchange={handleAgentChange}>
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+
+
+                            </template>
+
+                            <div class="slds-grid slds-gutters custom-gap">
+                                <!-- Property -->
+                                <template if:true={formData.Application.has_your_house_been_valued_by_an_agents}>
+                                    <div class="slds-col slds-size_1-of-2">
+                                        <label class="label-class" for="buying-position">Is your house on the market?</label>
+                                        <lightning-combobox name="marketstatus"
+                                            value={formData.Application.marketstatusYes} placeholder="Select"
+                                            options={marketStatusOptions} disabled={isReadOnly}
+                                            onchange={handleApplicationChange}></lightning-combobox>
+                                    </div>
+
+                                </template>
+
+                            </div>
+
+                        </div>
+
+                        <template if:true={formData.Application.marketstatus_Val}>
+                            <div class="slds-grid slds-gutters custom-gap">
+                                <div class="slds-col slds-size_2-of-2">
+                                    <div class="property-table-container">
+                                        <table class="property-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="propertyLabel">Name</th>
+                                                    <th class="propertyLabel">Phone</th>
+                                                    <th class="propertyLabel" colspan="2">Time on the market</th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="text"
+                                                            variant="standard" name="agentName"
+                                                            placeholder="type here..." value={formData.Agent.agentName}
+                                                            onchange={handleAgentChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="text"
+                                                            variant="standard" name="agentPhone"
+                                                            placeholder="type here..." value={formData.Agent.agentPhone}
+                                                            onchange={handleAgentChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td class="propertyInputs" colspan="2">
+                                                        <lightning-input disabled={isReadOnly} type="text"
+                                                            variant="standard" name="Timeonthemarket"
+                                                            placeholder="type here..."
+                                                            value={formData.Application.Timeonthemarket}
+                                                            onchange={handleApplicationChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th class="propertyLabel">Email</th>
+                                                    <th class="propertyLabel" colspan="3">Agent Address</th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="text"
+                                                            variant="standard" name="agentEmail"
+                                                            placeholder="type here..." value={formData.Agent.agentEmail}
+                                                            onchange={handleAgentChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td class="propertyInputs" colspan="3">
+                                                        <lightning-input-address address-label="" street-label="Street"
+                                                            city-label="City" country-label="Country"
+                                                            province-label="Province" postal-code-label="Post Code"
+                                                            field-level-help="Agent Address"
+                                                            street={formData.Agent.street} city={formData.Agent.city}
+                                                            country={formData.Agent.country}
+                                                            province={formData.Agent.province}
+                                                            postal-code={formData.Agent.postCode}
+                                                            onchange={handleAddressChange} disabled={isReadOnly}>
+                                                        </lightning-input-address>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th
+                                                        style=" text-align: left !important;font-weight: bold; font-size:20px; background-color: #0e8e3817;">
+                                                        Current Asking Price</th>
+                                                    <th class="propertyLabel">Number of Viewings</th>
+                                                    <th class="propertyLabel">Previous Asking Price</th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="propertyInputs"> 
+                                                        <lightning-input style="font-weight: bold; font-size: 23px;--lwc-heightInput: 42px;"
+                                                            disabled={isReadOnly} type="number" variant="standard"
+                                                            name="CurrentAskingPrice" placeholder="type here..."
+                                                            formatter="currency" step=".01"
+                                                            value={formData.Application.CurrentAskingPrice}
+                                                            onchange={handleApplicationChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="text"
+                                                            variant="standard" name="NumberofViewings"
+                                                            placeholder="type here..."
+                                                            value={formData.Application.NumberofViewings}
+                                                            onchange={handleApplicationChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="number"
+                                                            variant="standard" name="Previousaskingprice"
+                                                            placeholder="type here..." formatter="currency" step=".01"
+                                                            value={formData.Application.Previousaskingprice}
+                                                            onchange={handleApplicationChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th class="propertyLabel">Any Previous Offers</th>
+                                                </tr>
+                                                <tr>
+                                                    <td class="propertyInputs">
+                                                        <lightning-input disabled={isReadOnly} type="number"
+                                                            variant="standard" name="Anypreviousoffers"
+                                                            placeholder="type here..." formatter="currency" step=".01"
+                                                            value={formData.Application.Anypreviousoffers}
+                                                            onchange={handleApplicationChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                    <td colspan="2" style="border-bottom : "></td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <div class="section-container">
+                        <h2 class="section-header">Terms & Conditions</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div style="padding-left:20px; padding-top: 8px;">
+                                <!-- <label class="label-class" for="buying-position">Client aware must de-instruct current agent direct even if New Home Solutions are subsequently then instructing.</label> -->
+                                <lightning-input type="checkbox" variant="standard" name="terms"
+                                    checked={formData.Application.terms} onchange={handleApplicationChange}
+                                    disabled={isReadOnly}></lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_11-of-12">
+                                <label style=" color: #333; margin-bottom: 8px; display: block; font-size: 20px;" for="buying-position"> Client aware must de-instruct current agent direct even if New Home Solutions are subsequently then instructing.</label>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <center>
+                            <template if:false={isReadOnly}>
+                                <!-- <lightning-button variant="brand" label="Submit" title="Submit"
+                                    onclick={handleSaveAndSubmit}></lightning-button> -->
+                                <button style="background: #075f50; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: background 0.3s ease;"
+                  onclick={handleSaveAndSubmit} >
+                    Submit
+                </button>
+                                <!-- <button class="button button-primary" onclick={handleSaveAndSubmit} >Submit</button> -->
+                            </template>
+
+
+                            <template if:true={isReadOnly}>
+                                <lightning-button label="Download PDF" onclick={handleDownloadPdf}></lightning-button>
+
+                            </template>
+
+                        </center>
+                    </div>
+
+                </div>
+            </lightning-quick-action-panel>
+        </template>
+
+        <!-- <template if:true={isLoading}>
+        <c-custom-loader></c-custom-loader>
+    </template> -->
+
+
+        <template if:true={isModalOpen}>
+            <div class="custom-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Application submission status</h2>
+                        <button class="close-button" onclick={closeModal}>X</button>
+                    </div>
+                    <div class="modal-body">
+                        <template for:each={processResults} for:item="result">
+                            <div key={result.id} class="result-row">
+                                <div class={result.animationClass}></div>
+                                <span>{result.message}</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={finalCheck}>
+            <div
+                style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+                <div
+                    style="background: #fff; width: 400px; max-width: 90%; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); animation: fadeIn 0.3s ease-in-out;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f1f1; padding-bottom: 10px;">
+                        <h2 style="margin: 0; font-size: 1.5rem; color: #333;">THANK YOU !</h2>
+                        <button style="background: none; border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: #555; transition: color 0.3s ease;" onclick={closeModal}>X</button>
+                    </div>
+                    <div style="padding-top: 15px; text-align: center;">
+                        <div style="margin-bottom: 12px; font-size: 1rem; color: #444;">
+                            <p>{finalMessage}</p>
+                            <p>Download your submitted application copy from below button</p>
+                        </div>
+                        <button style="background: #075f50; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: background 0.3s ease;"
+                  onclick={handleDownloadPdf} >
+                    Download
+                </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+
+        <template if:true={customError}>
+            <div class="custom-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Error</h2>
+                        <button class="close-button" onclick={closeModal}>X</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="color: red; font-size: 16px;">
+                            <template for:each={processResults} for:item="result">
+                                <div key={result.id} class="result-row">
+                                    <div class={result.animationClass}></div>
+                                    <span>{result.message}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+
+    </div>
+</template>

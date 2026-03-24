@@ -1,0 +1,133 @@
+/* ========== nhsApplicationFormPro.css (no left panel) ========== */
+
+/* Page & container */
+:host {
+  --gap-xs: .25rem;
+  --gap-sm: .5rem;
+  --gap: 1rem;
+  --gap-lg: 1.5rem;
+  --gap-xl: 2rem;
+
+  --card-pad: 1rem;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.06);
+  --muted: #6b7280;
+}
+
+.form-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--gap-lg) var(--gap);
+}
+
+/* Sticky page header with CTA */
+.form-header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--lwc-colorBackgroundAlt,#fff);
+  border-bottom: 1px solid var(--lwc-colorBorder,#e5e7eb);
+  padding: .75rem var(--gap);
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+.form-header-sticky .brand {
+  display: flex; align-items: center; gap: .75rem;
+  min-width: 0;
+}
+.form-header-sticky .brand img {
+  width: 36px; height: 36px; border-radius: 8px; object-fit: cover;
+}
+.form-header-sticky .title {
+  font-size: 1.05rem; font-weight: 600; line-height: 1.25rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.form-header-sticky .actions {
+  margin-left: auto; display: flex; gap: .5rem; align-items: center;
+}
+
+/* Section card */
+.section-card {
+  background: var(--lwc-colorBackgroundAlt,#fff);
+  border: 1px solid var(--lwc-colorBorder,#e5e7eb);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--card-pad);
+  margin-bottom: var(--gap-lg);
+}
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .75rem;
+}
+.section-header h2 {
+  font-size: 1.05rem; font-weight: 700; margin: 0;
+}
+.section-sub {
+  color: var(--muted);
+  font-size: .85rem;
+}
+
+/* Form grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gap);
+}
+.col-12 { grid-column: span 12; }
+.col-6  { grid-column: span 6; }
+.col-4  { grid-column: span 4; }
+.col-3  { grid-column: span 3; }
+@media (max-width: 1024px) {
+  .col-6, .col-4, .col-3 { grid-column: span 12; }
+}
+
+/* Field blocks */
+.field {
+  display: grid; gap: .35rem;
+}
+.field label,
+.label-class {
+  font-size: .8rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.field .help {
+  font-size: .75rem; color: var(--muted);
+}
+
+/* Stretch inputs */
+lightning-input, lightning-combobox, lightning-textarea, lightning-record-picker,
+c-custom-lookup, lightning-dual-listbox, lightning-input-address {
+  width: 100%;
+}
+.input-width { width: 100% !important; }
+
+/* Tables */
+.table-wrap {
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid var(--lwc-colorBorder,#e5e7eb);
+}
+.slds-table th {
+  position: sticky; top: 0; z-index: 1;
+  background: #fafafa;
+}
+.slds-table td, .slds-table th {
+  vertical-align: middle;
+}
+.slds-table tr:nth-child(even) td {
+  background: #fcfcfd;
+}
+
+/* Two-column helper inside sections */
+.kv {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 768px) { .kv { grid-template-columns: 1fr; } }
+
+/* Misc spacing */
+.spc-sm { margin-top: .5rem; }
+.spc   { margin-top: 1rem; }
+.spc-lg{ margin-top: 1.5rem; }

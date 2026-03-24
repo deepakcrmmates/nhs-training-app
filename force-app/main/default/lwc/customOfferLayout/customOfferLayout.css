@@ -1,0 +1,43 @@
+.container {
+  margin: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bordered-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+
+.bordered-table th,
+.bordered-table td {
+  border: 1px solid #dddddd1b;
+  padding: 10px;
+  text-align: left;
+}
+
+.bordered-table th {
+ 
+  font-weight: bold;
+}
+
+.vertical-text {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  text-align: center;
+  font-weight: bold;
+}
+
+
+@media print {
+    .print-button {
+        display: none; /* Hide the button in print view */
+    }
+
+    .container {
+        padding: 0;
+    }
+}

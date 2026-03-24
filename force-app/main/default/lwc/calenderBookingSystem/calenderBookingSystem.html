@@ -1,0 +1,36 @@
+<template>
+
+      <!-- Spinner -->
+        <template if:true={loader}>
+            <div class="spinner-overlay">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+    <div class="tabs-container">
+        <!-- Tab Headers -->
+        <ul class="tabs-header">
+            
+            <li 
+                class={bookingTabClass} 
+                onclick={handleBookingTabClick}>
+               1) Booking Cancellation
+            </li>
+            <li 
+                class={agentTabClass} 
+                onclick={handleAgentTabClick}>
+              2) Agent Re-Booking
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tabs-content">
+           
+            <template if:true={showBookingCancellation}>
+                <c-booking-cancel componentname ='Calender Booking System' record-id =  {recordId} buttonlabel ='Next'  onnext={handleChildResponse}></c-booking-cancel>
+            </template>
+             <template if:true={showAgentBooking}>
+                <c-vendor-availability-table record-id =  {recordId} onclosemodal={handleModalClose}></c-vendor-availability-table>
+            </template>
+        </div>
+    </div>
+</template>

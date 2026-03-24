@@ -1,0 +1,76 @@
+<template>
+    <lightning-card>
+        <div class="card-header sticky-header">
+            <div class="header-title">
+                <h2>Book Slots</h2>
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-text-title_caps sticky-header">
+                        <th scope="col">Date</th>
+                         <th scope="col">Day</th>
+                        <th scope="col">Availability</th>
+                        <th scope="col">AM</th>
+                        <th scope="col">PM</th>
+                        <th scope="col">Notes</th>
+                        <th scope="col">AM Slots</th>
+                        <th scope="col">PM Slots</th>
+                        <th scope="col">Agent</th>
+                    </tr>
+                </thead>
+                <tbody class="scrollable-body">
+                    <template for:each={vendorAvailability} for:item="record">
+                        <tr key={record.Id} data-id={record.Id}>
+                            <td>{record.formattedDate}</td>
+                             <td>{record.day}</td>
+                            <td>
+                                <lightning-button 
+                                    label={record.availabilityLabel} 
+                                    variant={record.availabilityVariant}>
+                                </lightning-button>
+                            </td>
+                            <td>
+                                <lightning-input type="checkbox" checked={record.AM__c} disabled></lightning-input>
+                            </td>
+                            <td>
+                                <lightning-input type="checkbox" checked={record.PM__c} disabled></lightning-input>
+                            </td>
+                            <td>{record.Notes__c}</td>
+                            <td>
+                                <lightning-combobox name="selectedAMSlot" placeholder="Select AM Slot" 
+                                    options={amSlotOptions} value={record.selectedAMSlot} 
+                                    disabled={record.isAMSlotDisabled}
+                                    data-id={record.Id}
+                                    onchange={handleSlotChange}>
+                                </lightning-combobox>
+                            </td>
+                            <td>
+                                <lightning-combobox name="selectedPMSlot" placeholder="Select PM Slot" 
+                                    options={pmSlotOptions} value={record.selectedPMSlot} 
+                                    disabled={record.isPMSlotDisabled} 
+                                    data-id={record.Id}
+                                    onchange={handleSlotChange}>
+                                </lightning-combobox>
+                            </td>
+                            <td>
+                                <lightning-combobox name="agent" placeholder="Select Agent" 
+                                    options={agentOptions} data-id={record.Id}
+                                    data-vendor-id={record.Vendor__c} data-date={record.Date__c} 
+                                    value={record.Agent__c} onchange={handleAgentChange}
+                                    disabled={record.isSlotDisabled}>
+                                </lightning-combobox>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="footer sticky-footer">
+            <center>
+            <lightning-button label="Book Slots" onclick={handleSlotBooking}></lightning-button>
+            </center>
+        </div>
+    </lightning-card>
+</template>

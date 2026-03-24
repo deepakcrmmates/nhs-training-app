@@ -1,0 +1,49 @@
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    gap: 10px; /* Space between images */
+}
+
+.image-container {
+    position: relative; /* Allows absolute positioning of the label */
+}
+
+.image {
+    width: 100%; /* Make images responsive */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 5px; /* Optional: Add rounded corners */
+}
+
+label {
+    position: absolute; /* Position label over image */
+    top: 10px; /* Adjust as needed */
+    left: 10px; /* Adjust as needed */
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background for readability */
+    padding: 5px; /* Padding around label */
+    border-radius: 3px; /* Rounded corners for label */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+input[type="radio"] {
+    display: none; /* Hide radio button */
+}
+
+.image-container:hover label {
+    opacity: 1; /* Show label on hover */
+}
+.modal-body {
+    max-height: 400px; /* Set your desired max height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Hide scrollbar for WebKit browsers */
+.modal-body::-webkit-scrollbar {
+    width: 0; /* Hide vertical scrollbar */
+    background: transparent; /* Optional: for background styling */
+}
+
+/* For Firefox */
+.modal-body {
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+}

@@ -1,0 +1,50 @@
+.input-section {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.input-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+    width: 100vw;           /* Viewport width */
+    max-width: 100%;        /* Prevent overflow */
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+.map-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.map-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.map-frame {
+    
+    height: 400px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.map-frames {
+   
+    height: 400px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}

@@ -1,0 +1,109 @@
+<template>
+    <div class="app-container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">Offer</div>
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search Offer" oninput={handleSearch} />
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+        </div>
+        <div class="kanban-container">
+
+            <div class="kanban-view">
+                <template if:true={days}>
+                    <template for:each={days} for:item="day">
+                        <div key={day.dateKey} class="kanban-column" ondragover={handleDragOver} ondrop={handleDrop}
+                            data-stage={day.label}>
+                            <div class="kanban-column-header">{day.label}</div>
+                            <div class="kanban-column-body">
+                                <!-- Iterate over events for the current day -->
+                                <template for:each={day.events} for:item="event">
+                                    <div key={event.uniqueKey} class={event.cardClass} draggable={event.isDraggable}
+                                        ondragstart={handleDragStart} data-unique-key={event.uniqueKey}
+                                        data-stage={event.stage}>
+                                        <div class="kanban-card-header">
+                                            {event.Subject}
+                                        </div>
+                                        <div class="kanban-card-body">
+                                            <p><strong>Offer:</strong><br />
+                                                <a href="#" if:true={event.Id} onclick={handleNavigation}
+                                                    data-id={event.Id}>
+                                                   {event.Name}
+                                                </a>
+                                            </p>
+                                            <p><strong>Application:</strong><br />
+                                                <a href="#" if:true={event.opportunityName} onclick={handleNavigation}
+                                                    data-id={event.applicationId}>
+                                                    {event.opportunityName}
+                                                </a>
+                                            </p>
+                                            <p><strong>House Builder:</strong><br />
+                                                <a href="#" if:true={event.housebuilderId} onclick={handleNavigation}
+                                                    data-id={event.housebuilderId}>
+                                                    {event.housebuilder}
+                                                </a>
+                                            </p>
+                                            <p><strong>Agent:</strong><br />
+                                                <a href="#" if:true={event.agentName} onclick={handleNavigation}
+                                                    data-id={event.agentId}>
+                                                    {event.agentName}
+                                                </a>
+                                            </p>
+                                            <p><strong>Offer Amount:</strong><br /> {event.offerAmount}</p>
+                                            <p><strong>Date & Time:</strong><br /> {event.formattedStartDateTime}</p>
+                                            <p><strong>Stage:</strong><br /> {event.stage}</p>
+
+                                            <!-- Checkbox Container -->
+                                            <template if:true={event.showAcceptButton}>
+                                                <div class="checkbox-container">
+                                                    <!-- Tickmark (Allow) -->
+                                                    <button class="tickmark"
+        data-unique-key={event.uniqueKey}
+        onclick={handleAllowCheckbox}>
+    ✓
+</button>
+
+                                                    <!-- Crossmark (Disallow) -->
+                                                    <button class="crossmark"
+        data-unique-key={event.uniqueKey}
+        onclick={handleDisallowCheckbox}>
+    ✗
+</button>
+
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </div>
+
+      <template if:true={isOpen}>
+        <div class="modal-backdrop">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2>Internal Notes</h2>
+                    <button class="close-button" onclick={closeModal}>×</button>
+                </div>
+                <div class="modal-body">
+                    <label for="notes">Enter Notes:</label>
+                    <textarea id="notes" class="notes-textarea" onchange={handleInput}></textarea>
+                    <!-- Error message displayed here -->
+                <template if:true={isError}>
+                    <p class="error-message">Please enter internal notes before submitting.</p>
+                </template>
+                </div>
+                <div class="modal-footer">
+                    <button class="submit-button" onclick={handleSubmit}>Submit</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

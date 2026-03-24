@@ -6,10 +6,10 @@ const DELAY = 300; // dealy apex callout timing in miliseconds
 
 export default class CustomLookupLwc extends LightningElement {
    @api helpText = "custom search lookup";
-    @api label = "Account";
+    @api label = "";
     @api required;
     @api selectedIconName = "standard:account";
-    @api objectLabel = "Account";
+    @api objectLabel = "";
     recordsList = [];
     selectedRecordName;
 
@@ -67,6 +67,7 @@ export default class CustomLookupLwc extends LightningElement {
     }
 
     get isValueSelected() {
+      //  console.log('OUTPUT :this.selectedRecordId; ', this.selectedRecordId);
         return this.selectedRecordId;
     }
 

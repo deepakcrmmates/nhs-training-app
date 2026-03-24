@@ -1,0 +1,37 @@
+<template>
+    <div class="slds-form-element">
+        <!-- <label class="slds-form-element__label" for="combobox">{label}</label> -->
+        <div class="slds-form-element__control">
+            <div class={dropdownClass}>
+                <input
+                    type="text"
+                    class="slds-input"
+                    placeholder={placeholder}
+                    value={searchTerm}
+                    oninput={handleSearch}
+                    onfocus={handleFocus}
+                    onblur={handleBlur}
+                />
+                <div class="slds-dropdown slds-dropdown_length-5 ">
+                    <ul class="slds-listbox slds-listbox_vertical" role="listbox">
+                        <template for:each={filteredOptions} for:item="option">
+                            <li
+                                key={option.value}
+                                role="presentation"
+                                class="slds-listbox__item"
+                                data-value={option.value}
+                                onclick={handleSelection}
+                            >
+                                <div class="slds-media slds-listbox__option slds-listbox__option_plain" role="option">
+                                    <span class="slds-media__body">
+                                        <span class="slds-truncate">{option.label}</span>
+                                    </span>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -4,11 +4,12 @@ const DELAY = 500;
 
 export default class Idealaddresslookup extends LightningElement {
     @api helpText = "Custom Search Address";
-    @api label = "Search UK Address";
+    @api label = "";
     @api required;
     @api selectedIconName = "standard:account";
     @api objectLabel = "Account";
     recordsList = [];
+    defaultCountry = 'United Kingdom';
     selectedRecordName;
 
     @api objectApiName = "Account";

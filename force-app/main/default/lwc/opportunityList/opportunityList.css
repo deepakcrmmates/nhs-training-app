@@ -1,0 +1,238 @@
+/* Updated OpportunityList.css */
+.highlight-total-count {
+font-weight: bold;
+    border-radius: 8px 8px 0px 0px;
+    font-size: 22px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #075f50;
+    color: white;
+}
+
+
+.sort-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.sort-button:hover {
+    background-color: #0056b3;
+}
+
+.sort-button .asc::after {
+    content: '\2191'; /* Up arrow */
+    margin-left: 5px;
+}
+
+.sort-button .desc::after {
+    content: '\2193'; /* Down arrow */
+    margin-left: 5px;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.application-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 950px;
+    overflow-y: auto;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: transparent transparent; /* Firefox */
+}
+
+.application-list::-webkit-scrollbar {
+    width: 6px; /* Chrome, Safari, Edge */
+}
+
+.application-list::-webkit-scrollbar-thumb {
+    background-color: transparent; /* Chrome, Safari, Edge */
+}
+
+.application-list:hover::-webkit-scrollbar-thumb {
+    background-color: #ccc; /* Chrome, Safari, Edge on hover */
+}
+
+.application-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.application-card:hover {
+    transform: scale(0.96);
+    box-shadow: 0 4px 12px rgba(11, 182, 11, 0.2);
+}
+
+.application-card.selected {
+    border-color: #28a745; /* Green border for selected application */
+    background-color: #e6ffee;
+}
+
+.application-details {
+    flex: 1;
+}
+
+.application-name {
+    font-weight: 300;
+    font-size: 16px;
+    margin: 0;
+}
+
+.application-address {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
+.application-counts {
+    display: flex;
+    gap: 10px;
+    padding-top: 8px;
+}
+.pagination-controls {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pagination-button {
+    background-color: #075f50;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination-button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+.circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.circle.green {
+    background-color: #28a745;
+}
+
+.circle.orange {
+    background-color: #ffc107;
+}
+
+.circle.red {
+    background-color: #dc3545;
+}
+.custom-sort-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #ffffff; /* Custom color for the buttons */
+}
+
+.custom-sort-button:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.custom-sort-button span {
+    font-size: 1.4rem;
+    color: inherit;
+}
+.search-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0.5rem;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    transition: box-shadow 0.3s ease;
+}
+
+.search-container:focus-within {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-color: #0070d2;
+}
+
+.search-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    color: #0070d2;
+    font-size: 1rem;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.search-icon:hover {
+    color: #005bb5;
+    transform: scale(1.1);
+}
+
+.search-input {
+    flex-grow: 1;
+    width: 0;
+    opacity: 0;
+    transition: width 0.3s ease, opacity 0.3s ease;
+    border: none;
+    outline: none;
+    margin-bottom: 11px;
+    font-size: 1rem;
+    background-color: transparent;
+    color: #333;
+    margin-left: 0.5rem;
+}
+
+.search-input.visible {
+    width: 200px;
+    opacity: 1;
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    font-style: italic;
+}

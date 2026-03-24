@@ -1,0 +1,144 @@
+/* Center everything */
+.container {
+    /* display: flex; */
+        height: 800px;
+   
+    margin-top: 28px;
+    background-color: #f4f6f9;
+    width: 100%;
+        overflow-y: auto;
+
+}
+
+.full-height {
+    height: 800px;
+    background-color: white;
+     overflow-y: auto;
+}
+
+/* Search Input Box */
+.search-container {
+    text-align: center;
+    padding: 10px;
+}
+
+/* Table Wrapper for Centering */
+.table-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+}
+
+/* Table Container */
+.table-container {
+    width: 100%;
+    max-height: 650px;
+    overflow-y: auto;
+    border-radius: 8px;
+    display: flex;
+    
+    justify-content: center;
+}
+
+/* Custom Table */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+/* Table Header */
+.custom-table thead {
+    position: sticky;
+    top: 0;
+    background: #075f50;
+    
+}
+
+th {
+    background: #075f50;
+    color: white;
+    padding: 14px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+}
+
+/* Table Rows */
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+    /* Prevents text from breaking */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Word Wrapping */
+.word-wrap {
+    text-align: left !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 200px;
+}
+
+/* Left Alignment for Text */
+.text-left {
+    text-align: left !important;
+}
+
+/* Alternate Row Coloring */
+tbody tr:nth-child(even) {
+    background: #f8f9fd;
+}
+
+/* Hover Effect */
+tbody tr:hover {
+    background: #e3f2fd;
+    transition: 0.3s;
+}
+
+/* Scrollable Tbody */
+.scrollable-tbody {
+    display: block;
+    max-height: 300px;
+    /* Adjust as needed */
+    overflow-y: auto;
+    width: 100%;
+}
+
+.scrollable-tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+thead,
+tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+.slds-spinner_container {
+   
+    height: 890px;
+    background-color: rgba(255, 255, 255, 0.6); /* Optional: adds translucent background */
+   
+}
+/* No Records Message */
+.no-records {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #777;
+    padding: 20px;
+}

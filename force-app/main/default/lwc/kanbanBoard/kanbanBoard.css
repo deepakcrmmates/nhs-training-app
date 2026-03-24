@@ -1,0 +1,10 @@
+.board {
+    padding: 10px;
+    background: #f4f6f9;
+}
+
+.columns {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+}

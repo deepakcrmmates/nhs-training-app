@@ -1,0 +1,126 @@
+<template>
+    <div class="kanban-container">
+        <div class="kanban-header">
+            <div class="kanban-header-content">
+                <h1 class="week-title">{weekRange}</h1>
+                <div class="header-buttons">
+                    <span>
+            <button class="icon-button" disabled={flag} onclick={handleKanbanClick}>🗂️</button>
+        </span>
+                    <span>
+            <button class="icon-button" disabled={flag} onclick={handleListClick}>☰</button>
+        </span>
+                </div>
+            </div>
+        </div>
+
+        <div if:true={kanBanFlag} class="kanban-view">
+            <template if:true={days}>
+                <template for:each={days} for:item="day">
+                    <div key={day.dateKey} class="kanban-column">
+                        <div class="kanban-column-header">{day.label}</div>
+                        <div class="kanban-column-body">
+                            <!-- Iterate over events for the current day -->
+                            <template for:each={day.events} for:item="event">
+                                <div key={event.Id} class="kanban-card">
+                                    <div class="kanban-card-header" style="color: #000000;">
+                                        {event.Subject}
+                                    </div>
+                                    <div class="kanban-card-body">
+                                        <p><strong>Application:</strong><br/>
+                                            <a href="#" style="color: #000000;" if:true={event.opportunityName}
+                                                onclick={handleNavigation}
+                                                data-id={event.applicationId}>{event.opportunityName}</a>
+                                        </p>
+                                        <p><strong>Housebuilder:</strong><br/>
+                                            <a href="#" style="color: #000000;" if:true={event.housebuilderId}
+                                                onclick={handleNavigation}
+                                                data-id={event.housebuilderId}>{event.housebuilder}</a>
+                                        </p>
+                                        <p><strong>Agent:</strong><br/>
+                                            <a href="#" style="color: #000000;" if:true={event.agentName}
+                                                onclick={handleNavigation} data-id={event.agentId}>{event.agentName}</a>
+                                        </p>
+
+                                        <p><strong>Vendor:</strong><br/>
+                                            <a href="#" style="color: #000000;" if:true={event.vendorName}
+                                                onclick={handleNavigation}
+                                                data-id={event.vendorId}>{event.vendorName}</a>
+                                        </p>
+                                        <p><strong>Date & Time:</strong><br/> {event.formattedStartDateTime}</p>
+                                        <!-- <div class="kanban-card-actions">
+                                    <button class="book-button">Book</button>
+                                </div> -->
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+
+       <template if:true={listFlag} for:each={groupedEvents} for:item="day">
+    <div key={day.label} class="slds-card slds-m-bottom_medium">
+        <!-- Date Header -->
+        <div class="slds-card__header slds-grid slds-theme_shade slds-p-around_small">
+            <h3 class="slds-text-heading_small slds-col group-header"> 📅 {day.label}</h3>
+        </div>
+
+        <!-- Table Section -->
+        <div class="slds-card__body slds-p-horizontal_medium">
+            <div class="slds-scrollable_x">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered styled-table">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th style="width: 20%;">
+                                <div class="slds-truncate" title="Application">Application</div>
+                            </th>
+                            <th style="width: 20%;">
+                                <div class="slds-truncate" title="Housebuilder">Housebuilder</div>
+                            </th>
+                            <th style="width: 20%;">
+                                <div class="slds-truncate" title="Agent">Agent</div>
+                            </th>
+                            <th style="width: 20%;">
+                                <div class="slds-truncate" title="Applicant">Applicant</div>
+                            </th>
+                            <th style="width: 20%;">
+                                <div class="slds-truncate" title="Date & Time">Date & Time</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={day.events} for:item="item">
+                            <tr key={item.Id}>
+                                <td>
+                                    <div class="slds-truncate" title={item.application}>{item.application}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" title={item.housebuilder}>{item.housebuilder}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" title={item.agentName}>{item.agentName}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" title={item.applicant}>{item.applicant}</div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" title={item.dateTime}>{item.dateTime}</div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+
+      
+
+    </div>
+</template>

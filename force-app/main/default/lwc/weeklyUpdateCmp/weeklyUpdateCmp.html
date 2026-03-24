@@ -1,0 +1,80 @@
+<template>
+    <div style="padding:10px; border:1px solid black;">
+    <lightning-card title="Weekly Updates">
+        <lightning-button style="padding:5px;"  label="Sort ↑↓" onclick={handleSort}></lightning-button><br/>
+        <template for:each={weekData} for:item="week">
+            <div key={week.key} class="slds-p-around_medium slds-box slds-m-bottom_small">
+                <div class="slds-grid slds-wrap slds-grid_align-spread">
+                    <h2 class="slds-text-heading_medium"> {week.weekNum} - Created Date: {week.createDate} | Last Modified Date: {week.modifyDate}</h2>
+                    <lightning-button-icon icon-name="utility:close" alternative-text="Remove"  onclick={removeWeek} class="slds-align-top"></lightning-button-icon>
+                </div>
+                <table class="slds-table slds-table_bordered">
+                    <thead>
+                        <tr>
+                            <th style="width:15%;text-align: center;">Agent Title</th>
+                            <th style="width:20%;text-align: center;">Agent Name</th>
+                            <th style="width:65%;text-align: center;">Updated Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center;">Agent 1</td>
+                            <td>
+                                <c-custom-lookup-lwc name ="agent1" data-id={week.Id} class="input" label="" selected-icon-name="standard:account" object-label="Account"
+										object-api-name="Account" field-api-name="Name" other-field-api-name="Industry"
+									onvalueselected={handleInputChange} selected-record-id ={week.agent1} data-agent="agent1" data-key={week.key}  >
+									</c-custom-lookup-lwc>
+
+                                <!-- <lightning-input type="text" value={week.agent1.lookup} data-week-id={week.id} data-agent="agent1" data-field="lookup" onchange={handleInputChange} placeholder="Lookup to Agent"></lightning-input> -->
+                                </td>
+                            <td><lightning-textarea value={week.notes1} name ='notes1' data-id={week.Id}  data-key={week.key}  onchange={handleInputChange} placeholder="Notes"></lightning-textarea></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">Agent 2</td>
+                            <td>
+                                 <c-custom-lookup-lwc name ="agent2" data-id={week.Id} class="input" label="" selected-icon-name="standard:account" object-label="Account"
+										object-api-name="Account" field-api-name="Name" other-field-api-name="Industry"
+									onvalueselected={handleInputChange} selected-record-id ={week.agent2}  data-key={week.key}  >
+									</c-custom-lookup-lwc>
+                                <!-- <lightning-input type="text" value={week.agent2.lookup} data-week-id={week.id} data-agent="agent2" data-field="lookup" onchange={handleInputChange} placeholder="Lookup to Agent">
+                                    </lightning-input> -->
+                                    </td>
+                            <td><lightning-textarea value={week.notes2} name ='notes2'  data-id={week.Id}  data-key={week.key}  onchange={handleInputChange}  placeholder="Notes"></lightning-textarea></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">Agent 3</td>
+                            <td height ="5px;">
+                                 <c-custom-lookup-lwc name ="agent3" data-id={week.Id} class="input" label="" selected-icon-name="standard:account" object-label="Account"
+										object-api-name="Account" field-api-name="Name" other-field-api-name="Industry"
+									onvalueselected={handleInputChange} selected-record-id ={week.agent3}  data-key={week.key} >
+									</c-custom-lookup-lwc>
+                                <!-- <lightning-input type="text" value={week.agent3.lookup} data-week-id={week.id} data-agent="agent3" data-field="lookup" onchange={handleInputChange} placeholder="Lookup to Agent"></lightning-input>
+                                 -->
+                                </td>
+                            <td><lightning-textarea value={week.notes3} name ='notes3'  data-id={week.Id}  data-key={week.key}  onchange={handleInputChange} placeholder="Notes"></lightning-textarea></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td style="text-align: right;">Created by:</td>
+                            <td style="text-align: left;" colspan="2">{week.createby}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right;">Modified by:</td>
+                            <td style="text-align: left;" colspan="2">{week.modifyby}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </template>
+        <div class="slds-m-around_medium" >
+            <lightning-button style="padding:4px;" label="Add Week" onclick={addWeek}></lightning-button>
+            <lightning-button style="padding:4px;"  label="Save" variant="brand" onclick={save}></lightning-button>
+        </div>
+         <div slot="footer" class="slds-var-m-vertical_medium">
+                <c-pagination2 records={jsonList} record-size="5" onupdate={updateAccountHandler}></c-pagination2>
+            </div>
+        
+    </lightning-card>
+    </div>
+</template>

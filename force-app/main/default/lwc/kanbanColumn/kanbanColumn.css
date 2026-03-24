@@ -1,0 +1,11 @@
+.column {
+    width: 300px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.card-container {
+    max-height: 400px;
+    overflow-y: auto;
+}

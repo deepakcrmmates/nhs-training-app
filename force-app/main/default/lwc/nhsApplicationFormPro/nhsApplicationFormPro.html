@@ -1,0 +1,254 @@
+<template>
+  <!-- Sticky Header (kept) -->
+  <div class="form-header-sticky">
+    <div class="brand">
+      <template if:true={accountLogoUrl}>
+        <img src={accountLogoUrl} alt="Logo" />
+      </template>
+      <div class="title">New Home Solutions — Application Form</div>
+    </div>
+    <div class="actions">
+      <lightning-button variant="neutral" label="Save Draft" onclick={handleSaveDraft}></lightning-button>
+      <lightning-button variant="brand" label="Submit" onclick={handleSubmit}></lightning-button>
+    </div>
+  </div>
+
+  <div class="form-shell">
+    <template if:true={isLoading}>
+      <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+    </template>
+
+    <template if:false={isLoading}>
+      <!-- No left panel anymore; single content column -->
+      <div>
+        <!-- House Builder -->
+        <div id="housebuilder" class="section-card">
+          <div class="section-header">
+            <h2>House Builder Details</h2>
+            <span class="section-sub">Select an Account with Record Type “Housebuilder”</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="field col-6">
+              <label class="label-class">House Builder (Account)</label>
+              <lightning-record-picker
+                object-api-name="Account"
+                value={form.houseBuilderId}
+                placeholder="Search housebuilder accounts..."
+                label=" "
+                display-info
+                matching-info={housebuilderMatchingInfo}
+                fields={housebuilderDisplayFields}
+                onselectionchange={handleHousebuilderSelect}>
+              </lightning-record-picker>
+              <div class="help">Only Accounts whose Record Type is <b>Housebuilder</b> are shown.</div>
+            </div>
+
+            <div class="field col-6">
+              <label class="label-class">Development Name</label>
+              <lightning-input class="input-width" value={form.developmentName} placeholder="e.g., Riverside Park" onchange={handleChange} data-field="developmentName"></lightning-input>
+            </div>
+
+            <div class="field col-12">
+              <label class="label-class">Site Address</label>
+              <lightning-textarea class="input-width" value={form.siteAddress} placeholder="Street, City, Postcode" onchange={handleChange} data-field="siteAddress"></lightning-textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Applicant -->
+        <div id="applicant" class="section-card">
+          <div class="section-header">
+            <h2>Applicant Details</h2>
+            <span class="section-sub">Primary applicant information</span>
+          </div>
+          <div class="form-grid">
+            <div class="field col-4">
+              <label class="label-class">First Name</label>
+              <lightning-input class="input-width" value={form.firstName} onchange={handleChange} data-field="firstName"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Last Name</label>
+              <lightning-input class="input-width" value={form.lastName} onchange={handleChange} data-field="lastName"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Email</label>
+              <lightning-input type="email" class="input-width" value={form.email} onchange={handleChange} data-field="email"></lightning-input>
+            </div>
+            <div class="field col-6">
+              <label class="label-class">Phone</label>
+              <lightning-input type="tel" class="input-width" value={form.phone} onchange={handleChange} data-field="phone"></lightning-input>
+            </div>
+            <div class="field col-6">
+              <label class="label-class">Date of Birth</label>
+              <lightning-input type="date" class="input-width" value={form.dob} onchange={handleChange} data-field="dob"></lightning-input>
+            </div>
+            <div class="field col-12">
+              <label class="label-class">Current Address</label>
+              <lightning-textarea class="input-width" value={form.currentAddress} onchange={handleChange} data-field="currentAddress"></lightning-textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Property -->
+        <div id="property" class="section-card">
+          <div class="section-header">
+            <h2>Property Information</h2>
+            <span class="section-sub">Plot/type, price, and features</span>
+          </div>
+          <div class="form-grid">
+            <div class="field col-4">
+              <label class="label-class">Interested Plot/Type</label>
+              <lightning-input class="input-width" value={form.plotType} onchange={handleChange} data-field="plotType"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Bedrooms</label>
+              <lightning-input type="number" min="0" class="input-width" value={form.bedrooms} onchange={handleChange} data-field="bedrooms"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Asking Price (GBP)</label>
+              <lightning-input type="number" min="0" class="input-width" value={form.askingPrice} onchange={handleChange} data-field="askingPrice"></lightning-input>
+            </div>
+          </div>
+
+          <div class="kv spc">
+            <div>
+              <div class="label-class">Key Features</div>
+              <div class="spc-sm">
+                <lightning-input type="checkbox" label="Garden" checked={form.features.garden} onchange={handleFeatureChange} data-field="garden"></lightning-input>
+                <lightning-input type="checkbox" label="Parking" checked={form.features.parking} onchange={handleFeatureChange} data-field="parking"></lightning-input>
+                <lightning-input type="checkbox" label="New Build Warranty" checked={form.features.warranty} onchange={handleFeatureChange} data-field="warranty"></lightning-input>
+              </div>
+            </div>
+            <div>
+              <div class="label-class">Tenure</div>
+              <lightning-combobox
+                class="input-width"
+                value={form.tenure}
+                placeholder="Select Tenure"
+                options={tenureOptions}
+                onchange={handleChange}
+                data-field="tenure">
+              </lightning-combobox>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mortgage -->
+        <div id="mortgage" class="section-card">
+          <div class="section-header">
+            <h2>Mortgage & Finance</h2>
+            <span class="section-sub">Budget, deposit, and lender status</span>
+          </div>
+          <div class="form-grid">
+            <div class="field col-4">
+              <label class="label-class">Client Budget (GBP)</label>
+              <lightning-input type="number" min="0" class="input-width" value={form.budget} onchange={handleChange} data-field="budget"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Deposit (GBP)</label>
+              <lightning-input type="number" min="0" class="input-width" value={form.deposit} onchange={handleChange} data-field="deposit"></lightning-input>
+            </div>
+            <div class="field col-4">
+              <label class="label-class">Agreement in Principle</label>
+              <lightning-combobox
+                class="input-width"
+                value={form.aip}
+                placeholder="Select"
+                options={yesNoOptions}
+                onchange={handleChange}
+                data-field="aip">
+              </lightning-combobox>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incentives -->
+        <div id="incentives" class="section-card">
+          <div class="section-header">
+            <h2>Builder Incentives</h2>
+            <span class="section-sub">Any incentives offered with this reservation</span>
+          </div>
+          <div class="form-grid">
+            <div class="field col-12">
+              <label class="label-class">Details</label>
+              <lightning-textarea class="input-width" value={form.incentives} onchange={handleChange} data-field="incentives" placeholder="e.g., Flooring package, stamp duty contribution, appliances"></lightning-textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent & Valuation -->
+        <div id="agent" class="section-card">
+          <div class="section-header">
+            <h2>Agent & Valuation</h2>
+            <span class="section-sub">Estate agent and valuation info</span>
+          </div>
+          <div class="form-grid">
+            <div class="field col-6">
+              <label class="label-class">Agent Name</label>
+              <lightning-input class="input-width" value={form.agentName} onchange={handleChange} data-field="agentName"></lightning-input>
+            </div>
+            <div class="field col-6">
+              <label class="label-class">Agent Phone</label>
+              <lightning-input type="tel" class="input-width" value={form.agentPhone} onchange={handleChange} data-field="agentPhone"></lightning-input>
+            </div>
+            <div class="field col-12">
+              <label class="label-class">Valuation Notes</label>
+              <lightning-textarea class="input-width" value={form.valuationNotes} onchange={handleChange} data-field="valuationNotes"></lightning-textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Declarations -->
+        <div id="declarations" class="section-card">
+          <div class="section-header">
+            <h2>Declarations</h2>
+            <span class="section-sub">Please confirm and accept</span>
+          </div>
+          <div class="kv">
+            <div class="result-row">
+              <lightning-input type="checkbox" checked={form.acceptTerms} onchange={handleChange} data-field="acceptTerms"></lightning-input>
+              <div>I confirm the information provided is accurate to the best of my knowledge.</div>
+            </div>
+            <div class="result-row">
+              <lightning-input type="checkbox" checked={form.acceptPrivacy} onchange={handleChange} data-field="acceptPrivacy"></lightning-input>
+              <div>I agree to the privacy policy and understand how my data will be used.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div id="summary" class="section-card">
+          <div class="section-header">
+            <h2>Summary</h2>
+            <span class="section-sub">Quick review before submission</span>
+          </div>
+          <div class="table-wrap">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+              <thead>
+                <tr>
+                  <th scope="col"><div class="slds-truncate" title="Field">Field</div></th>
+                  <th scope="col"><div class="slds-truncate" title="Value">Value</div></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>House Builder</td><td>{housebuilderName}</td></tr>
+                <tr><td>Development</td><td>{form.developmentName}</td></tr>
+                <tr><td>Applicant</td><td>{form.firstName} {form.lastName}</td></tr>
+                <tr><td>Email</td><td>{form.email}</td></tr>
+                <tr><td>Phone</td><td>{form.phone}</td></tr>
+                <tr><td>Plot/Type</td><td>{form.plotType}</td></tr>
+                <tr><td>Bedrooms</td><td>{form.bedrooms}</td></tr>
+                <tr><td>Asking Price</td><td>{form.askingPrice}</td></tr>
+                <tr><td>Budget</td><td>{form.budget}</td></tr>
+                <tr><td>Deposit</td><td>{form.deposit}</td></tr>
+                <tr><td>AIP</td><td>{form.aip}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</template>

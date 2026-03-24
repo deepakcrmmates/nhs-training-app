@@ -1,0 +1,8 @@
+<template>
+    <div class={circleClass} onmouseover={showPopup} onmouseout={hidePopup}>
+        {initials}
+        <div class="popup" if:true={showFullName}>
+            {name}
+        </div>
+    </div>
+</template>

@@ -1,0 +1,47 @@
+<template>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">{label}</div>
+            <div class="header-right">
+                <!-- <button class="tab-button" onclick={handleTabClick} data-tab="calendar">Calendar</button> -->
+                <!-- <button class="tab-button" onclick= {handleApplicationKanban} data-tab="application">Application</button>
+                <button class="tab-button" onclick= {handleAvailableClick} >Vendor Availability</button>
+                <button class="tab-button" onclick= {handleBookedClick} >Agents Booked</button>
+                <button class="tab-button" onclick={handleTabClick} data-tab="chasing">Figures to Chase</button>
+                <button class="tab-button" onclick={handleFigClick} >Figures Returned</button> -->
+                <!-- <button class="tab-button" onclick={handleOfferClick} >Offer</button> -->
+            </div>
+            <div class="navigation-buttons">
+                <template if:false={kanban}>
+                    <button class="nav-button" onclick={handlePrevClick}>&lt;</button>
+                    <button class="nav-button" onclick={handleNextClick}>&gt;</button>
+                    <!-- <div class="calendar-buttons" if:true = {isCalendarVisible}>
+        <button class="nav-button" onclick= {handleAvailableClick} >Available</button>
+        <button class="nav-button" onclick= {handleBookedClick} >Booked</button>
+    </div> -->
+                </template>
+            </div>
+        </header>
+
+        <div class="main-content">
+
+            <div if:false={kanban} class="toggle-container">
+                <!-- <button class="toggle-button" onclick={toggleCollapsibleSection}></button>
+                <div class="opportunity-container" style={opportunityContainerStyles}>
+                    <c-opportunity-list onopportunityselect={handleOpportunitySelect} nhs-process = {nhsProcess} tab = {tabName}></c-opportunity-list>
+                </div> -->
+            </div>
+
+            <div class="tab-content" style={tabContentStyles}>
+              
+
+                <!-------------------------------------------------------------------Offer ------------------------------------------------->
+                <div if:true={offer}>
+                    <c-offer-kanban-view  application-id={selectedOpportunityId} >
+                    </c-offer-kanban-view>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</template>

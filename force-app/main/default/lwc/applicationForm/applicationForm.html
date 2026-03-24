@@ -1,91 +1,124 @@
 <template>
 
-	<lightning-card class="slds-border_bottom" variant="Narrow" title="Application" icon-name="standard:opportunity">
-		<!-- <lightning-button-icon  icon-name="utility:down" variant="border-filled" alternative-text="Show More" slot="actions"></lightning-button-icon> -->
-		<div class="slds-p-horizontal_small ">
+	<lightning-card class="slds-border_bottom" variant="Narrow" title="Application Form"
+		icon-name="standard:opportunity">
+		<div class="slds-p-horizontal_small">
 			<lightning-layout multiple-rows>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<!-- <lightning-input type="text" variant="standard" name="name" label="Name"
-							placeholder="type here..." value={jsonDatas.name} onchange={handleChange}></lightning-input> -->
-							 <c-idealaddresslookup selected-icon-name="standard:account" object-label="Property"
-                                object-api-name="NHS_Property__c" field-api-name="Name" other-field-api-name="Industry"
-                                onvalueselected={handleValueSelectedOnAccounts}>
-                            </c-idealaddresslookup>
-					</div>
+				<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+					padding="around-small">
+					<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+						<p style="font-size:18px; text-align:left;"> <b>Search Property</b></p>
+						<c-idealaddresslookup selected-icon-name="standard:account" object-label="Property"
+							object-api-name="NHS_Property__c" field-api-name="Name" other-field-api-name="Industry"
+							onvalueselected={handleValueSelectedOnAccounts}>
+						</c-idealaddresslookup>
+				</div>
 				</lightning-layout-item>
 				
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="12">
-					 <lightning-record-edit-form object-api-name="NHS_Property__c" record-id={recordId} onsuccess={handleSuccess}>
-                        <template for:each={mapData} for:item="keyValue">    
-                            <div class="slds-section slds-is-open slds-m-around_medium" key={keyValue.key}>
-                                <h3 class="slds-section__title slds-theme_shade">
-                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">{keyValue.key}</span>
-                                </h3>
-                                <div class="slds-section__content">
-                                    <div class="slds-grid slds-form__row">
-                                        <template for:each={keyValue.value} for:item="field">
-                                            <lightning-input-field key={field.fieldPath} field-name={field.fieldPath} value={field.value} data-field-name={field.fieldPath} class="slds-col slds-size_1-of-2"></lightning-input-field>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <!-- <footer class="slds-card__footer">
+
+				<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+					padding="around-small">
+					<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+					<lightning-record-edit-form object-api-name="NHS_Property__c" record-id={recordId}
+						onsuccess={handleSuccess}>
+						<template for:each={mapData} for:item="keyValue">
+							<div class="slds-section slds-is-open slds-m-around_medium" key={keyValue.key}>
+								<div
+									style="     padding-bottom: 30px;">
+									<h3 class="slds-section__title slds-theme_shade">
+										<span class="slds-truncate slds-p-horizontal_small" title="Section Title">{keyValue.key}</span>
+									</h3>
+								</div>
+								<div class="slds-section__content">
+									<div class="slds-grid slds-form__row">
+										<template for:each={keyValue.value} for:item="field">
+											<lightning-input-field key={field.fieldPath} field-name={field.fieldPath}
+												value={field.value} data-field-name={field.fieldPath}
+												class="slds-col slds-size_1-of-2"></lightning-input-field>
+										</template>
+									</div>
+								</div>
+							</div>
+						</template>
+						<!-- <footer class="slds-card__footer">
                             <lightning-button class="slds-button_neutral slds-m-around_medium" label="Cancel" onclick={cancelhandle}></lightning-button>
                             <lightning-button class="slds-m-around_medium" variant="brand" type="submit" label="Save"></lightning-button>
                         </footer> -->
-                    </lightning-record-edit-form>
-				</lightning-layout-item>
-
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="12"
-					large-device-size="6">
-					<div class="slds-border_bottom">
-						<div class="custom-box">
-							<c-custom-lookup-lwc class="input" label="House Builder"
-								selected-icon-name="standard:account" object-label="Account" object-api-name="Account"
-								field-api-name="Name" other-field-api-name="Industry"
-								onvalueselected={handleValueSelectedOnAccount}></c-custom-lookup-lwc>
-						</div>
+					</lightning-record-edit-form>
 					</div>
 				</lightning-layout-item>
 
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-input type="text" variant="standard" name="development" label="Development"
-							placeholder="type here..." value='' onchange={handleChange}></lightning-input>
+
+				<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+					padding="around-small">
+					<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+						<p style="font-size:18px; text-align:left;"> <b>Property Information</b></p>
+						<table class="slds-table slds-table_cell-buffer">
+							<thead>
+								<tr class="slds-line-height_reset">
+
+									<th scope="col">
+										<c-custom-lookup-lwc class="input" label="House Builder"
+											selected-icon-name="standard:account" object-label="Account"
+											object-api-name="Account" field-api-name="Name"
+											other-field-api-name="Industry"
+											onvalueselected={handleValueSelectedOnAccount}></c-custom-lookup-lwc>
+									</th>
+
+									<th scope="col">
+										<lightning-input type="text" variant="standard" name="development"
+											label="Development" placeholder="type here..." value=''
+											onchange={handleChange}></lightning-input>
+									</th>
+								</tr>
+								<tr class="slds-line-height_reset">
+									<th scope="col">
+										<lightning-input type="text" variant="standard" name="plot" label="Plot"
+											placeholder="type here..." value='' onchange={handleChange}>
+										</lightning-input>
+									</th>
+
+									<th scope="col">
+										<lightning-combobox name="scheme" label="Scheme" value={value}
+											placeholder="Select Scheme" options={options} onchange={handleChange}>
+										</lightning-combobox>
+									</th>
+
+								</tr>
+								<tr class="slds-line-height_reset">
+									<th scope="col">
+										<!-- <lightning-input type="text" variant="standard" name="selesAdvisor"
+											label="Sales Advisor" onchange={handleChange}></lightning-input> -->
+											<lightning-combobox label="NHS Advisor" name ="salesAdvisor" 
+											options={salesAdv} onchange={handleChange}>
+										</lightning-combobox>
+									</th>
+									<th scope="col">
+										<lightning-input type="number" variant="standard" name="expectation"
+											label="Client Expectation" formatter="currency" step=".01"
+											placeholder="type here..." value='' onchange={handleChange}>
+										</lightning-input>
+									</th>
+
+								</tr>
+								<tr>
+									<th scope="col">
+										<lightning-input class="dateCls" type="date" variant="standard"
+											name="dateOfApplicationReceived" label="Date of Application Received"
+											onchange={handleChange}></lightning-input>
+									</th>
+									<th scope="col">
+										<!-- <lightning-combobox name="house" label="Type of House" value={value}
+											placeholder="Select House" options={type} onchange={handleChange}>
+										</lightning-combobox> -->
+									</th>
+								</tr>
+
+							</thead>
+						</table>
 					</div>
 				</lightning-layout-item>
 
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-input type="text" variant="standard" name="plot" label="Plot"
-							placeholder="type here..." value='' onchange={handleChange}></lightning-input>
-					</div>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-combobox name="scheme" label="Scheme" value={value} placeholder="Select Scheme"
-							options={options} onchange={handleChange}></lightning-combobox>
-					</div>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-input class="dateCls" type="date" variant="standard" name="dateOfApplicationReceived" label="Date of Application Received" onchange={handleChange}></lightning-input>
-					</div>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-input type="text" variant="standard" name="selesAdvisor" label="Sales Advisor" onchange={handleChange}></lightning-input>
-					</div>
-				</lightning-layout-item>
 				<!-- <lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
 					large-device-size="6">
 					<div class="custom-box">
@@ -104,35 +137,32 @@
 						</div>
 					</div>
 				</lightning-layout-item> -->
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div class="custom-box">
-						<lightning-input type="number" variant="standard" name="expectation" label="Client Expectation"
-							formatter="currency" step=".01" placeholder="type here..." value='' onchange={handleChange}>
-						</lightning-input>
-					</div>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="12"
-					large-device-size="12">
-					<h1><b> ETA Completion Date</b> </h1>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6" value='' onchange={handleChange}>
-					<div class="custom-box"> &nbsp;&nbsp;&nbsp;
-						<label style="padding: 15px;"> Start Date</label>
-						<input class="1" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="startDateInput" label ="Start Date" onchange={handleChange}>
+				<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+					padding="around-small">
+					<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+						<p style="font-size:18px; text-align:left;"> <b>ETA Completion Date</b></p>
+						<table class="slds-table slds-table_cell-buffer">
+							<thead>
+								<tr class="slds-line-height_reset">
+
+									<th scope="col">
+										<label style="padding: 15px;"> Start Date</label>
+										<input class="1" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="startDateInput" label ="Start Date" onchange={handleChange}>
+
+									</th>
+									<th scope="col">
+										<label style="padding: 15px;"> End Date</label>
+										<input class="2" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="endDateInput" label ="Start Date" onchange={handleChange}>
+
+									</th>
+								</tr>
+
+							</thead>
+						</table>
 					</div>
 				</lightning-layout-item>
 
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-					large-device-size="6">
-					<div style="padding-left:20px;" class="custom-box">
-						<label style="padding: 15px;"> End Date</label>
-						<input class="2" style ="height: 30px;width: 200px; padding: 5px 5px 5px 20px;" type="month" id="endDateInput" label ="Start Date" onchange={handleChange}>
-						<!-- <lightning-input type="date" variant="standard" name="endDate" label="End Date"
-							placeholder="type here..." value='' onchange={handleChange}></lightning-input> -->
-					</div>
-				</lightning-layout-item>
+
 				<!-- <lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="4"
 					large-device-size="4">
 					<div class="custom-box">
@@ -170,7 +200,7 @@
 						</div>
 					
 				</lightning-layout-item> -->
-				
+
 
 				<!-- <lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="12"
 					large-device-size="6">
@@ -185,143 +215,119 @@
 					
 				</lightning-layout-item> -->
 				<!-- <template if:true={temp3}> -->
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="6" large-device-size="6">
-						<h1><b> New Vendor 1</b> </h1>
-					</lightning-layout-item>
-					
+<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+	padding="around-small">
+	<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+		<p style="font-size:18px; text-align:left;"> <b>Vendor Details</b></p>
+		<table class="slds-table slds-table_cell-buffer">
+			<thead>
+				<tr class="slds-line-height_reset">
 
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="6" large-device-size="6">
-						<h1><b> New Vendor 2</b> </h1>
-					</lightning-layout-item>
+					<th scope="col">
+						<label style="padding: 15px;"> New Vendor 1</label>
+					</th>
+					<th scope="col">
+					</th>
+					<th scope="col">
+						<label style="padding: 15px;"> New Vendor 2</label>
+					</th>
+					<th scope="col">
 
-				
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="firstname" label="First Name"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis1}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="lastname" label="Last Name"
-									placeholder="type here..." onchange={handleContactChange} required disabled={dis1}>
-								</lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-				
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="firstname1" label="First Name"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis2}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="lastname1" label="Last Name"
-									placeholder="type here..." onchange={handleContactChange} required disabled={dis2}>
-								</lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
+					</th>
+				</tr>
+				<tr class="slds-line-height_reset">
 
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="firstname" label="First Name"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis1}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="lastname" label="Last Name"
+							placeholder="type here..." onchange={handleContactChange} required disabled={dis1}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="firstname1" label="First Name"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis2}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="lastname1" label="Last Name"
+							placeholder="type here..." onchange={handleContactChange} >
+						</lightning-input>
+					</th>
+				</tr>
+				<tr class="slds-line-height_reset">
 
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="email" label="Email"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis1}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="mobilePhone" label="Phone"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis1}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-			
-							
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="email1" label="Email"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis2}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
-					<lightning-layout-item size="12" padding="around-small" small-device-size="3"
-						medium-device-size="12" large-device-size="3">
-						<div class="slds-border_bottom">
-							<div class="custom-box">
-								<lightning-input type="text" variant="standard" name="mobilePhone1" label="Phone"
-									placeholder="type here..." onchange={handleContactChange} disabled={dis2}></lightning-input>
-							</div>
-						</div>
-					</lightning-layout-item>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="email" label="Email"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis1}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="mobilePhone" label="Phone"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis1}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="email1" label="Email"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis2}>
+						</lightning-input>
+					</th>
+					<th scope="col">
+						<lightning-input type="text" variant="standard" name="mobilePhone1" label="Phone"
+							placeholder="type here..." onchange={handleContactChange} disabled={dis2}>
+						</lightning-input>
+					</th>
+				</tr>
+
+			</thead>
+		</table>
+	</div>
+</lightning-layout-item>
 
 				<!-- </template> -->
 
-				
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="12"
-					large-device-size="12">
-					<h1><b> Vendor Availability</b> </h1>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="12"
-					large-device-size="12">
-					
-					<table class="slds-table slds-table_cell-buffer slds-table_bordered">
-					
+<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+	padding="around-small">
+	<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+		<p style="font-size:18px; text-align:left;"> <b>Vendor Availability</b></p>
+		<table class="slds-table slds-table_cell-buffer slds-table_bordered">
+
 						<tr class="slds-line-height_reset">
 							<th scope="col">
-								<lightning-layout-item class="in1" size="12" padding="around-small" small-device-size="3"
-									medium-device-size="6" large-device-size="6">
-									<lightning-input type="checkbox" variant="standard" name="monAM" label="Mon-AM" value=''
-										onchange={handleChange}>
+								<lightning-layout-item class="in1" size="12" padding="around-small"
+									small-device-size="3" medium-device-size="6" large-device-size="6">
+									<lightning-input type="checkbox" variant="standard" name="monAM" label="Mon-AM"
+										value='' onchange={handleChange}>
 									</lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="col">
-								<lightning-layout-item class="in1" size="12" padding="around-small" small-device-size="3"
-									medium-device-size="6" large-device-size="6">
+								<lightning-layout-item class="in1" size="12" padding="around-small"
+									small-device-size="3" medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="tueAM" label="Tue-AM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="col">
-								<lightning-layout-item class="in1" size="12" padding="around-small" small-device-size="3"
-									medium-device-size="6" large-device-size="6">
+								<lightning-layout-item class="in1" size="12" padding="around-small"
+									small-device-size="3" medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="wenAM" label="Wed-AM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="col">
-								<lightning-layout-item class="in1" size="12" padding="around-small" small-device-size="3"
-									medium-device-size="6" large-device-size="6">
+								<lightning-layout-item class="in1" size="12" padding="around-small"
+									small-device-size="3" medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="thuAM" label="Thu-AM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="col">
-								<lightning-layout-item class="in1" size="12" padding="around-small" small-device-size="3"
-									medium-device-size="6" large-device-size="6">
+								<lightning-layout-item class="in1" size="12" padding="around-small"
+									small-device-size="3" medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="friAM" label="Fri AM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
@@ -329,47 +335,54 @@
 						</tr>
 						<tr class="slds-hint-parent">
 							<th scope="row">
-								<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-									large-device-size="6">
+								<lightning-layout-item size="12" padding="around-small" small-device-size="3"
+									medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="monPM" label="Mon-PM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="row">
-								<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-									large-device-size="6">
+								<lightning-layout-item size="12" padding="around-small" small-device-size="3"
+									medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="tuePM" label="Tue-PM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="row">
-								<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-									large-device-size="6">
+								<lightning-layout-item size="12" padding="around-small" small-device-size="3"
+									medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="wenPM" label="Wed-PM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="row">
-								<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-									large-device-size="6">
+								<lightning-layout-item size="12" padding="around-small" small-device-size="3"
+									medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="thuPM" label="Thu-PM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 							<th scope="row">
-								<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="6"
-									large-device-size="6">
+								<lightning-layout-item size="12" padding="around-small" small-device-size="3"
+									medium-device-size="6" large-device-size="6">
 									<lightning-input type="checkbox" variant="standard" name="friPM" label="Fri PM"
 										placeholder="type here..." value='' onchange={handleChange}></lightning-input>
 								</lightning-layout-item>
 							</th>
 						</tr>
 					</table>
-				</lightning-layout-item>
-				<lightning-layout-item size="12" padding="around-small" small-device-size="3" medium-device-size="9"
-					large-device-size="12">
-					<lightning-input style="--lwc-heightInput: 75px;" type="text" variant="standard" name="notes"
-						label="Notes" placeholder="type here..." value='' onchange={handleChange}></lightning-input>
+	</div>
+</lightning-layout-item>
+
+
+				
+				<lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12"
+					padding="around-small">
+					<div class="custom-box slds-box slds-p-around_medium slds-text-align_left">
+						<p style="font-size:18px; text-align:left;"> <b>Notes</b></p>
+						<lightning-input style="--lwc-heightInput: 75px;" type="text" variant="standard" name="notes" 
+							placeholder="type here..." value='' onchange={handleChange}></lightning-input>
+				</div>
 				</lightning-layout-item>
 
 			</lightning-layout>
@@ -377,7 +390,7 @@
 
 		<div slot="footer">
 			<center>
-				<lightning-button variant="brand" label="Save" title="save" onclick={handleSaveClick}>
+				<lightning-button variant="brand" label="Save" title="save" onclick={handleSaveClick} disabled ={disable}>
 				</lightning-button>
 				&nbsp;&nbsp;
 				<lightning-button variant="neutral" label="Cancel" onclick={handleClickCancel}></lightning-button>

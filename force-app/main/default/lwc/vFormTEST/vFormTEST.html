@@ -1,0 +1,795 @@
+<template>
+    <div>
+        <div class="form-header">
+            <h2> Valuation Form </h2>
+        </div>
+
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+        </template>
+
+        <template if:false={isLoading}>
+            <lightning-quick-action-panel header="">
+                <div class="slds-is-relative agent-offer-form">
+
+                    <!-- SECTION 1: Agent Details -->
+                    <div class="section-container">
+                        <h2 class="section-header">Agent Details</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Agent Name -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="agent-name">Agent Name</label>
+                                <lightning-input type="text" variant="standard" id="agent-name" class="agent-name"
+                                    placeholder={name} disabled></lightning-input>
+                            </div>
+
+                            <!-- Agent Email -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="agent-email">Email</label>
+                                <lightning-input type="email" variant="standard" id="agent-email" class="agent-email"
+                                    placeholder={email} disabled></lightning-input>
+                            </div>
+
+                            <!-- Image Section -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <img src={richTextValue} alt="Account Logo" style="left: 72%;position: absolute; width: 20%; height: auto; z-index: 1; border-radius: 5px;" />
+
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Telephone -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="agent-phone">Telephone</label>
+                                <lightning-input type="tel" variant="standard" id="agent-phone" class="agent-phone"
+                                    placeholder={phone} disabled></lightning-input>
+                            </div>
+
+                            <!-- Appointment Date -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="appointment-date">Appointment Date</label>
+                                <lightning-input type="text" variant="standard" id="appointment-date"
+                                    class="appointment-date" placeholder={appointment} disabled></lightning-input>
+                            </div>
+
+                            <!-- Empty Column to Balance Layout -->
+                            <div class="slds-col slds-size_1-of-3"></div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Date and Time of Appraisal -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="appraisal-datetime">Date and Time of Appraisal</label>
+                                <!-- <lightning-input type="datetime" variant="standard" id="appraisal-datetime" name="date"
+                                    class="appraisal-datetime" onchange={handleChange}></lightning-input> -->
+
+                                    <lightning-input type="datetime" variant="standard" name="date"
+												onchange={handleChange}>
+											</lightning-input>
+                            </div>
+
+                            <!-- Empty Columns to Balance Layout -->
+                            <div class="slds-col slds-size_1-of-3"></div>
+                            <div class="slds-col slds-size_1-of-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 1: Contact Details -->
+                    <div class="section-container">
+                        <h2 class="section-header">Contact Details</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Customer Name -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="customer-name">Customer Name</label>
+                                <lightning-input type="text" variant="standard" id="customer-name" class="customer-name"
+                                    placeholder={customerName} disabled></lightning-input>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="customer-email">Email</label>
+                                <lightning-input type="email" variant="standard" id="customer-email"
+                                    class="customer-email" placeholder={customerEmail} disabled></lightning-input>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Telephone -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="customer-phone">Telephone</label>
+                                <lightning-input type="tel" variant="standard" id="customer-phone"
+                                    class="customer-phone" placeholder={customerPhone} disabled></lightning-input>
+                            </div>
+
+                            <!-- Application -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="customer-application">Application</label>
+                                <lightning-input type="text" variant="standard" id="customer-application"
+                                    class="customer-application" placeholder={customerApplication} disabled>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Property -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="customer-property">Property</label>
+                                <lightning-input type="text" variant="standard" id="customer-property"
+                                    class="customer-property" placeholder={customerProperty} disabled></lightning-input>
+                            </div>
+
+                            <!-- Empty Column for Balance -->
+                            <div class="slds-col slds-size_1-of-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <h2 class="section-header">Property Information</h2>
+
+                        <!-- First Row: Freehold & Leasehold Checkboxes -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="freehold">Freehold</label>
+                                <lightning-input type="checkbox" variant="standard" id="freehold" class="validate"
+                                    name="freehold" checked={freeholdval} onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="leasehold">Leasehold</label>
+                                <lightning-input type="checkbox" variant="standard" id="leasehold" class="validate"
+                                    name="leasehold" checked={leaseholdval} onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <!-- Second Row: Years Left -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="years-left">Years Left</label>
+                                <lightning-input type="number" variant="standard" id="years-left" class="validate"
+                                    name="yearsLeft" style="width:100%;" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2"></div> <!-- Empty column for balance -->
+                        </div>
+
+                        <!-- Third Row: Ground Rent -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="ground-rent">Ground Rent</label>
+                                <lightning-input type="number" variant="standard" id="ground-rent" class="validate"
+                                    name="groundRent" formatter="currency" step=".01" currency-code="EUR" value="0"
+                                    style="width:100%;" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2"></div> <!-- Empty column for balance -->
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <h2 class="section-header">Description of Property</h2>
+
+                        <!-- First Row: Property Type & Type of Construction -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="property-type">Property Type</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="propertyType" id="property-type" value={value}
+                                    placeholder="Select" options={propertyType} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="type-of-construction">Type of Construction</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-input type="text" id="type-of-construction" name="typeOfConstruction"
+                                    placeholder="Type here..." onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <!-- Second Row: Age of Property & Number of Bedrooms -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="age-of-property">Age of Property</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-input type="number" id="age-of-property" name="ageOfProperty"
+                                    onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="no-of-bedroom">Number of Bedrooms</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-input type="number" id="no-of-bedroom" name="noOfBedroom"
+                                    onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <!-- Third Row: Reception/Living & Additional Rooms -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="reception-living">Reception/Living</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-input type="number" id="reception-living" name="receptionLiving"
+                                    format-style="currency" currency-code="EUR" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="additional-rooms">List of Additional Rooms</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-input type="number" id="additional-rooms" name="otherRoom"
+                                    onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <!-- Fourth Row: Garage & Garden -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="garage">Garage</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="garage1" id="garage" value={value} placeholder="Select"
+                                    options={garage1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="garden">Garden</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="garden1" id="garden" value={value} placeholder="Select"
+                                    options={garden1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <!-- Fifth Row: Central Heating & Double Glazing -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="central-heating">Central Heating</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="centralHeating1" id="central-heating" value={value}
+                                    placeholder="Select" options={central_Heating1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="double-glazing">Double Glazing</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="doubleGlazing1" id="double-glazing" value={value}
+                                    placeholder="Select" options={double_Glazing1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <h2 class="section-header">Condition of Property: Must Supply Photos</h2>
+
+                        <!-- First Row: Interior & Kitchen -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="interior">Interior</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="interior1" id="interior" value={value} placeholder="Select"
+                                    options={interior1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="kitchen">Kitchen</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="kitchen1" id="kitchen" value={value} placeholder="Select"
+                                    options={kitchen1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <!-- Second Row: Bathroom/En-Suites & Gardens -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="bathroom">Bathroom/En-Suites</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="bathroom_En_Suites1" id="bathroom" value={value}
+                                    placeholder="Select" options={bathroom_En_Suites1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="gardens">Gardens</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="gardens1" id="gardens" value={value} placeholder="Select"
+                                    options={gardens1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <!-- Third Row: Exterior & Appliances -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="exterior">Exterior</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="exterior1" id="exterior" value={value} placeholder="Select"
+                                    options={exterior1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="appliances">Appliances</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="appliances1" id="appliances" value={value}
+                                    placeholder="Select" options={appliances1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <!-- Fourth Row: Outbuildings -->
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <div class="slds-col label-col">
+                                <label class="label-class" for="outbuildings">Outbuildings</label>
+                            </div>
+                            <div class="slds-col input-col">
+                                <lightning-combobox name="outbuildings1" id="outbuildings" value={value}
+                                    placeholder="Select" options={outbuildings1} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                            <div class="slds-col label-col">
+                            </div>
+                            <div class="slds-col input-col">
+
+                            </div>
+                        </div>
+
+                        <!-- Single Column: Textareas -->
+                        <div class="slds-m-top_medium">
+                            <label class="label-class" for="">Any other comments on the overall condition of the property:</label>
+                            <lightning-textarea name="anyComment" label="" onchange={handleChange}>
+                            </lightning-textarea>
+                        </div>
+
+                        <div class="slds-m-top_medium">
+                            <label class="label-class" for="">Any essential repairs prior to marketing:</label>
+                            <lightning-textarea name="anyRepair" label="" onchange={handleChange}>
+                            </lightning-textarea>
+                        </div>
+
+                        <div class="slds-m-top_medium">
+                            <label class="label-class" for="">Positive Aspects of the Property</label>
+                            <lightning-textarea name="positiveAspect" label="" maxlength="255" onchange={handleChange}>
+                            </lightning-textarea>
+                        </div>
+
+                        <div class="slds-m-top_medium">
+                            <label class="label-class" for="">Negative Aspects of the Property</label>
+                            <lightning-textarea name="negativeAspect" label="" maxlength="255" onchange={handleChange}>
+                            </lightning-textarea>
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <h2 class="section-header">Marketing Factors:</h2>
+
+                        <!-- Single Column: Textarea Fields -->
+                        <div class="slds-m-top_medium">
+                            <label class="label-class" for="">Please outline the current local market conditions / surrounding amenities / new developments?</label>
+                            <lightning-textarea name="currentMarket" label="" maxlength="255" onchange={handleChange}>
+                            </lightning-textarea>
+                        </div>
+                    </div>
+
+                    <div class="custom-box slds-box slds-p-around_medium">
+                        <h2 class="section-header">Comparable Properties (Sold)</h2>
+
+                        <table class="slds-table ">
+                            <thead>
+                                <!-- Header Row -->
+                                <tr class="slds-text-title_caps">
+                                    <th></th>
+                                    <th>Property 1</th>
+                                    <th>Property 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Address Lookup -->
+                                <tr>
+                                    <th>Address</th>
+                                    <td>
+                                        <c-idealaddresslookup name="handleProperty1"
+                                            selected-icon-name="standard:account" object-label="Property"
+                                            object-api-name="NHS_Property__c" field-api-name="Name"
+                                            onvalueselected={handleProperty1}>
+                                        </c-idealaddresslookup>
+                                    </td>
+                                    <td>
+                                        <c-idealaddresslookup name="handleProperty2"
+                                            selected-icon-name="standard:account" object-label="Property"
+                                            object-api-name="NHS_Property__c" field-api-name="Name"
+                                            onvalueselected={handleProperty2}>
+                                        </c-idealaddresslookup>
+                                    </td>
+                                </tr>
+
+                                <!-- Description -->
+                                <tr>
+                                    <th>Description</th>
+                                    <td>
+                                        <lightning-textarea name="soldDescription" onchange={handleChange}>
+                                        </lightning-textarea>
+                                    </td>
+                                    <td>
+                                        <lightning-textarea name="soldDescription1" onchange={handleChange}>
+                                        </lightning-textarea>
+                                    </td>
+                                </tr>
+
+                                <!-- Agent -->
+                                <tr>
+                                    <th>Agent</th>
+                                    <td>
+                                        <lightning-input type="text" name="soldPropertyAgent1"
+                                            placeholder="Enter agent name" onchange={handleChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-input type="text" name="soldPropertyAgent2"
+                                            placeholder="Enter agent name" onchange={handleChange}></lightning-input>
+                                    </td>
+                                </tr>
+
+                                <!-- Sold Date -->
+                                <tr>
+                                    <th>Sold Date</th>
+                                    <td>
+                                        <lightning-input class="dateCls" type="date" name="soldDate"
+                                            placeholder="DD/MM/YYYY" onchange={handleChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-input class="dateCls1" type="date" name="soldDate1"
+                                            placeholder="DD/MM/YYYY" onchange={handleChange}></lightning-input>
+                                    </td>
+                                </tr>
+
+                                <!-- Asking Price -->
+                                <tr>
+                                    <th>Asking Price</th>
+                                    <td>
+                                        <lightning-input type="number" name="soldAskingprice" formatter="currency"
+                                            step=".01" currency-code="EUR" onchange={handleChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-input type="number" name="soldAskingprice1" formatter="currency"
+                                            step=".01" currency-code="EUR" onchange={handleChange}></lightning-input>
+                                    </td>
+                                </tr>
+
+                                <!-- Time on Market -->
+                                <tr>
+                                    <th>Time on Market</th>
+                                    <td>
+                                        <lightning-input type="text" name="soldTimeInMarket"
+                                            placeholder="Enter duration" onchange={handleChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-input type="text" name="soldTimeInMarket1"
+                                            placeholder="Enter duration" onchange={handleChange}></lightning-input>
+                                    </td>
+                                </tr>
+
+                                <!-- Sold Price -->
+                                <tr>
+                                    <th>Sold Price</th>
+                                    <td>
+                                        <lightning-input type="number" name="soldprice" formatter="currency" step=".01"
+                                            currency-code="EUR" onchange={handleChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-input type="number" name="soldprice1" formatter="currency" step=".01"
+                                            currency-code="EUR" onchange={handleChange}></lightning-input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="custom-box slds-box slds-p-around_medium">
+                        <h2 class="section-header">Comparable Properties (On Market)</h2>
+
+                        <table class="slds-table ">
+                            <thead>
+                                <!-- Header Row -->
+                                <tr class="slds-text-title_caps">
+                                    <th></th>
+                                    <th>Property 1</th>
+                                    <th>Property 2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr>
+                                    <th>Address</th>
+                                    <th>
+                                        <c-idealaddresslookup name="handleProperty3"
+                                            selected-icon-name="standard:account" object-label="Property"
+                                            object-api-name="NHS_Property__c" field-api-name="Name"
+                                            other-field-api-name="" onvalueselected={handleProperty3}>
+                                        </c-idealaddresslookup>
+                                    </th>
+                                    <th>
+                                        <c-idealaddresslookup name="handleProperty4"
+                                            selected-icon-name="standard:account" object-label="Property"
+                                            object-api-name="NHS_Property__c" field-api-name="Name"
+                                            other-field-api-name="" onvalueselected={handleProperty4}>
+                                        </c-idealaddresslookup>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>
+                                        <lightning-textarea name="DescriptionOnMarket" onchange={handleChange}>
+                                        </lightning-textarea>
+                                    </th>
+                                    <th>
+                                        <lightning-textarea name="DescriptionOnMarket1" onchange={handleChange}>
+                                        </lightning-textarea>
+                                    </th>
+                                </tr>
+                                <tr class="slds-line-height_reset">
+                                    <th>Agent</th>
+                                    <th>
+                                        <lightning-input type="text" variant="standard" name="marketPropertyAgent1"
+                                            placeholder="Type here..." onchange={handleChange}></lightning-input>
+                                    </th>
+                                    <th>
+                                        <lightning-input type="text" variant="standard" name="marketPropertyAgent2"
+                                            placeholder="Type here..." onchange={handleChange}></lightning-input>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Asking Price</th>
+                                    <th>
+                                        <lightning-input name="marketAskingprice" type="number" value="0"
+                                            formatter="currency" step=".01" currency-code="EUR" onchange={handleChange}>
+                                        </lightning-input>
+                                    </th>
+                                    <th>
+                                        <lightning-input name="marketAskingprice1" type="number" value="0"
+                                            formatter="currency" step=".01" currency-code="EUR" onchange={handleChange}>
+                                        </lightning-input>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>Time on Market</th>
+                                    <th>
+                                        <lightning-input type="text" variant="standard" name="TimeInMarket"
+                                            onchange={handleChange}></lightning-input>
+                                    </th>
+                                    <th>
+                                        <lightning-input type="text" variant="standard" name="TimeInMarket1"
+                                            onchange={handleChange}></lightning-input>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- SECTION: Desktop Valuation -->
+                    <div class="section-container">
+                        <h2 class="section-header">Desktop Valuation</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Valuation Tools Textarea -->
+                            <div class="slds-col slds-size_2-of-3">
+                                <label class="label-class" for="valuation-tools">As well as visiting the property, what other valuation tools will you be using to help you provide an accurate valuation?</label>
+                                <lightning-textarea id="valuation-tools" name="visitingProperty"
+                                    placeholder="Enter the tools used for valuation..." onchange={handleChange}>
+                                </lightning-textarea>
+                            </div>
+
+                            <!-- Empty Column to Balance Layout -->
+                            <div class="slds-col slds-size_1-of-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: Market Appraisal Figures -->
+                    <div class="section-container">
+                        <h2 class="section-header">Market Appraisal Figures</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Resale Combobox -->
+                            <div class="slds-col slds-size_1-of-1">
+                                <label class="label-class" for="resale">In your opinion, where applicable, should this property be considered for purchase and immediate re-sale by our client?</label>
+                                <lightning-combobox id="resale" name="resale" placeholder="Select" value={value}
+                                    options={resales} onchange={handleChange}>
+                                </lightning-combobox>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Market Price -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="market-price">Market Price (€)</label>
+                                <lightning-input id="market-price" name="marketprice" type="number" value="0"
+                                    formatter="currency" step=".01" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- 6 Week Sale Price -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="six-week-price">6 Week Sale (€)</label>
+                                <lightning-input id="six-week-price" name="6weekprice" type="number" value="0"
+                                    formatter="currency" step=".01" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Forced Sale Price -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="forced-price">Forced Sale (€)</label>
+                                <lightning-input id="forced-price" name="forceprice" type="number" value="0"
+                                    formatter="currency" step=".01" currency-code="EUR" onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: File Uploads -->
+                    <!-- SECTION: File Uploads -->
+                    <div class="section-container">
+                        <h2 class="section-header">Upload Property Photos</h2>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Kitchen Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="kitchen">Kitchen Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="Kitchen"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Bedroom Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="bedroom">Bedroom Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="Bed"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Bathroom Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="bathroom">Bathroom Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="BathRoom"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Living Room Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="living">Living Room Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="Living"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Parking Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="parking">Parking Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="Parking"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Garden Photo -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="garden">Garden Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="Garden"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Other Photo (Takes up 1/3rd space, rest is empty to balance layout) -->
+                            <div class="slds-col slds-size_1-of-3">
+                                <label class="label-class" for="others">Other Photo</label>
+                                <lightning-input type="file" accept=".png, .jpg, .jpeg" name="other"
+                                    onchange={openfileUpload}>
+                                </lightning-input>
+                            </div>
+
+                            <!-- Empty columns to maintain alignment -->
+                            <div class="slds-col slds-size_1-of-3"></div>
+                            <div class="slds-col slds-size_1-of-3"></div>
+                        </div>
+                    </div>
+
+                    <div class="section-container">
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Other Photo (Takes up 1/3rd space, rest is empty to balance layout) -->
+                            <div class="slds-col slds-size_3-of-3">
+                                <lightning-input style="font-size:12px; text-align:left;" type="checkbox"
+                                    variant="standard" name="Terms_and_Condition"
+                                    label="I accept the terms and condition." onchange={handleChange}>
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <center>
+                            <template if:false={isAllSuccess}>
+                                <lightning-button style="padding:5px;" variant="neutral" label="Submit Form"
+                                    title="Submit" onclick={handleClick} disabled={showError}></lightning-button>
+                            </template>
+                        </center>
+                    </div>
+
+                </div>
+            </lightning-quick-action-panel>
+        </template>
+
+        <!-- Modal for Submission Status -->
+        <template if:true={isModalOpen}>
+            <div class="custom-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Valuation Submission Status</h2>
+                        <button class="close-button" onclick={closeModal}>X</button>
+                    </div>
+                    <div class="modal-body">
+                       
+                            <div  class="result-row">
+                                <div
+                                    style=" font-family: Arial, Helvetica, sans-serif;border: 2px solid black; padding: 20px; margin: 0 auto; text-align: center; background-color: #075F50; color:white;">
+
+                                    <p
+                                        style="color: white; font-size: 48px; padding:20px; font-family: Arial, Helvetica, sans-serif; font-weight:bold">
+                                        Thank You ! </p>
+                                    <p
+                                        style="color: white; font-size: 20px; font-family: 'Times New Roman', Times, serif;">
+                                        <b>{successMessage}</b>
+                                    </p>
+                                   
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Error Modal -->
+        <template if:true={customError}>
+            <div class="custom-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Error</h2>
+                        <button class="close-button" onclick={closeModal}>X</button>
+                    </div>
+                    <div class="modal-body">
+                        <template for:each={processResults} for:item="result">
+                            <div key={result.id} class="result-row">
+                                <div class={result.animationClass}></div>
+                                <span>{result.message}</span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

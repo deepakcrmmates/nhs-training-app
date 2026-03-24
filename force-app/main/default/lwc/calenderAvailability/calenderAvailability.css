@@ -1,0 +1,397 @@
+/* YourComponent.css */
+
+.custom-modal-container .slds-modal__container {
+
+ width: 90% !important;
+	max-width: 90% !important;
+
+}
+
+
+/* vendorAvailability.css */
+.slds-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+/* Custom class for 'Available' status */
+.button-available {
+    background-color: green;
+    color: white;
+    border: 1px solid darkgreen;
+}
+.button-gray {
+width: 60%;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 0.5rem 0rem;
+    border-radius: 0.25rem;
+
+    background-color: rgba(202, 195, 195, 0.759);
+    color: rgb(31, 20, 20);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+/* Custom class for 'Unavailable' status */
+.button-unavailable {
+    background-color: red;
+    color: white;
+    border: 1px solid darkred;
+}
+
+/* Base class for buttons */
+.custom-button {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+}
+
+/* Hover state */
+.custom-button:hover {
+    opacity: 0.9;
+}
+
+
+/* Styling for the lightning-card */
+.lightning-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+}
+
+/* Card header and footer styles */
+.slds-truncate{
+	font-size: 22px;
+}
+
+.card-header {
+    height: 19vh;
+       margin: 5px;
+	   border-radius: 10px;
+    position: static;
+    border: 1px solid #c4b8b8;
+    max-width: 100%;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+    padding: 10px;
+}
+
+.header-left {
+    border: 1px solid #726767;
+    padding: 10px;
+    text-wrap: wrap;
+    border-radius: 12px;
+    background-color: #dfdede80;
+}
+.header-title {
+	text-align: center;
+}
+.header-bottom {
+  
+}
+
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+
+.vendor-name {
+    font-size: 14px;
+    padding: 5px;
+    font-weight: normal;
+    color: #140909de;
+    border: 1px gray;
+    
+    text-wrap: wrap;
+    
+}
+
+.header-title h1 {
+    margin: 0;
+    font-size: 22px;
+    color: #333;
+}
+
+
+
+.property-name {
+	font-size: 14px;
+    padding: 5px;
+    font-weight: normal;
+    color: #140909de;
+    border: 1px gray;
+  
+    text-wrap: wrap;
+    
+}
+
+/* Card body styling */
+
+.card-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    height: 323px;
+}
+
+/* Styling for each week section */
+.week-section {
+        height: 50vh;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #d8dde6;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.week-title {
+    margin-bottom: 0.5rem;
+    font-size: 18px;
+    color: #333333;
+}
+
+/* Table styling */
+.slds-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.slds-table td {
+ text-align: center;
+    border: 1px solid #ddd;
+}
+.slds-table th {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.slds-table th {
+    background-color: #f3f2f2;
+    color: #1e1e1e;
+    font-weight: bold;
+}
+
+.slds-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.slds-table tbody tr:hover {
+    background-color: #eaeaea;
+    cursor: pointer;
+}
+
+/* Availability button styling */
+.availability-button {
+  width: 60%;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 0.5rem 0rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+/* Lightning input styling */
+.lightning-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.week-table-container {
+    max-height: 270px; /* Adjust based on your needs */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #d8dde6;
+
+    /* Hide scrollbar for WebKit browsers (Chrome, Safari, etc.) */
+    scrollbar-width: none; /* Firefox */
+}
+
+.week-table-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for WebKit browsers */
+}
+
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f4f6f9; /* Ensure the header has a background */
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+}
+
+/* Optional: Add a style for table data to prevent content overflow */
+.week-table-container td {
+    white-space: nowrap; /* Prevent content from wrapping */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis to long text */
+}
+
+
+/* Footer styling */
+.card-footer {
+     position: static;
+    max-width: 100%;
+    bottom: 0;
+    background-color: white;
+    z-index: 1;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+	text-align: center;
+}
+.custom-checkbox {
+    display: inline-block;
+    position: relative;
+    padding-left: 35px;
+	padding-bottom: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #fefbfb;
+    border-radius: 0px;
+    border: 1px solid grey;
+    transition: background-color 0.2s ease;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: #4CAF50; /* Green color when checked */
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+/* CSS file (e.g., newVendorAvailabilityCalendar.css) */
+
+.date-box.disabled {
+   text-decoration: line-through;
+    background-color: whitesmoke; /* Light gray background for disabled dates */
+    color: #231919; /* Light gray text for disabled dates */
+    cursor: not-allowed; /* Change cursor to indicate unclickable */
+}
+
+.date-box.past {
+    text-decoration: line-through;
+    background-color: #e0e0e0; /* Gray background for past dates */
+    color: #b0b0b0a0; /* Gray text for past dates */
+}
+
+.availability-button.disabled {
+    text-decoration: line-through;
+    background-color: #e0e0e0; /* Gray background for disabled buttons */
+    color: #b0b0b0; /* Gray text for disabled buttons */
+    cursor: not-allowed; /* Change cursor to indicate unclickable */
+    border: none; /* Remove border */
+}
+
+
+
+/* Responsive Design */
+@media only screen and (max-width: 768px) {
+    .card-header,
+    .card-footer {
+        position: relative;
+    }
+
+    .card-body {
+        padding: 0.5rem;
+    }
+
+    .slds-table th,
+    .slds-table td {
+        padding: 8px;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+.custom-checkbox {
+    display: inline-block;
+    position: relative;
+    padding-left: 35px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #ccc;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: #4CAF50; /* Green color when checked */
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+}

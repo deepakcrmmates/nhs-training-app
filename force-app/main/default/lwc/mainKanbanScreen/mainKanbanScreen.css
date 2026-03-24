@@ -1,0 +1,52 @@
+/* .custom-tabset {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.custom-tabset .slds-tabs_default__item {
+    background-color: #f4f6f9; 
+}
+
+.custom-tabset .slds-tabs_default__item.slds-is-active {
+    background-color: #d2000b; 
+    color: white; 
+}
+
+.custom-tabset .slds-tabs_default__item:hover {
+    background-color: #b23200; 
+}
+
+.tab-content {
+    padding: 16px;
+    min-height: 300px;
+    background-color: #ffffff; 
+    border-top: 1px solid #ddd;
+} */
+
+/* Custom CSS for the lightning-tabset */
+.custom-tabset {
+    --slds-c-tab-bar-item-color-background: #f2f2f2; /* Tab background color */
+    --slds-c-tab-bar-item-color-background-active: #c0c3c6; /* Active tab background */
+    --slds-c-tab-bar-item-color-background-hover: #9f9595ea; /* Hover tab background */
+    --slds-c-tab-bar-item-color-text: #333; /* Text color for tabs */
+     --slds-c-tab-bar-item-font-size: 20px;
+    --slds-c-tab-bar-item-color-text-active: #fff; /* Text color for active tab */
+}
+
+/* Adjusting tab content */
+.tab-content {
+    padding: 10px;
+    background-color: #f9f9f9; /* Content background */
+    border-radius: 5px; /* Round corners for content */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Adding shadow to content */
+}
+
+/* Add more custom styling here as needed */
+
+
+/* Optional: Add transitions */
+.custom-tabset .slds-tabs_default__item {
+    transition: background-color 0.3s ease;
+}

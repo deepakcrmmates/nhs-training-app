@@ -1,0 +1,79 @@
+<template>
+    <lightning-card title="Application Kanban View">
+        <!-- Record Type Selection -->
+        <!-- <div class="combobox-container">
+            <span style="padding-bottom: 5px; font-weight: bold; font-size:16px;">Select Record Type</span>
+            <lightning-combobox class="custom-combobox" name="recordType" value={selectedRecordTypeId}
+                placeholder="Select a Record Type" options={recordTypes} onchange={handleRecordTypeChange}>
+            </lightning-combobox>
+        </div> -->
+
+        <!-- Path Navigation -->
+        <!-- <div class="path-container">
+          <template if:true={columns}>
+            <template for:each={columns} for:item="column">
+              <div key={column.stage} class="path-step" data-id={column.stage}>
+                <div class="path-step-circle"></div>
+                <span class="path-step-label">{column.stage}</span>
+              </div>
+            </template>
+          </template>
+        </div> -->
+
+        <!-- Kanban Board -->
+        <div class="kanban-board">
+            <template if:true={columns}>
+                <template for:each={columns} for:item="column">
+                    <div key={column.stage} class="kanban-column" data-id={column.stage} ondragover={handleDragOver}
+                        ondrop={handleDrop}>
+                        <!-- Column Header -->
+                        <div class="kanban-column-header">
+                            <h3>{column.stage}</h3>
+                        </div>
+
+                        <!-- Cards Container -->
+                        <div class="kanban-cards">
+                            <!-- Placeholder for Dragging -->
+                            <div class="kanban-card-placeholder"></div>
+
+                            <!-- Opportunities -->
+                            <template for:each={column.opportunities} for:item="opportunity">
+                                <div key={opportunity.Id} class="kanban-card" draggable="true" data-id={opportunity.Id}
+                                    data-stage={column.stage} ondragstart={handleDragStart} ondragend={handleDragEnd}>
+                                  
+                                      <div style="display: flex; flex-direction: row; align-content: space-around; align-items: center; flex-wrap: nowrap;">
+                                   
+
+                                    <!-- Card Header with Link -->
+                                    <div style="width:75%;  overflow-wrap: break-word; word-break: break-all;">
+                                    <div class="kanban-card-header">
+                                        <a class="a" href="#" data-id={opportunity.Id} onclick={navigateOppHandler}>
+                                            <span class="slds-truncate" data-id={opportunity.Id}>
+                                                <h2 style="padding-top: 5px;">{opportunity.Name}</h2>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <!-- Card Details -->
+                                    
+                                    <div class="kanban-card-details">
+                                        <p><strong>Housebuilder:</strong> {opportunity.Housebuilder} -
+                                            {opportunity.City}</p>
+                                        <p><strong>Plot:</strong> {opportunity.Plot}</p>
+                                        <p><strong>APRN:</strong> {opportunity.Aprn}</p>
+                                    </div>
+                                </div>
+                                  <!-- Circle with Initials -->
+                                 <div style="float:right; width:25%;padding-left: 38px;">
+                                      <!-- <c-initials-circle name={opportunity.Owner}></c-initials-circle> -->
+                                 <c-account-circles account={opportunity}></c-account-circles>
+                                    </div>
+                                      </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,26 @@
+<template>
+    <lightning-layout class="main-layout">
+        <!-- Sidebar Layout -->
+        <lightning-layout-item class="sidebar">
+            <!-- Custom HTML Button for Toggle -->
+            <div style="background-color:white;border-top: 1px solid #8080804d;">
+                <button class="custom-toggle-button" onclick={toggleOpportunityList}>
+                    <lightning-icon icon-name={toggleIconName} alternative-text="Toggle" size="small" class="custom-icon"></lightning-icon>
+                </button>
+            </div>
+
+            <!-- Conditionally show the Opportunity List -->
+            <div class={opportunityListClass}>
+                <c-chasing-slot-opportunity  onopportunityselect={handleOpportunitySelect}></c-chasing-slot-opportunity>
+            </div>
+        </lightning-layout-item>
+
+        <!-- Kanban View Layout -->
+        <lightning-layout-item class="kanban-view-container normal-width">
+            <div class="kanban-view" style="border: 1px solid #dcdcdc; background-color: #ffffff;">
+                <!-- Corrected component name to kebab-case -->
+                <c-chasing-for-booking-slot application-id={selectedOpportunityId}></c-chasing-for-booking-slot>
+            </div>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>

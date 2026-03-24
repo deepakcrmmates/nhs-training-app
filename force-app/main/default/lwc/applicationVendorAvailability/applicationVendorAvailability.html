@@ -1,0 +1,103 @@
+<template>
+    <template if:true={hasData}>
+        <div class="schedule-container">
+            
+            <!-- Vendor Availability Header -->
+            <h2 class="vendor-header">Vendor Availability</h2>
+
+            <!-- Week Navigation Buttons -->
+            <div class="navigation-buttons">
+                <button class="nav-button" onclick={handlePreviousWeek}>&lt;</button>
+                <span>{weekRange}</span>
+                <button class="nav-button" onclick={handleNextWeek}>&gt;</button>
+            </div>
+
+            <!-- Availability Table -->
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Time Slot</th>
+                        <!-- Header for the week -->
+                        <template for:each={weekData} for:item="day">
+                            <th key={day.date}>{day.label}</th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- AM Row -->
+                    <tr>
+                        <td>AM</td>
+                        <template for:each={weekData} for:item="day">
+                            <td key={day.slotKeyAM} class={day.amClass} style={day.amStyle} data-date={day.date}>
+                                <template if:true={day.amAvailable}>✔</template>
+                                <template if:false={day.amAvailable}>x</template>
+                            </td>
+                        </template>
+                    </tr>
+                    <!-- PM Row -->
+                    <tr>
+                        <td>PM</td>
+                        <template for:each={weekData} for:item="day">
+                            <td key={day.slotKeyPM} class={day.pmClass} style={day.pmStyle} data-date={day.date}>
+                                <template if:true={day.pmAvailable}>✔</template>
+                                <template if:false={day.pmAvailable}>x</template>
+                            </td>
+                        </template>
+                    </tr>
+                    <!-- Book Row -->
+                    <tr>
+                        <td></td>
+                        <template for:each={weekData} for:item="day">
+                            <td key={day.date}>
+                                <button
+                                    class="book-button"
+                                    disabled={day.isDisabled}
+                                    data-date={day.date}
+                                    onclick={handleBookClick}
+                                >
+                                    Book
+                                </button>
+                            </td>
+                        </template>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </template>
+
+    <template if:false={hasData}>
+        <p>No vendor availability data found for this opportunity.</p>
+    </template>
+
+    <template if:true={isModalOpen}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close"
+                           alternative-text="close"
+                           variant="inverse"
+                           size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Vendor Availability</h2>
+                </header>
+
+                <!-- modal body start -->
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <c-vendor-availability-table record-id={recordId} onclosemodal={closeModal}>
+                    </c-vendor-availability-table>
+                </div>
+
+                <!-- modal footer start-->
+                <footer class="slds-modal__footer">
+                    <!-- <button class="slds-button slds-button_neutral" onclick={closeModal}>Cancel</button> -->
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

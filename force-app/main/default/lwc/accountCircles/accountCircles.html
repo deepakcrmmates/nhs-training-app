@@ -1,0 +1,10 @@
+<template>
+    <div class="circle-container">
+        <div class="circle-wrapper">
+            <div class="circle" style={processedAccount.circleStyle} onmouseover={handleMouseOver} onmouseout={handleMouseOut} data-name={processedAccount.Owner}>
+                {processedAccount.initials}
+            </div>
+            <div class="popup">{processedAccount.Owner}</div>
+        </div>
+    </div>
+</template>

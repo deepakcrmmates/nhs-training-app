@@ -1,0 +1,195 @@
+<template>
+    <div class="nhs-board">
+
+        <!-- Stage nav -->
+        <div class="stage-nav">
+            <template for:each={stageNav} for:item="s">
+                <button key={s.key} class={s.cls} data-key={s.key} onclick={handleNavClick}>
+                    <span class="sn-dot" style={s.dotStyle}></span>
+                    {s.label}
+                </button>
+            </template>
+        </div>
+
+        <!-- Page header -->
+        <div class="page-hdr">
+            <div>
+                <div class="bc">
+                    <span>New Applications</span>
+                    <span class="bcsep">›</span>
+                    <span class="bc-on">Application</span>
+                    <span class="bcsep">›</span>
+                    <span class="bc-dim">Kanban View</span>
+                </div>
+                <h1 class="page-title">Application Pipeline</h1>
+                <p class="page-sub">To be Contacted &nbsp;›&nbsp; 1st Contact &nbsp;›&nbsp; 2nd Contact &nbsp;›&nbsp; 3rd Contact &nbsp;›&nbsp; Sales Cancelled</p>
+            </div>
+            <div class="sum-bar">
+                <div class="s-st"><span class="s-v">{totalCards}</span><span class="s-l">Applications</span></div>
+                <div class="s-dv"></div>
+                <div class="s-st"><span class="s-v">{activeCards}</span><span class="s-l">Active</span></div>
+                <div class="s-dv"></div>
+                <div class="s-st cancelled"><span class="s-v">{cancelledCards}</span><span class="s-l">Cancelled</span></div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="tl">
+                <div class="sw">
+                    <lightning-icon icon-name="utility:search" size="xx-small" class="si"></lightning-icon>
+                    <input class="s-inp" type="text" placeholder="Search by name or ref..."
+                           value={searchTerm} oninput={handleSearch} />
+                    <template if:true={searchTerm}>
+                        <button class="clr" onclick={clearSearch}>
+                            <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                        </button>
+                    </template>
+                </div>
+                <select class="f-sel" onchange={handleAssignee}>
+                    <option value="">All assignees</option>
+                    <template for:each={assigneeList} for:item="a">
+                        <option key={a} value={a}>{a}</option>
+                    </template>
+                </select>
+                <label class="arc-lbl">
+                    <input type="checkbox" checked={showArchived} onchange={handleArchived} />
+                    Show archived
+                </label>
+            </div>
+            <div class="tr">
+                <button class="icon-btn" onclick={handleRefresh} title="Refresh">
+                    <lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="load-wrap">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                <p>Loading applications...</p>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={hasError}>
+            <div class="err-box">
+                <lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon>
+                <span>{errorMessage}</span>
+                <button class="retry-btn" onclick={handleRefresh}>Retry</button>
+            </div>
+        </template>
+
+        <!-- Kanban board -->
+        <template if:true={showBoard}>
+            <div class="board">
+                <template for:each={columns} for:item="col">
+                    <div key={col.stageName} class={col.colClass} data-stage={col.stageName}
+                         ondragover={handleDragOver} ondrop={handleDrop}
+                         ondragleave={handleDragLeave} ondragenter={handleDragEnter}>
+
+                        <div class="col-hdr" style={col.accentStyle}>
+                            <div class="col-top">
+                                <div class="col-nw">
+                                    <span class="col-dot" style={col.dotStyle}></span>
+                                    <span class="col-nm">{col.stageName}</span>
+                                </div>
+                                <span class="col-cnt">{col.cardCount}</span>
+                            </div>
+                            <template if:true={col.showTotal}>
+                                <div class="col-tot">£{col.totalFormatted}</div>
+                            </template>
+                        </div>
+
+                        <template if:true={col.isDragOver}>
+                            <div class="drop-h">
+                                <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                                Drop here
+                            </div>
+                        </template>
+
+                        <div class="col-body">
+                            <template for:each={col.cards} for:item="card">
+                                <div key={card.id} class={card.cardClass}
+                                     draggable="true" data-id={card.id}
+                                     ondragstart={handleDragStart} ondragend={handleDragEnd}>
+                                    <div class="c-bar" style={col.accentBarStyle}></div>
+                                    <div class="c-in">
+                                        <div class="c-top-row">
+                                            <span class="c-ref">{card.appRefNumber}</span>
+                                            <template if:true={card.archived}>
+                                                <span class="arc-chip">Archived</span>
+                                            </template>
+                                        </div>
+                                        <div class="c-name" data-id={card.id} onclick={handleCardClick}>{card.name}</div>
+                                        <div class="c-chips">
+                                            <template if:true={card.plot}>
+                                                <span class="chip cp">Plot {card.plot}</span>
+                                            </template>
+                                            <template if:true={card.houseBuilder}>
+                                                <span class="chip cb">{card.houseBuilder}</span>
+                                            </template>
+                                        </div>
+                                        <div class="c-dets">
+                                            <template if:true={card.city}>
+                                                <div class="c-det">
+                                                    <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                                    <span>{card.city}</span>
+                                                </div>
+                                            </template>
+                                            <template if:true={card.closeDateFormatted}>
+                                                <div class="c-det">
+                                                    <lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon>
+                                                    <span>{card.closeDateFormatted}</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="c-foot">
+                                            <div class="c-own">
+                                                <div class="ava" style={card.avStyle}>{card.avInitials}</div>
+                                                <span class="ow-n">{card.ownerName}</span>
+                                            </div>
+                                            <div class="c-acts">
+                                                <button class="act-btn" data-id={card.id} onclick={handleCardClick} title="Open record">
+                                                    <lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon>
+                                                </button>
+                                                <button class="act-btn" data-id={card.id} data-archived={card.archived}
+                                                        onclick={handleArchiveClick} title={card.arcLabel}>
+                                                    <lightning-icon icon-name={card.arcIcon} size="xx-small"></lightning-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template if:true={col.isEmpty}>
+                                <div class="col-empty">
+                                    <lightning-icon icon-name="utility:inbox" size="small"></lightning-icon>
+                                    <p>No applications</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Coming soon for other nav tabs -->
+        <template if:true={showComingSoon}>
+            <div class="coming-soon">
+                <lightning-icon icon-name="utility:kanban" size="large"></lightning-icon>
+                <h2>{activeStageLabel}</h2>
+                <p>This stage view is coming soon.</p>
+            </div>
+        </template>
+
+        <!-- Toast -->
+        <template if:true={toastVisible}>
+            <div class={toastClass}>
+                <lightning-icon icon-name={toastIcon} size="x-small" variant="inverse"></lightning-icon>
+                <span>{toastMessage}</span>
+            </div>
+        </template>
+    </div>
+</template>

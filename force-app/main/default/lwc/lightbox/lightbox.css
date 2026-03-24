@@ -1,0 +1,102 @@
+.gallery-container {
+    height: 340px; /*  266px Set a fixed height for the gallery container */
+    overflow-y: auto; /* Enable vertical scrolling */
+    
+}
+.gallery-container::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.thumbnail {
+    flex: 0 0 30%; /* 30% width for each thumbnail, so three can fit in one row */
+    margin: 5px;
+    cursor: pointer;
+}
+
+.thumbnail img {
+    width: 100%; /* Make sure the image fits within the thumbnail container */
+    border: 2px solid #ccc;
+    border-radius: 4px;
+}
+
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the lightbox is on top of other elements */
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    text-align: center;
+}
+
+.lightbox-content img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.caption {
+    margin-top: 10px;
+    color: #fff;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    color: #fff;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.prev,
+.next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -22px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    transition: 0.3s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.prev {
+    left: 0;
+}
+
+.next {
+    right: 0;
+}
+
+.prev:hover,
+.next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}

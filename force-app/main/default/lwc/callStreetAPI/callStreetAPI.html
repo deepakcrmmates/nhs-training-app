@@ -1,0 +1,12 @@
+<template>
+	<lightning-card variant="Narrow" title="">
+		
+		<center>
+			<div class="exampleHolder" if:true={loader}>
+				<lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+			</div>
+		</center>
+		<p slot="footer"></p>
+	</lightning-card>
+
+</template>

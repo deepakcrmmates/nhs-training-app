@@ -1,50 +1,156 @@
-import { LightningElement, track } from 'lwc';
-import updateRecords from '@salesforce/apex/WeeklyUpdatesController.updateRecords';
+import { LightningElement, track, wire } from 'lwc';
+import { getRecord } from 'lightning/uiRecordApi';
+import USER_ID from '@salesforce/user/Id';
+import USER_NAME_FIELD from '@salesforce/schema/User.Name';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import saveRecords from '@salesforce/apex/WeeklyUpdatesController.saveRecords';
+import getInitialData from '@salesforce/apex/WeeklyUpdatesController.getInitialData';
 
 export default class WeeklyUpdates extends LightningElement {
-    @track data = [];  // This will hold your data
-    @track draftValues = [];  // This holds any changes made in the UI
-
-    columns = [
-        { label: 'Weekly Updates Name', fieldName: 'name', type: 'text', editable: true },
-        { label: 'Application', fieldName: 'Application__c', type: 'Lookup(Application)', editable: true },
-        { label: 'Property', fieldName: 'Property__c', type: 'Lookup(Property)', editable: true },
-        { label: 'Update Agent', fieldName: 'Update_Agent__c', type: 'Lookup(Account)', editable: true },
-        { label: 'Update By', fieldName: 'Update_By__c', type: 'Text', editable: true },
-        { label: 'Update Date', fieldName: 'Update_Date__c', type: 'Date', editable: true }
+    @track weeks = [
+        this.createWeek(1)
     ];
+    userId = USER_ID;
+    userName;
+    @track jssonObject ={};
+    @track jsonList = [];
+    idSet = new Set();
 
     connectedCallback() {
-        // Fetch data from backend (Apex, APIs, etc.) and initialize `this.data`
-        this.data = [{id: 'a', name: 'Task 1', Application: 'ABC Application', Property: '72 Doniford House'}];
+        this.jssonObject['Agent1'] = '';
+        this.jssonObject['Agent2'] = '';
+        this.jssonObject['Agent3'] = '';
+        this.jssonObject['notes1'] = '';
+        this.jssonObject['notes2'] = '';
+        this.jssonObject['notes3'] = '';
+    }
+    @wire(getRecord, { recordId: USER_ID, fields: [USER_NAME_FIELD] })
+    wiredUser({ error, data }) {
+        if (data) {
+            this.userName = data.fields.Name.value;
+            this.weeks.forEach(week => {
+                week.createdBy = this.userName;
+                week.modifiedBy = this.userName;
+            });
+        } else if (error) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error loading user',
+                    message: error.body.message,
+                    variant: 'error',
+                }),
+            );
+        }
     }
 
-    handleSave(event) {
-        const updatedFields = event.detail.draftValues;
+    createWeek(weekNumber) {
+        const currentDate = new Date().toISOString().slice(0, 10); // Current date in YYYY-MM-DD format
+        return {
+            id: Date.now(),
+            weekNumber: weekNumber,
+            createdDate: currentDate,
+            modifiedDate: currentDate,
+            createdBy: this.userName || 'Loading...',
+            modifiedBy: this.userName || 'Loading...',
+            agent1: '',
+            agent2: '',
+            agent3: '',
+            notes1:'',
+            notes2:'',
+            notes3:''
+        };
+    }
 
-        // Here you'd call an Apex method to update records on server side
-        updateRecords({data: updatedFields})
-            .then(result => {
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Success',
-                        message: 'Records updated',
-                        variant: 'success'
-                    })
-                );
-                // Clear draft values
-                this.draftValues = [];
-                // Refresh data
-                this.connectedCallback();
-            })
-            .catch(error => {
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: 'Error updating records',
-                        message: error.body.message,
-                        variant: 'error'
-                    })
-                );
-            });
+    addWeek() {
+        const newWeekNumber = this.weeks.length + 1;
+        this.weeks = [...this.weeks, this.createWeek(newWeekNumber)];
+    }
+
+    removeWeek(event) {
+        const weekId = event.currentTarget.dataset.id;
+        this.weeks = this.weeks.filter(week => week.id !== parseInt(weekId));
+    }
+
+    handleInputChange(event) {
+        var temp = this.weeks.find((item) =>
+      item.weekId == event.currentTarget.dataset.weekId
+    );
+        console.log('OUTPUT : ', JSON.stringify(temp));
+        var name = event.target.name;
+       // const weekId = event.target.dataset.weekId;
+        const field = event.target.dataset.field;
+        const agent =  event.target.dataset.agent;
+        console.log('OUTPUT :agent ',agent);
+        const value = event.target.value;
+
+        // const weekIndex = this.weeks.findIndex(week => week.id === parseInt(weekId));
+        // if (weekIndex !== -1) {
+        //     if (agent) {
+        //         this.weeks[weekIndex][agent][field] =  event.detail.id;
+        //     } else {
+        //         this.weeks[weekIndex][field] = value;
+        //     }
+        //     this.weeks[weekIndex].modifiedDate = new Date().toISOString().slice(0, 10);
+        //     this.weeks[weekIndex].modifiedBy = this.userName;
+        //     this.weeks = [...this.weeks];
+        // }
+        let a={};
+        if(name == 'agent1'){
+            this.jssonObject['Agent1']  = event.detail.id;
+        }
+        if(name == 'agent2'){
+           this.jssonObject['Agent2'] = event.detail.id;
+        }
+        if(name == 'agent3'){
+            this.jssonObject['Agent3'] = event.detail.id;
+        }
+        if(name == 'notes1'){
+             this.jssonObject['notes1'] = event.target.value;
+        }
+        if(name =='notes2'){
+             this.jssonObject['notes2'] = event.target.value;
+        }
+        if(name =='notes3'){
+            this.jssonObject['notes3'] = event.target.value;
+        }
+
+        if (!this.idSet.has(temp.weekId)) {
+      console.log('OUTPUT : 1');
+      this.idSet.add(temp.weekId);
+      this.jsonList.push(this.jssonObject);
+      console.log('OUTPUT : this.uniqueList after', JSON.stringify(this.jsonList));
+    }
+        
+       // this.jsonList.push(this.jssonObject);
+        console.log('OUTPUT : list', JSON.stringify(this.jsonList) );
+      //  console.log('OUTPUT : listr', (this.jsonList) );
+    }
+
+    // save() {
+    //     // Logic to save data
+    //     console.log(JSON.stringify(this.weeks));
+    // }
+
+    save(){
+         console.log('OUTPUT : save click list', JSON.stringify(this.jssonObject));
+
+         saveRecords({ jsonDatalist: JSON.stringify(this.jsonList) })
+         .then(result => {
+        // this.isDisabled = true;
+        const evt = new ShowToastEvent({
+                            title: 'Success..!',
+                            message: 'Record saved successfully..',
+                            variant: 'success',
+                            mode: 'Pester '
+                        });
+                        this.dispatchEvent(evt);
+        //location.reload();
+        console.log('Records saved successfully:', result);
+        // Reset viewingsOffersData or perform any necessary actions after saving
+      })
+      .catch(error => {
+        console.error('Error saving records:', error);
+        // Handle error
+      });
     }
 }

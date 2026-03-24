@@ -1,0 +1,105 @@
+<template>
+    <lightning-card>
+        <!-- Record Type Selection
+        <div class="combobox-container">
+            <span style="padding-bottom: 5px; font-weight: bold; font-size:16px;">Select Record Type</span>
+            <lightning-combobox class="custom-combobox" name="recordType" value={selectedRecordTypeId}
+                placeholder="Select a Record Type" options={recordTypes} onchange={handleRecordTypeChange}>
+            </lightning-combobox>
+        </div> -->
+
+        <!-- Path Navigation -->
+        <!-- <div class="path-container">
+          <template if:true={columns}>
+            <template for:each={columns} for:item="column">
+              <div key={column.stage} class="path-step" data-id={column.stage}>
+                <div class="path-step-circle"></div>
+                <span class="path-step-label">{column.stage}</span>
+              </div>
+            </template>
+          </template>
+        </div> -->
+        <!-- 
+         <div style="padding:15px;">
+             <label style ="font-size: 22px; font-family: 'Salesforce Sans';"> Application</label>
+        </div> -->
+
+        <!-- Kanban Board -->
+        <div class="kanban-board">
+    <template if:true={columns}>
+        <template for:each={columns} for:item="column">
+            <div key={column.stage} class="kanban-column" data-id={column.stage} ondragover={handleDragOver} ondrop={handleDrop}>
+
+                <!-- Column Header -->
+                <div class="kanban-column-header">
+                    <h3>{column.stage}</h3>
+                </div>
+
+                <div class="kanban-header-content">
+                    <span>
+                        <input type="text" class="kanban-search-box" placeholder="Search..."
+                            data-stage={column.stage} oninput={handleSearch}>
+                    </span>
+
+                    <span>
+                        <button class="sort-button" data-stage={column.stage} onclick={handleSort}>
+                            <lightning-icon icon-name={column.sortIcon} size="x-small"></lightning-icon>
+                        </button>
+                    </span>
+                </div>
+
+                <!-- Cards Container with Scroll Handler -->
+                <div class="kanban-cards scrollable-container" data-stage={column.stage} onscroll={handleScroll}>
+                    
+                    <!-- Placeholder for Dragging -->
+                    <div class="kanban-card-placeholder"></div>
+
+                    <!-- Opportunities -->
+                    <template for:each={column.filteredOpportunities} for:item="opportunity">
+                        <div key={opportunity.Id} class="kanban-card" draggable="true" data-id={opportunity.Id}
+                            data-stage={column.stage} ondragstart={handleDragStart} ondragend={handleDragEnd}>
+
+                            <div style="display: flex; flex-direction: row; align-content: space-around; align-items: center; flex-wrap: nowrap;">
+                                
+                                <!-- Card Content -->
+                                <div style="width:75%; overflow-wrap: break-word; word-break: break-all;">
+                                    <div class="kanban-card-header">
+                                        <a class="a" href="#" data-id={opportunity.Id} onclick={navigateOppHandler}>
+                                            <span class="slds-truncate" data-id={opportunity.Id}>
+                                                <p class="card-header">{opportunity.Name}</p>
+                                            </span>
+                                        </a>
+                                    </div>
+                                    <div class="kanban-card-details">
+                                        <p><strong>Housebuilder:</strong><br/> {opportunity.Housebuilder} - {opportunity.City}</p>
+                                        <p><strong>Plot:</strong> {opportunity.Plot}</p>
+                                        <p><strong>APRN:</strong> {opportunity.Aprn}</p>
+                                        <p><strong>Date created:</strong> {opportunity.FormattedCreatedDate}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Circle with Initials -->
+                                <div style="float:right; width:25%; padding-left: 38px; position: relative; top: 50px;">
+                                    <c-account-circles account={opportunity}></c-account-circles>
+                                </div>
+
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Spinner shown while loading more -->
+                    <template if:true={column.isLoading}>
+                        <div class="slds-spinner_container">
+                            <lightning-spinner alternative-text="Loading more opportunities..." size="small"></lightning-spinner>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+    </template>
+</div>
+
+
+    </lightning-card>
+</template>

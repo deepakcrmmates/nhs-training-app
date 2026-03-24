@@ -1,0 +1,48 @@
+<template>
+    <lightning-card title="📍 Google Map & Street View Viewer" icon-name="standard:location">
+        <!-- 🧭 Input Section -->
+        <!-- <div class="input-section">
+            <div class="input-group">
+                <lightning-input label="Latitude" value={lat} onchange={handleLatChange}></lightning-input>
+            </div>
+            <div class="input-group">
+                <lightning-input label="Longitude" value={lng} onchange={handleLngChange}></lightning-input>
+            </div>
+        </div> -->
+
+        <!-- 🌍 Map Display Section -->
+ <!-- Dynamic VF View -->
+        <!-- <div class="map-grid">
+            <div class="map-block">
+                <label class="map-label">🔁 Dynamic Street View (VF)</label>
+                <iframe src="/apex/GoogleMapStreetVF" class="map-frames" lwc:dom="manual"></iframe>
+            </div>
+        </div> -->
+        <div class="map-grid">
+           
+
+            <!-- Embed Street View -->
+            <div class="map-block">
+                <label class="map-label">Street View</label>
+                <iframe
+                    class="map-frame"
+                    src={streetViewEmbedUrl}
+                    allowfullscreen
+                    loading="lazy" width="100%" height="400" frameborder="0" 
+                ></iframe>
+            </div>
+        </div>
+<div class="map-grid">
+            <!-- Embed Map View -->
+            <div class="map-block">
+                <label class="map-label"> Map View</label>
+                <iframe
+                    class="map-frame"
+                    src={mapViewUrl}
+                    allowfullscreen
+                    loading="lazy" width="100%" height="400" frameborder="0" 
+                ></iframe>
+            </div>
+        </div>
+    </lightning-card>
+</template>

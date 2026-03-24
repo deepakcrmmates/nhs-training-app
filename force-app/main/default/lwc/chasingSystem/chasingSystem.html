@@ -1,0 +1,28 @@
+<template>
+    <div style="">
+        <!-- Dynamic Header for the Selected Tab -->
+        <div class="header">
+            {selectedTabHeader}
+        </div>
+
+        <!-- Lightning Tabset with a custom class for styling -->
+        <lightning-tabset variant="scoped" class="custom-tabset" active-tab-value={activeTabValue} >
+            <!-- Tab 1 for Calendar -->
+            <lightning-tab label="Calendar" value="1" onactive={handleTabChange} style="height: 83vh;">
+                <div class="tab-content">
+                    <c-calendar-parent-kanban-component></c-calendar-parent-kanban-component>
+                </div>
+            </lightning-tab>
+
+            <!-- Tab 2 for Chasing -->
+            <lightning-tab label="Chasing" value="2" onactive={handleTabChange} style="height: 83vh;">
+                <div class="tab-content">
+                    <c-chasing-parent-component></c-chasing-parent-component>
+                </div>
+            </lightning-tab>
+        </lightning-tabset>
+
+        <!-- Highlight Bar for the Active Tab -->
+        <!-- <div class="highlight-bar" style={highlightBarStyle}></div> -->
+    </div>
+</template>

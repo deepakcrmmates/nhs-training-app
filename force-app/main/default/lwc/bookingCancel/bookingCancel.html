@@ -1,0 +1,60 @@
+<template>
+    <lightning-card  class="custom-card">
+        <!-- Container for header and table -->
+        <div class="table-container">
+          <div class="table-header slds-align_absolute-center slds-m-bottom_small">
+    <h1 class="slds-text-heading_medium custom-heading"> Booking Details</h1>
+</div>
+
+            <div class="table-wrapper">
+                   <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-is-relative custom-bordered-table">
+
+                    <thead>
+                        <tr>
+                            <th scope="col">Agent</th>
+                            <th scope="col">Date</th>
+                            <!-- <th scope="col">End Date</th> -->
+                            <th scope="col">Day</th>
+                            <th scope="col">Reason</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body">
+                        <template if:true={events}>
+                            <template for:each={events} for:item="event">
+                                <tr key={event.Id}>
+                                    <td>{event.agentName}</td>
+                                    <td>{event.formattedStartDate}</td>
+                                    <!-- <td>{event.formattedEndDate}</td> -->
+                                    <td>{event.day}</td>
+                                    <td>
+                                    <lightning-input data-id={event.Id} value={event.Description} onchange={handleInputChange} class="custom-input"
+                                         required={event.isDescriptionRequired}  message-when-value-missing="Notes are required when the booking is canceled">
+                                    </lightning-input>
+
+                                    </td>
+                                    <td>
+                                        <lightning-button
+                                            data-id={event.Id}
+                                            variant={event.buttonClass}
+                                            label={event.buttonLabel}
+                                            onclick={handleButtonClick}
+                                        ></lightning-button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Footer with Update button -->
+        <div class="footer slds-align_absolute-center">
+            <lightning-button
+                label={buttonlabel}
+                onclick={handleUpdateSlots}
+                class="slds-m-top_medium"
+            ></lightning-button>
+        </div>
+    </lightning-card>
+</template>

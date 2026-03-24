@@ -1,0 +1,448 @@
+/* General Form Container Styling */
+.agent-offer-form {
+    background: #f3f3f321;
+    padding: 20px;
+    border-radius: 8px;
+    width:90%;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Header */
+.form-header {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    font-size: 1.5rem;
+    width: auto;
+    padding: 20px 20px 20px 120px; /* Add left padding to make space for the image */
+    background-color: #075f50;
+    color: white;
+    text-align: right;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+    margin-bottom: 20px;
+    font-weight: lighter;
+
+    /* Add background image */
+    background-image: url('https://nhsolutions--training.sandbox.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_Png&versionId=068KG000000Lajz&operationContext=DELIVERY&contentId=05TKG0000009shl&page=0&d=/a/KG000000CfdF/q0V5qK8wc30.C7xSGliuF0oJDLUU7Pv_5majI3Z2NzI&oid=00D7a0000005DDN&dpt=null&viewId='); /* Use the provided URL */
+    background-position: left center; /* Align the image to the left */
+    background-size: 300px; /* Set a specific size for the image */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+}
+
+/* Section Header */
+.section-header {
+    font-size: 20px;
+    font-weight: bold;
+     color: #333;   
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #d8dde6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Section Container */
+.section-container {
+    background-color: #f3f3f3;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    padding: 16px;
+    margin-bottom: 60px;
+}
+
+/* Label Styling */
+.label-class {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 18px;
+}
+
+/* Input Fields Styling */
+lightning-input, lightning-textarea, lightning-combobox, c-custom-lookup-lwc {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+lightning-input::part(input), lightning-textarea::part(textarea), lightning-combobox::part(input) {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.875rem;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+lightning-input::part(input):focus, lightning-textarea::part(textarea):focus, lightning-combobox::part(input):focus {
+    border-color: #0070d2;
+    box-shadow: 0 0 5px rgba(0, 112, 210, 0.3);
+}
+
+/* Checkbox Styling */
+lightning-input[type="checkbox"]::part(input) {
+    margin-right: 8px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.button-primary {
+    background-color: #0070d2;
+    color: #ffffff;
+}
+
+.button-primary:hover {
+    background-color: #005fb2;
+    transform: translateY(-2px);
+}
+/* Custom gap between columns */
+.custom-gap {
+    gap: 20px; /* Adjust the gap size as needed */
+}
+/* Constrain input width */
+.input-width {
+    width: 96%; /* Ensure inputs take full width of their container */
+    max-width: 96%; /* Prevent inputs from overflowing */
+}
+
+/* Ensure textarea and combobox also respect the width */
+lightning-textarea.input-width,
+lightning-combobox.input-width,
+c-custom-lookup-lwc.input-width {
+    width: 96%;
+    max-width: 96%;
+}
+
+/* Apply custom gap to the grid */
+.slds-grid.slds-gutters.custom-gap {
+    margin-right: -10px; /* Adjust based on the gap size */
+    margin-left: -10px;  /* Adjust based on the gap size */
+}
+
+.slds-grid.slds-gutters.custom-gap > .slds-col {
+    padding-right: 10px; /* Adjust based on the gap size */
+    padding-left: 10px;  /* Adjust based on the gap size */
+}
+
+.uploaded-files {
+    margin-top: 1rem;
+}
+
+.file-item {
+    margin-bottom: 0.5rem;
+}
+
+.file-name {
+    font-weight: bold;
+}
+
+.file-field {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/***********Modal CSS********************/
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: 'Arial', sans-serif; /* Modern, clean font */
+}
+
+.modal-content {
+    background: #ffffff; /* White background for contrast */
+    padding: 25px 30px; /* Added padding for spacing */
+    border-radius: 8px; /* Softer corners */
+    width: 50%; /* Adjust width to make it less overwhelming */
+    max-width: 600px; /* Limit maximum size for smaller screens */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Soft shadow for a polished look */
+    animation: fadeIn 0.3s ease-in-out; /* Subtle animation */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; /* Add space below the header */
+    border-bottom: 2px solid #f0f0f0; /* Subtle separation line */
+}
+
+.modal-header h2 {
+    font-size: 1.5rem; /* Larger, clear title */
+    color: #333; /* Dark gray for better readability */
+    margin: 0; /* No extra spacing */
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.25rem; /* Slightly larger close button */
+    color: #888; /* Gray color for a softer feel */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.close-button:hover {
+    color: #333; /* Darker color on hover */
+}
+
+.modal-body {
+    font-size: 1rem; /* Standard font size for readability */
+    color: #555; /* Medium gray for text */
+    line-height: 1.6; /* Comfortable line spacing */
+}
+
+.modal-body p {
+    margin: 10px 0; /* Spacing between messages */
+    padding: 10px; /* Add some padding around messages */
+    border-radius: 5px; /* Round the edges */
+}
+
+.modal-body p.success {
+    background-color: #e6ffe6; /* Light green background */
+    color: #2e7d32; /* Dark green text */
+    border: 1px solid #c8e6c9; /* Subtle border */
+}
+
+.modal-body p.error {
+    background-color: #ffe6e6; /* Light red background */
+    color: #d32f2f; /* Dark red text */
+    border: 1px solid #ffcdd2; /* Subtle border */
+}
+
+.modal-body p.warning {
+    background-color: #fff8e6; /* Light yellow background */
+    color: #f57c00; /* Dark orange text */
+    border: 1px solid #ffe0b2; /* Subtle border */
+}
+/***************************/
+
+.result-row {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.result-row span {
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+/* Base checkbox styles */
+/* Base styles for the animated checkbox */
+.animated-checkbox {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Circle shape */
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+}
+
+/* Success animation */
+.animated-checkbox.success {
+    background-color: green; /* Green circle */
+    animation: success-circle-animation 0.6s ease-out forwards;
+}
+
+.animated-checkbox.success::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 16px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    top: 6px;
+    left: 10px;
+    opacity: 0;
+    animation: tick-animation 0.4s 0.2s ease-out forwards;
+}
+
+/* Error animation */
+.animated-checkbox.error {
+    background-color: red; /* Red circle */
+    animation: error-circle-animation 0.6s ease-out forwards;
+}
+
+.animated-checkbox.error::before,
+.animated-checkbox.error::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: white;
+    top: 15px;
+    left: 7px;
+    opacity: 0;
+}
+
+.animated-checkbox.error::before {
+    transform: rotate(45deg);
+    animation: cross-line1-animation 0.4s 0.2s ease-out forwards;
+}
+
+.animated-checkbox.error::after {
+    transform: rotate(-45deg);
+    animation: cross-line2-animation 0.4s 0.2s ease-out forwards;
+}
+
+/* Animations */
+@keyframes success-circle-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes tick-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes error-circle-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes cross-line1-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes cross-line2-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* Success animations */
+@keyframes checkmark-border-animation {
+    0% {
+        border-color: #ccc;
+    }
+    100% {
+        border-color: green;
+    }
+}
+
+@keyframes checkmark-tick-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Error animations */
+@keyframes crossmark-border-animation {
+    0% {
+        border-color: #ccc;
+    }
+    100% {
+        border-color: red;
+    }
+}
+
+@keyframes crossmark-line1-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes crossmark-line2-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* Animation for modal appearance */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/*********Modal Css End **********************/
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .slds-grid.slds-gutters {
+        flex-direction: column;
+    }
+
+    .slds-col {
+        width: 100%;
+    }
+
+    .form-header {
+        font-size: 1.25rem;
+    }
+}

@@ -1,0 +1,94 @@
+.main-layout {
+    display: flex;
+    height: 62vh;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.sidebar {
+   height: 522px;
+    border: 1px rgb(153, 148, 148);
+    border-radius: 10px;
+    background-color: whitesmoke;
+    width: 20%;
+    transition: width 0.3s ease-in-out;
+    position: relative;
+     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.opportunity-list.visible {
+    display: block;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.opportunity-list.hidden {
+    display: none;
+}
+
+.toggle-button-container {
+    position: absolute;
+    background-color:white;
+    top: 20px;
+    right: -30px; /* Adjust the position so it appears on the side of the sidebar */
+    z-index: 1; /* Ensure it shows above other elements */
+}
+
+.custom-toggle-button {
+    background-color: wheat;
+   color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px; /* Square shape with slightly rounded corners */
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease-in-out;
+    width: 40px;
+    height: 40px; /* Fixed square size */
+}
+
+.custom-toggle-button:hover {
+    background-color: lightyellow; /* Change background on hover */
+}
+
+.custom-toggle-button:active {
+    background-color: #22ac45; /* Darker color when clicked */
+}
+
+
+.custom-icon {
+    fill: white; /* Icon color set to white */
+    transition: transform 0.4s ease-in-out; /* Smooth rotation animation */
+}
+
+.icon-rotate {
+    transform: rotate(180deg); /* Rotate 180 degrees when opportunity list is visible */
+}
+
+
+.kanban-view-container {
+    transition: width 0.3s ease-in-out;
+}
+
+.normal-width {
+    width: 80%;
+    background-color: whitesmoke;
+    height: 522px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.kanban-view {
+    height: 520px;
+    padding-top: 56px;
+    background-color: whitesmoke;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

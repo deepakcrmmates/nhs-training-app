@@ -1,0 +1,18 @@
+<template>
+    <lightning-card title="Street Data API">
+        <lightning-input label="Address" value={address} onchange={handleAddressChange}></lightning-input>
+        <lightning-input label="Postcode" value={postcode} onchange={handlePostcodeChange}></lightning-input>
+        <lightning-button label="Get Data" onclick={fetchStreetData} class="slds-m-top_medium"></lightning-button>
+        <template if:true={data}>
+            <div class="slds-m-top_medium">
+                <h3>Data:</h3>
+                <pre>{data}</pre>
+            </div>
+        </template>
+        <template if:true={error}>
+            <div class="slds-m-top_medium slds-text-color_error">
+                <p>Error: {error}</p>
+            </div>
+        </template>
+    </lightning-card>
+</template>

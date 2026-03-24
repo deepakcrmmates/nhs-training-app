@@ -1,0 +1,9 @@
+.primary-image-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.primary-image {
+    max-width: 100%; /* Make sure the image is responsive */
+    height: auto;
+}

@@ -1,0 +1,19 @@
+.dummy{
+	color : black;
+}
+.tables-container {
+    margin-top: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    margin-bottom: 20px;
+	border: 1px solid black;
+}
+
+
+td {
+    border: 1px solid black;
+    padding: 8px;
+    
+}

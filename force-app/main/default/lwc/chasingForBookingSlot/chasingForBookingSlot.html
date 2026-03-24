@@ -1,0 +1,109 @@
+<template>
+    <div class="kanban-container">
+        <!-- <div class="kanban-header">
+            <h1 class="week-title">{weekRange}</h1>
+        </div> -->
+        <div class="kanban-header">
+           <div class="kanban-header-content">
+                <h1 class="week-title">{weekRange}</h1>
+                 <div class="header-buttons">
+                    <span>
+            <button class="icon-button" disabled={flag} onclick={handleKanbanClick}>🗂️</button>
+                    </span>
+                    <span>
+            <button class="icon-button" disabled={flag} onclick={handleListClick}>☰</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div if:true={kanBanFlag} class="kanban-view">
+            <template if:true={days}>
+                <template for:each={days} for:item="day">
+                    <div key={day.dateKey} class="kanban-column">
+                        <div class="kanban-column-header">{day.label}</div>
+                        <div class="kanban-column-body">
+                            <template for:each={day.events} for:item="event">
+                                <div key={event.Id} class={event.fullClass}>
+                                    <div class="kanban-card-header">
+                                        <h3 class="subject">{event.Subject}</h3>
+                                    </div>
+                                    <div class="kanban-card-body" >
+                                        <p >
+                                            <strong>Application:</strong><br/>
+                                            <a href="#"  style="color: #000000;" onclick={handleNavigation} if:true={event.opportunityId}
+                                                data-id={event.opportunityId}>
+                                                {event.oppFullName}
+                                            </a>
+                                        </p>
+                                        <p>
+                                            <strong>Housebuilder:</strong><br/>
+                                            <a href="#"  style="color: #000000;" onclick={handleNavigation} if:true={event.HousebuilderId}
+                                                data-id={event.HousebuilderId} >
+                                                {event.Housebuilder}
+                                            </a>
+                                        </p>
+                                        <p>
+                                            <strong>Agent:</strong><br/>
+                                            <a href="#"  style="color: #000000;" onclick={handleNavigation} if:true={event.agentId}
+                                                data-id={event.agentId} >
+                                                {event.agentFullName}
+                                            </a>
+                                        </p>
+                                        <p>
+                                            <strong>Vendor:</strong><br/>
+                                            <a href="#"  style="color: #000000;" onclick={handleNavigation} if:true={event.vendorId}
+                                                data-id={event.vendorId} >
+                                               {event.vendorFullName}
+                                            </a>
+                                        </p>
+                                        <p ><strong>Date & Time:</strong><br/> {event.formattedStartDateTime}</p>
+                                        
+                                    </div>
+                                </div>
+
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+    
+  <template if:true={listFlag}>
+    <template if:true={formattedEvents}>
+        <template for:each={formattedEvents} for:item="group">
+            <div key={group.dateTime} class="event-section slds-p-around_medium slds-m-bottom_medium">
+                <!-- Date & Time Header -->
+                <div class="event-header slds-p-around_small slds-theme_shade slds-text-title_bold slds-border_bottom">
+                  📅  {group.dateTime}
+                </div>
+
+                <!-- Styled Table -->
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered event-table">
+                    <thead class="slds-theme_shade">
+                        <tr>
+                            <th style="width: 25%;">Application</th>
+                            <th style="width: 25%;">Housebuilder</th>
+                            <th style="width: 25%;">Agent</th>
+                            <th style="width: 25%;">Vendor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={group.records} for:item="event">
+                            <tr key={event.Id}>
+                                <td>{event.applicationName}</td>
+                                <td>{event.housebuilderName}</td>
+                                <td>{event.agentName}</td>
+                                <td>{event.vendorName}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+    </template>
+</template>
+
+
+    </div>
+</template>

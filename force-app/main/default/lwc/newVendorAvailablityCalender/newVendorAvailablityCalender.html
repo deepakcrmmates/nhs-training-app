@@ -1,0 +1,106 @@
+<template>
+    <div style="border:1px solid black; padding:10px;">
+    <lightning-card>
+        <div class="card-header">
+            <div class="header-title">
+                <h1>Calendar Availability</h1>
+            </div><br/>
+            <div class="header-left">
+             <span style="padding: 5px;"> <b> Vendor Name -</b></span> <span class="vendor-name"> {firstname} {lastname}</span><br/>
+             <span style="padding: 5px;"> <b> Property Name -</b> </span> <span class="property-name"> {property}</span>
+            </div><br/>
+        </div>
+        <div class="card-body">
+            <template for:each={weekData} for:item="week" for:index="index">
+                <div key={week.weekNumber} class="week-section">
+                    <h2 class="week-title">{week.weekNumber}</h2>
+                    <div class="week-table-container">
+                        <table class="slds-table slds-table_cell-buffer">
+                            <thead class="sticky-header">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Day</th>
+                                    <th>Availability</th>
+                                    <th>AM</th>
+                                    <th>PM</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={week.availabilityList} for:item="item" for:index="dateIndex">
+                                    <tr key={item.date}>
+                                        <td data-label="Date">
+                                            <span class={item.dateBoxClass}>
+                                                {item.formattedDate}
+                                            </span>
+                                        </td>
+                                        <td>{item.day}</td>
+                                        <td data-label="Availability">
+                                          <button
+                                            data-week={index}
+                                            data-index={dateIndex}
+                                            data-availability={item.availability}
+                                            class={item.buttonClass}
+                                            onclick={toggleAvailability}
+                                          >
+                                            {item.availability}
+                                          </button>
+                                        </td>
+                                        <td data-label="AM">
+                                            <label class="custom-checkbox">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={item.amChecked}
+                                                    data-field="amChecked"
+                                                    data-index={dateIndex}
+                                                    data-week={index}
+                                                    onchange={handleCheckboxChange}
+                                                    disabled={item.amDisabled}/>
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </td>
+                                        <td data-label="PM">
+                                            <label class="custom-checkbox">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={item.pmChecked}
+                                                    data-field="pmChecked"
+                                                    data-index={dateIndex}
+                                                    data-week={index}
+                                                    onchange={handleCheckboxChange}
+                                                    disabled={item.pmDisabled}/>
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </td>
+                                        <td data-label="Notes">
+                                            <center style="position: relative; left: 3%; bottom: 8px;">
+                                                 <lightning-input type="text" value={item.notes} data-index={dateIndex} data-week={index} data-notes
+                                                    class="lightning-input" disabled={item.disabled} onchange={handleNotesChange}>
+                                                </lightning-input>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <footer class="card-footer">
+            <center style="display:flex; padding:0px;">
+                <div style="padding-right: 0px;">
+                    <lightning-button label="Add New Week" variant="neutral" onclick={handleAddNewWeek}
+                        class="slds-button custom-button">
+                    </lightning-button>
+                </div>
+                <div style="padding-left: 0px;">
+                    <lightning-button label="Save" variant="brand" onclick={handleSave}
+                        class="slds-button custom-button">
+                    </lightning-button>
+                </div>
+            </center>
+        </footer>
+    </lightning-card>
+    </div>
+</template>

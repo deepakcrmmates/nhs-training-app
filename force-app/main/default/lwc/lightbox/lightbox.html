@@ -1,0 +1,29 @@
+<template>
+ <lightning-card title="">
+     <div class="gallery-container">
+        <div class="gallery">
+            <template for:each={files} for:item="image">
+              
+                <div key={image.id} class="thumbnail" onclick={openLightbox}>
+                    <img src={image.src} data-id={image.id} alt={image.alt} />
+                </div>
+            </template>
+        </div>
+     </div>
+        <!-- <div class="pagination">
+            <button class="page-button" onclick={prevPage} disabled={isPrevDisabled}>Previous</button>
+            <button class="page-button" onclick={nextPage} disabled={isNextDisabled}>Next</button>
+        </div> -->
+        <template if:true={isLightboxOpen}>
+            <div class="lightbox" onclick={closeLightbox}>
+                <div class="lightbox-content" onclick={stopPropagation}>
+                    <span class="close" onclick={closeLightbox}>&times;</span>
+                    <img src={currentImage.src} alt={currentImage.alt} style="height: 550px;" />
+                    <div class="caption">{currentImage.alt}</div>
+                    <a class="prev" onclick={showPreviousImage}>&#10094;</a>
+                    <a class="next" onclick={showNextImage}>&#10095;</a>
+                </div>
+            </div>
+        </template>
+    </lightning-card>
+</template>

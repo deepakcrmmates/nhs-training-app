@@ -1,0 +1,70 @@
+<template>
+	<!-- <div style="border:1px solid black;">
+        <div>
+		<lightning-button variant="base" label="Refresh" title="titleName" onclick={handleClick}></lightning-button>
+	</div>
+	</div> -->
+	<div style="border:1px solid black;">
+        <!-- <div>
+		<lightning-input type="number" variant="standard" name="name" label="Current" value={topValue} onchange={handleChange}>
+		</lightning-input>
+	</div>
+	<div>
+		<lightning-input type="number" variant="standard" name="name" label="Potential" value={lowValue} onchange={handlePotentialChange}>
+		</lightning-input>
+	</div> -->
+		<table class="slds-table slds-table_cell-buffer slds-table_bordered">
+			<thead>
+				<tr class="slds-line-height_reset">
+					<th scope="col" colspan="3" style="text-align: center; font-weight: bold;font-size:14px; border: 1px solid #00000057;">
+                       <b> Energy Rating Chart </b>
+					</th>
+				</tr>
+                <tr class="slds-line-height_reset">
+                    <th style="width: 48%;"></th>
+                    <th style="width: 26%;text-align: center;">Current</th>
+                    <th style="width: 26%;text-align: center;">Potential</th>
+                </tr>
+			</thead>
+			<tbody>
+				<tr class="slds-hint-parent">
+					<th scope="row" style="width: 48%;">
+						<div class="energy-chart-container">
+							<div class="energy-chart">
+								<div class="energy-rating rating-a"><span style="float:right;font-size:16px;">A</span>
+									<span style="float:left">92+</span> </div>
+								<div class="energy-rating rating-b"><span style="float:right;font-size:16px;">B</span>
+									<span style="float:left">81-91</span> </div>
+								<div class="energy-rating rating-c"><span style="float:right;font-size:16px;">C</span>
+									<span style="float:left">69-80</span> </div>
+								<div class="energy-rating rating-d"><span style="float:right;font-size:16px;">D</span>
+									<span style="float:left">55-68</span> </div>
+								<div class="energy-rating rating-e"><span style="float:right;font-size:16px;">E</span>
+									<span style="float:left">39-54</span> </div>
+								<div class="energy-rating rating-f"><span style="float:right;font-size:16px;">F</span>
+									<span style="float:left">21-38</span> </div>
+								<div class="energy-rating rating-g"><span style="float:right;font-size:16px;">G</span>
+									<span style="float:left; ">1-20</span> </div>
+							</div>
+						</div>
+					</th>
+					<th scope="row">
+						<div class="container" style="border-right:1px solid black;">
+							<div class="msg" style={msgs}>
+								<center style="padding-top:6px;color:white; font-size:15px;"> {topValue} </center>
+							</div>
+                            </div>
+					</th>
+					<th scope="row">
+						<div class="container1" style="border-left:1px solid black;margin-left: 22px;">
+							<div class="msg1" style={potentials}>
+								<center style="padding-top:6px;color:white;font-size:15px;"> {lowValue} </center>
+							</div>
+						</div>
+					</th>
+
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</template>

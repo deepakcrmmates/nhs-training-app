@@ -1,0 +1,102 @@
+/* vendorAvailabilityTable.css */
+
+:host {
+    display: block;
+    height: 100%;
+}
+
+    .table-container {
+        max-height: 500px; /* Adjust height as needed */
+        overflow-y: auto;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+            margin: 15px;
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 2; /* Ensures the header stays above the table body */
+        background-color: white;
+    }
+
+    .sticky-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        background-color: white;
+        padding: 10px;
+        text-align: right;
+    }
+
+    .scrollable-body {
+        display: block;
+        max-height: 300px; /* Adjust height as needed */
+        overflow-y: auto;
+    }
+
+    .slds-table thead, .slds-table tbody tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed; /* Ensure columns remain fixed size */
+    }
+
+    .slds-table tbody {
+        display: block;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+.header {
+    background-color: #f3f6f9;
+    padding: 1rem;
+    border-bottom: 2px solid #d8dde6;
+    position: static;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.header-title {
+	text-align: center;
+    font-size: 28px;
+    padding-bottom: 40px;
+}
+.body {
+    overflow-y: auto;
+    height: calc(100% - 5rem); /* Adjust based on header and footer height */
+    padding: 1rem;
+    background-color: #ffffff;
+}
+
+.footer {
+    background-color: #f3f6f9;
+    padding: 1rem;
+    border-top: 1px solid #d8dde6;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+        margin: -7px 15px 15px 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+
+}
+
+.slds-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.slds-table th, .slds-table td {
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.availability-button {
+    border-radius: 4px;
+}
+
+.slot-combobox, .agent-combobox {
+    width: 100%;
+}
+
+.slds-checkbox {
+    margin: 0;
+    left: 10px;
+}

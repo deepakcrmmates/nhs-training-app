@@ -1,0 +1,529 @@
+<template>
+    <div>
+        <p class="form-header">Agent Offer Submission Form</p>
+        <template if:true={isLoading}>
+            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+        </template>
+        <template if:false={isLoading}>
+            <lightning-quick-action-panel header="">
+                <div class="slds-is-relative agent-offer-form">
+                    <!-- SECTION 1: PROPERTY DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">PROPERTY DETAILS</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Property -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="property">Property</label>
+                                <lightning-input type="text" variant="standard" id="property"
+                                    placeholder="Enter property name" value={propertyName} disabled class="input-width"
+                                    style="width:96%; font-size:16px;"></lightning-input>
+                            </div>
+                            <!-- Vendor Name -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="vendor-name">Vendor Name</label>
+                                <lightning-input type="text" variant="standard" id="vendor-name"
+                                    placeholder={Vendor.Name} disabled class="input-width"
+                                    style="width:96%; font-size:16px;">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Vendor Email -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="vendor-email">Vendor Email</label>
+                                <lightning-input type="email" variant="standard" id="vendor-email"
+                                    placeholder={Vendor.Email} disabled class="input-width"
+                                    style="width:96%; font-size:16px;">
+                                </lightning-input>
+                            </div>
+                            <!-- Vendor Phone -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="vendor-phone">Vendor Phone</label>
+                                <lightning-input type="tel" variant="standard" id="vendor-phone"
+                                    placeholder={Vendor.Phone} disabled class="input-width"
+                                    style="width:96%; font-size:16px;">
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: AGENT DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">AGENT DETAILS</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Agent Name -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="agent-name">Agent Name</label>
+                              <div style="width:96%; font-size:16px;">
+                                <lightning-input type="text"  value={AgentName}
+                                disabled class="input-width" style="width:96%; font-size:16px;">
+                            </lightning-input>
+                             </div>
+                            </div>
+                            <!-- Agent Contact Details (Agent Phone) -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="agent-phone">Agent Phone</label>
+                                <lightning-input type="tel" variant="standard" id="agent-phone"
+                                    placeholder="Enter agent phone" value={agentPhone} disabled
+                                    style="width:96%; font-size:16px;">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Agent Email -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="agent-email">Agent Email</label>
+                                <lightning-input type="email" variant="standard" id="agent-email"
+                                    placeholder="Enter agent email" value={agentEmail} disabled class="input-width"
+                                    style="width:96%; font-size:16px;"></lightning-input>
+                            </div>
+                            <!-- Agent Address -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="agent-address">Agent Address</label>
+                                <lightning-textarea id="agent-address" placeholder={agentAddress} disabled
+                                    class="input-width" style="width:96%; font-size:16px;">
+                                </lightning-textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 3: OFFER DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">OFFER DETAILS</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Offer Amount -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="offer-amount">Offer Amount</label>
+                                <lightning-input type="number" variant="standard" id="offer-amount" name="Offer Amount"
+                                    formatter="currency" step=".01" placeholder="0.00" onchange={handleChange}
+                                    class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- Date Offer Received (Default: Current Date and Time) -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="offer-date">Date Offer Received</label>
+                                <lightning-input type="datetime" variant="standard" id="offer-date"
+                                    name="Date offer received" value={currentDateTime} onchange={handleChange}
+                                    class="input-width" style="width:96%; font-size:16px;"></lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Offer Active (Default: Ticked) -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="offer-active">Offer Active</label>
+                                <lightning-input type="checkbox" variant="standard" id="offer-active"
+                                    name="Offer Active" onchange={handleChange} checked={offer.yes} class="input-width"
+                                    style="width:96%; font-size:16px;"></lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 4: PURCHASER DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">PURCHASER DETAILS</h2>
+
+                        <!-- Create New Contact Form -->
+                      
+                            <div class="slds-p-around_medium">
+                                
+                                        <h2 style="font-size: 18px; margin-bottom: 10px;">Create New Purchaser</h2>
+                                        <table class="slds-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <lightning-input type="text" label="First Name"
+                                                            value={contact.FirstName} onchange={handleInputChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <lightning-input type="text" label="Last Name"
+                                                            value={contact.LastName} onchange={handleInputChange}
+                                                            required>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <lightning-input type="email" label="Email"
+                                                            value={contact.Email} onchange={handleInputChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <lightning-input type="tel" label="Phone" value={contact.Phone}
+                                                            onchange={handleInputChange}>
+                                                        </lightning-input>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <lightning-input-address address-label="Address"
+                                                            street-label="Street" city-label="City"
+                                                            country-label="Country" province-label="Province"
+                                                            postal-code-label="PostalCode"
+                                                            field-level-help="Purchaser Address"
+                                                            onchange={handleAddressChange}>
+                                                        </lightning-input-address>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="slds-m-top_medium">
+                                            <lightning-button label="Save Contact" variant="brand"
+                                                onclick={saveContact}>
+                                            </lightning-button>
+                                            <lightning-button style="margin-left : 8px;" label="Cancel"
+                                                variant="neutral" onclick={cancelContact}>
+                                            </lightning-button>
+                                        </div>
+                                    
+                               
+                            </div>
+                    
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Purchaser Buying Position (Picklist) -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="buying-position">Purchaser Buying Position</label>
+                                <lightning-combobox id="buying-position" name="Purchasers Buying Position"
+                                    value={buyingPosition} options={buyingPositionOptions} onchange={handleChange}
+                                    class="input-width"></lightning-combobox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 5: Purchaser's Solicitor DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">Purchaser's Solicitors Details</h2>
+                        
+                            <div class="slds-p-around_medium">
+                                <h2 style="font-size: 18px; margin-bottom: 10px;">Create New Purchaser's Solicitor</h2>
+                                 
+                                <table class="slds-table">
+                                    <tbody>
+                                        <!-- Account Name -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="text" label="Account Name" value={SolicitorCompany.Name}
+                                                    onchange={handleSolicitorCompanyInputChange} data-field="Name" required>
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <!-- Phone -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="tel" label="Phone" value={SolicitorCompany.Phone}
+                                                    onchange={handleSolicitorCompanyInputChange} data-field="Phone">
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <!-- Email -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="email" label="Email" value={SolicitorCompany.Email}
+                                                    onchange={handleSolicitorCompanyInputChange} data-field="Email">
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <!-- Billing Address -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input-address address-label="Billing Address"
+                                                    street-label="Street" city-label="City" country-label="Country"
+                                                    province-label="State" postal-code-label="Postal Code"
+                                                    field-level-help="Billing Address" street={SolicitorCompany.BillingStreet}
+                                                    city={SolicitorCompany.BillingCity} country={SolicitorCompany.BillingCountry}
+                                                    province={SolicitorCompany.BillingState}
+                                                    postal-code={SolicitorCompany.BillingPostalCode}
+                                                    onchange={handleSolicitorCompanyAddressChange}>
+                                                </lightning-input-address>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <!-- Solicitors Person -->
+                                <table class="slds-table">
+                                    <tbody>
+                                         <tr>
+                                            <td>
+                                                <lightning-input type="text" label="First Name" value={SolicitorPerson.Name}
+                                                    onchange={handleSolicitorPersonInputChange} data-field="FirstName" required>
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="text" label="Last Name" value={SolicitorPerson.Name}
+                                                    onchange={handleSolicitorPersonInputChange} data-field="LastName" required>
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <!-- Phone -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="tel" label="Phone" value={SolicitorPerson.Phone}
+                                                    onchange={handleSolicitorPersonInputChange} data-field="Phone">
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                        <!-- Email -->
+                                        <tr>
+                                            <td>
+                                                <lightning-input type="email" label="Email" value={SolicitorPerson.Email}
+                                                    onchange={handleSolicitorPersonInputChange} data-field="Email__c">
+                                                </lightning-input>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                 </table>
+                                <div class="slds-m-top_medium">
+                                    <lightning-button label="Save Account" variant="brand" onclick={saveAccount}>
+                                    </lightning-button>
+                                    <lightning-button style="margin-left: 8px;" label="Cancel" variant="neutral"
+                                        onclick={cancelAccount}>
+                                    </lightning-button>
+                                </div>
+                            </div>
+                       
+                    </div>
+
+                    <!-- SECTION 6: MORTGAGE DETAILS -->
+                    <div class="section-container">
+                        <h2 class="section-header">MORTGAGE DETAILS</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- 1st row: Mortgage Required -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="mortgage-required">Mortgage Required</label>
+                                <lightning-input type="checkbox" variant="standard" id="mortgage-required"
+                                    name="Mortgage Required" checked={mortgageRequired} onchange={handleChange}
+                                    class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- Empty column to maintain grid structure -->
+                            <div class="slds-col slds-size_1-of-2"></div>
+                        </div>
+
+                        <!-- Create New Lender Form -->
+                        <div class="slds-p-around_medium">
+                            <h2 style="font-size: 18px; margin-bottom: 10px;">Create New Lender</h2>
+                             <table class="slds-table">
+                                <tbody>
+                                    <!-- New Lender Details -->
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="text" label="Account Name" data-field="accountName"  value={Lender.accountName}
+                                                onchange={handleLenderInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="text" label="Email" data-field="Email"  value={Lender.Email}
+                                                onchange={handleLenderInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="text" label="Phone" data-field="Phone"  value={Lender.Phone}
+                                                onchange={handleLenderInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input-address address-label="Address" street-label="Street"
+                                                city-label="City" country-label="Country" province-label="Province"
+                                                postal-code-label="PostalCode" field-level-help="Lender Address"
+                                                onchange={handleLenderAddressChange}>
+                                            </lightning-input-address>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                             </table>
+
+                              <h2 style="font-size: 18px; margin-bottom: 10px;">Create Financial Advisor</h2>
+                            <table class="slds-table">
+                                <tbody>
+                                    
+                                <!-- New Advisor Details -->
+
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="text" label="FirstName" data-field="FirstName"  value={FinancialAdvisor.FirstName}
+                                                onchange={handleAdvisorInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="text" label="LastName" data-field="LastName"  value={FinancialAdvisor.LastName}
+                                                onchange={handleAdvisorInputChange} required>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="email" label="Email" data-field="Email" value={FinancialAdvisor.Email}
+                                                onchange={handleAdvisorInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <lightning-input type="tel" label="Phone"  data-field="Phone" value={FinancialAdvisor.Phone}
+                                                onchange={handleAdvisorInputChange}>
+                                            </lightning-input>
+                                        </td>
+                                    </tr>
+                                    
+                                </tbody>
+                            </table>
+                            <div class="slds-m-top_medium">
+                                <lightning-button label="Save" variant="brand" onclick={saveLender}>
+                                </lightning-button>
+                                <lightning-button style="margin-left : 8px;" label="Cancel" variant="neutral"
+                                    onclick={cancelLender}>
+                                </lightning-button>
+                            </div>
+                        </div>
+
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- 4th row: Deposit -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="deposit">Deposit</label>
+                                <lightning-input type="number" variant="standard" id="deposit" name="Deposit"
+                                    formatter="currency" step=".01" placeholder="0.00" onchange={handleChange}
+                                    class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- 4th row: Decision in Principle -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="decision-in-principle">Decision in Principle</label>
+                                <lightning-input type="checkbox" variant="standard" id="decision-in-principle"
+                                    name="Decision in Principle" checked={decisionInPrinciple} onchange={handleChange}
+                                    class="input-width">
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 7: ID VERIFICATION -->
+                    <div class="section-container">
+                        <h2 class="section-header">Additional Details</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Id Verified -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="id-verified">Id Verified</label>
+                                <lightning-input type="checkbox" variant="standard" id="id-verified" name="Id Verified"
+                                    onchange={handleChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Proof of Funding -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="proof-of-funding">Proof of Funding</label>
+                                <lightning-input style="padding-top: 6px;" type="checkbox" variant="standard"
+                                    id="proof-of-funding" name="Proof of Funding" onchange={handleChange}
+                                    class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- 2nd row: Exchange Deadline -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="exchange-deadline">Exchange Deadline</label>
+                                <lightning-input type="date" variant="standard" id="exchange-deadline"
+                                    name="Exchange Deadline" onchange={handleChange} class="input-width"
+                                    style="width:96%; font-size:16px;">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- AML Check -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="aml-check">AML Check</label>
+                                <lightning-input style="padding-top: 6px;" type="checkbox" variant="standard"
+                                    id="aml-check" name="AML Check" onchange={handleChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- 3rd row: Buyer Aware of Estimated Completion Date -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="completion-date">Buyer Aware of Estimated Completion Date</label>
+                                <lightning-input type="date" variant="standard" id="completion-date"
+                                    name="Buyer aware of Estimated Completion Date" onchange={handleChange}
+                                    class="input-width" style="width:96%; font-size:16px;"></lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Any Special Conditions (Long text on Offer) -->
+                            <div class="slds-col slds-size_1-of-1">
+                                <label class="label-class" for="special-conditions">Any Special Conditions</label>
+                                <lightning-textarea id="special-conditions" name="Any Special Conditions"
+                                    onchange={handleChange} class="input-width" style="width:96%; font-size:16px;">
+                                </lightning-textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 8: FILE UPLOAD -->
+                    <div class="section-container">
+                        <h2 class="section-header">File Upload</h2>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Upload Id -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="upload-id">Upload Id</label>
+                                <lightning-input type="file" variant="standard" id="upload-id" name="Upload Id"
+                                    onchange={handleFileChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- Upload Decision in Principle -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="upload-decision">Upload Decision in Principle</label>
+                                <lightning-input type="file" variant="standard" id="upload-decision"
+                                    name="Upload Decision in Principle" onchange={handleFileChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                        </div>
+                        <div class="slds-grid slds-gutters custom-gap">
+                            <!-- Upload AML Check -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="upload-aml-check">Upload AML Check</label>
+                                <lightning-input type="file" variant="standard" id="upload-aml-check"
+                                    name="Upload AML Check" onchange={handleFileChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                            <!-- Upload Proof of Income -->
+                            <div class="slds-col slds-size_1-of-2">
+                                <label class="label-class" for="upload-income">Upload Proof of Income</label>
+                                <lightning-input type="file" variant="standard" id="upload-income"
+                                    name="Upload Proof of Income" onchange={handleFileChange} class="input-width">
+                                </lightning-input>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Uploaded File Names -->
+                    <div class="uploaded-files">
+                        <h2 class="section-header">Uploaded Files</h2>
+                        <template for:each={uploadedFiles} for:item="file">
+                            <div key={file.fieldName} class="file-item">
+                                <span class="file-name">{file.name}</span> &nbsp;&nbsp;
+                                <span class="file-field">({file.fieldName})</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <center>
+                            <button class="button button-primary" onclick={handleSubmit}>Submit</button>
+                        </center>
+                    </div>
+                </div>
+            </lightning-quick-action-panel>
+        </template>
+    </div>
+</template>

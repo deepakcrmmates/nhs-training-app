@@ -1,0 +1,20 @@
+<template>
+    <div class="toolbar">
+
+        <!-- 🔄 View Toggle -->
+        <div class="view-toggle">
+            <button onclick={handleKanban}>Kanban</button>
+            <button onclick={handleTable}>Table</button>
+        </div>
+
+        <!-- 📅 Date Filter -->
+        <div class="filter">
+            <select onchange={handleFilter}>
+                <option value="">All</option>
+                <option value="WEEK">Last 7 Days</option>
+                <option value="MONTH">Last 30 Days</option>
+            </select>
+        </div>
+
+    </div>
+</template>

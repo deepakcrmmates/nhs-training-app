@@ -1,0 +1,166 @@
+<template>
+    <!-- Kanban Container -->
+    <div class="kanban-container">
+        <!-- Header -->
+         <div class="kanban-header">
+        <div class="kanban-header-content">
+            <h1 class="week-title">{currentWeekHeader}</h1>
+            <div class="header-buttons">
+                <span>
+                    <button class="icon-button" disabled={flag} onclick={handleKanbanClick}>🗂️</button>
+                </span>
+                <span>
+                    <button class="icon-button" disabled={flag} onclick={handleListClick}>☰</button>
+                </span>
+            </div>
+        </div>
+         </div>
+
+        <!-- Kanban View -->
+        <template if:true={kanBanFlag}>
+            <div class="kanban-view">
+                <template if:true={dates}>
+                    <template for:each={dates} for:item="day">
+                        <div key={day.label} class="kanban-column">
+                            <div class="kanban-column-header">{day.label}</div>
+                            <div class="kanban-column-body">
+                                <template if:true={day.availabilities}>
+                                    <template for:each={day.availabilities} for:item="availability">
+                                        <div key={availability.Id} class="kanban-card">
+                                            <div class="kanban-card-header">
+                                                <a href="#" onclick={handleNavigation} data-id={availability.Vendor__c}
+                                                    title={availability.vendorFullName}>
+                                                    {availability.vendorFullName}
+                                                </a>
+                                            </div>
+                                            <div class="kanban-card-body">
+                                                <p>
+                                                    <strong>Application:</strong><br/>
+                                                    <a href="#" onclick={handleNavigation}
+                                                        data-id={availability.Application__c}>
+                                                        {availability.applicationFullName}
+                                                    </a>
+                                                </p>
+                                                <p><strong>Date:</strong><br/> {availability.Date__c}</p>
+                                                <div class="availability-container">
+                                                    <p><strong>Morning:</strong>&nbsp;
+                                                        <input type="checkbox" class="styled-checkbox" disabled checked={availability.AM__c}/>
+                                                    </p>
+                                                    <p><strong>Evening:</strong>&nbsp;
+                                                        <input type="checkbox" class="styled-checkbox" disabled checked={availability.PM__c}/>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="kanban-card-footer">
+                                                <center>
+                                                    <button class="book-button" onclick={handleBook} data-id={availability.Id}>Book</button>
+                                                </center>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template if:false={day.availabilities}>
+                                    <div class="no-availability-message">No availabilities for this day.</div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </template>
+
+        <!-- List View -->
+    <template if:true={listFlag}>
+    <template for:each={groupedAvailabilities} for:item="day">
+        <div key={day.label} class="slds-card slds-m-bottom_medium">
+            <div class="slds-card__header slds-theme_shade slds-p-around_small slds-grid">
+                <h3 class="slds-text-heading_small slds-col">
+                    📅 {day.label}
+                </h3>
+            </div>
+
+            <div class="slds-card__body slds-p-around_medium">
+                <div class="slds-scrollable_x">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered full-width-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">
+                                    <div class="slds-truncate slds-p-around_xx-small">Application</div>
+                                </th>
+                                <th style="width: 25%;">
+                                    <div class="slds-truncate slds-p-around_xx-small">Vendor</div>
+                                </th>
+                                <th style="width: 20%;">
+                                    <div class="slds-truncate slds-p-around_xx-small">Date</div>
+                                </th>
+                                <th style="width: 12.5%;" class="slds-text-align_center">
+                                    <div class="slds-truncate slds-p-around_xx-small">AM</div>
+                                </th>
+                                <th style="width: 12.5%;" class="slds-text-align_center">
+                                    <div class="slds-truncate slds-p-around_xx-small">PM</div>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <template for:each={day.events} for:item="item">
+                                <tr key={item.Id}>
+                                    <td class="slds-p-around_xx-small">
+                                        <div class="slds-truncate" title={item.Application__r.Name}>
+                                            {item.Application__r.Name}
+                                        </div>
+                                    </td>
+                                    <td class="slds-p-around_xx-small">
+                                        <div class="slds-truncate" title={item.vendorFullName}>
+                                            {item.vendorFullName}
+                                        </div>
+                                    </td>
+                                    <td class="slds-p-around_xx-small">
+                                        <div class="slds-truncate">{item.Date__c}</div>
+                                    </td>
+                                    <td class="slds-p-around_xx-small slds-text-align_center">
+                                        <template if:true={item.AM__c}>
+                                            <lightning-icon icon-name="utility:check" alternative-text="AM Available" size="x-small" class="availability-icon"></lightning-icon>
+                                        </template>
+                                        <template if:false={item.AM__c}>
+                                            <lightning-icon icon-name="utility:close" alternative-text="AM Unavailable" size="x-small" class="availability-icon"></lightning-icon>
+                                        </template>
+                                    </td>
+                                    <td class="slds-p-around_xx-small slds-text-align_center">
+                                        <template if:true={item.PM__c}>
+                                            <lightning-icon icon-name="utility:check" alternative-text="PM Available" size="x-small" class="availability-icon"></lightning-icon>
+                                        </template>
+                                        <template if:false={item.PM__c}>
+                                            <lightning-icon icon-name="utility:close" alternative-text="PM Unavailable" size="x-small" class="availability-icon"></lightning-icon>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>
+
+
+    </div>
+
+    <!-- Modal Section -->
+    <template if:true={isPopupVisible}>
+        <section class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container custom-modal">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closePopup}>
+                        <lightning-icon icon-name="utility:close" alternative-text="Close" variant="inverse"></lightning-icon>
+                    </button>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <c-vendor-availability-table record-id={applicationId}></c-vendor-availability-table>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

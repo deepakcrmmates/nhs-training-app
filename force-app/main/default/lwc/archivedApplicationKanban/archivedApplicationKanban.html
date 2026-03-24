@@ -1,0 +1,74 @@
+<template>
+    <div class="container">
+        <div>
+            <!-- Search Input -->
+            <div class="search-container">
+                <lightning-input type="search" label="" placeholder="Search by Name or Sales Advisor..." onchange={handleSearch}>
+                </lightning-input>
+            </div>
+
+            <!-- Table Section -->
+            <template if:true={filteredOpportunities}>
+                <div class="table-container" onscroll={handleScroll}>
+                    <table class="custom-table">
+                        <thead class="fixed-header">
+                            <tr>
+                                <th>Application Name</th>
+                                <th>Housebuilder</th>
+                                <th>Vendor</th>
+                                <th>Stage</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredOpportunities} for:item="opp">
+                                <tr key={opp.Id}>
+                                    <td class="word-wrap">
+                                        <button class="a slds-button slds-button_reset" data-id={opp.Id} onclick={navigateOppHandler}>
+                                            <span class="slds-truncate">
+                                                <p class="word-wrap">{opp.applicationName}</p> <!-- Safely render Application Name -->
+                                            </span>
+                                        </button>
+                                    </td>
+
+                                    <td class="word-wrap">
+                                        <button class="a slds-button slds-button_reset" data-id={opp.House_Builder__c} onclick={navigateOppHandler}>
+                                            <span class="slds-truncate">
+                                                <p class="word-wrap">{opp.houseBuilder}</p> <!-- Safely render House Builder -->
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td class="word-wrap">
+                                        <button class="a slds-button slds-button_reset" data-id={opp.Applicant__c} onclick={navigateOppHandler}>
+                                            <span class="slds-truncate">
+                                                <p class="word-wrap">{opp.vendorName}</p> <!-- Safely render Vendor -->
+                                            </span>
+                                        </button>
+                                    </td>
+                                    <td class="text-left">{opp.StageName}</td>
+                                    <td>
+                                        <lightning-button variant="brand" label={opp.label} data-id={opp.Id} onclick={handleUnarchivedClick} disabled={opp.disable}>
+                                        </lightning-button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Loader: Visible while fetching more data -->
+                    <template if:true={isLoading}>
+                        <div class="slds-spinner_container">
+                            <lightning-spinner alternative-text="Loading more applications..." size="medium">
+                            </lightning-spinner>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- No Records Message -->
+            <template if:false={filteredOpportunities}>
+                <p class="no-records">No matching applications found.</p>
+            </template>
+        </div>
+    </div>
+</template>

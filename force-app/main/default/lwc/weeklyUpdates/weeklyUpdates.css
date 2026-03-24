@@ -1,0 +1,26 @@
+.slds-box {
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+}
+
+.slds-m-bottom_small {
+    margin-bottom: 1rem;
+}
+
+.slds-table th, .slds-table td {
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.slds-table_bordered {
+    border-collapse: collapse;
+}
+
+.slds-table_bordered th, .slds-table_bordered td {
+    border: 1px solid #d8dde6;
+}
+
+.slds-align-top {
+    align-self: flex-start;
+}

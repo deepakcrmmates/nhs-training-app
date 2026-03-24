@@ -1,0 +1,28 @@
+/* Style for the filter container */
+.filter-container {
+	float: right;
+    width: 225px;
+    padding-right: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Style for the label of the combobox */
+.filter-container label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Custom style for lightning-combobox */
+.filter-container lightning-combobox {
+    padding: 8px 12px;
+	margin-left: 45px;
+	text-align: center;
+    border-radius: 5px;
+    border: 1px solid gray;
+    font-size: 1rem;
+    background-color: #ffb6c11c; /* Background color for combobox */
+}
+
+/* Add additional styles if needed */

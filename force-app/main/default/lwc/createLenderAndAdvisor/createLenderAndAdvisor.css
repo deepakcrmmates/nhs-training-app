@@ -1,0 +1,164 @@
+/* General Form Container Styling */
+.agent-offer-form {
+    background: #f3f3f321;
+    padding: 20px;
+    border-radius: 8px;
+    width:90%;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Header */
+.form-header {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-size: 1.5rem;
+    width: auto;
+    padding: 20px;
+    color: #16325c;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Section Header */
+.section-header {
+    font-size: 20px;
+    font-weight: bold;
+     color: #333;   
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #d8dde6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Section Container */
+.section-container {
+    background-color: #f3f3f3;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    padding: 16px;
+    margin-bottom: 60px;
+}
+
+/* Label Styling */
+.label-class {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 18px;
+}
+
+/* Input Fields Styling */
+lightning-input, lightning-textarea, lightning-combobox, c-custom-lookup-lwc {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+lightning-input::part(input), lightning-textarea::part(textarea), lightning-combobox::part(input) {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.875rem;
+    border: 1px solid #d8dde6;
+    border-radius: 4px;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+lightning-input::part(input):focus, lightning-textarea::part(textarea):focus, lightning-combobox::part(input):focus {
+    border-color: #0070d2;
+    box-shadow: 0 0 5px rgba(0, 112, 210, 0.3);
+}
+
+/* Checkbox Styling */
+lightning-input[type="checkbox"]::part(input) {
+    margin-right: 8px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.button-primary {
+    background-color: #0070d2;
+    color: #ffffff;
+}
+
+.button-primary:hover {
+    background-color: #005fb2;
+    transform: translateY(-2px);
+}
+/* Custom gap between columns */
+.custom-gap {
+    gap: 20px; /* Adjust the gap size as needed */
+}
+/* Constrain input width */
+.input-width {
+    width: 96%; /* Ensure inputs take full width of their container */
+    max-width: 96%; /* Prevent inputs from overflowing */
+}
+
+/* Ensure textarea and combobox also respect the width */
+lightning-textarea.input-width,
+lightning-combobox.input-width,
+c-custom-lookup-lwc.input-width {
+    width: 96%;
+    max-width: 96%;
+}
+
+/* Apply custom gap to the grid */
+.slds-grid.slds-gutters.custom-gap {
+    margin-right: -10px; /* Adjust based on the gap size */
+    margin-left: -10px;  /* Adjust based on the gap size */
+}
+
+.slds-grid.slds-gutters.custom-gap > .slds-col {
+    padding-right: 10px; /* Adjust based on the gap size */
+    padding-left: 10px;  /* Adjust based on the gap size */
+}
+
+.uploaded-files {
+    margin-top: 1rem;
+}
+
+.file-item {
+    margin-bottom: 0.5rem;
+}
+
+.file-name {
+    font-weight: bold;
+}
+
+.file-field {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .slds-grid.slds-gutters {
+        flex-direction: column;
+    }
+
+    .slds-col {
+        width: 100%;
+    }
+
+    .form-header {
+        font-size: 1.25rem;
+    }
+}

@@ -1,0 +1,36 @@
+<template>
+    <div class="column">
+
+        <!-- Header -->
+        <div class="header">
+            <h3>{stage}</h3>
+
+            <!-- 🔍 Search -->
+            <template if:true={config.enableSearch}>
+                <input type="text"
+                       placeholder="Search..."
+                       oninput={handleSearch} />
+            </template>
+
+            <!-- 🔃 Sort -->
+            <template if:true={config.enableSort}>
+                <button onclick={handleSort}>
+                    Sort ({sortDirection})
+                </button>
+            </template>
+        </div>
+
+        <!-- Cards -->
+        <div class="card-container" onscroll={handleScroll}>
+            <template for:each={visibleRecords} for:item="rec">
+    <c-kanban-cards
+        key={rec.id}
+        record={rec}
+        stage={stage}
+        config={config}>
+    </c-kanban-cards>
+</template>
+        </div>
+
+    </div>
+</template>

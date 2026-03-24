@@ -1,0 +1,165 @@
+.app-container {
+    font-family: Arial, sans-serif;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color:  #f4f6f9;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.header-left {
+    font-size: 36px;
+    font-family: Salesforce Sans;
+    font-weight: inherit;
+    color: #333333de;
+}
+
+.header-right {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-content {
+    flex-grow: 1; /* Allows the tab content area to expand and fill available space */
+    background-color:  #f4f6f9; /* Light background color for contrast */
+    border-radius: 8px; /* Rounded corners for aesthetics */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a clean UI */
+    transition: all 0.3s ease-in-out; /* Smooth appearance changes */
+    display: flex; /* Makes it flexible for additional styling if needed */
+    justify-content: left; /* Centers the content horizontally */
+   height: 900 px;
+    overflow-y: auto;
+}
+
+.main-content {
+    display: flex;
+    gap: 16px; /* Adds spacing between the tab-content and opportunity-container */
+     
+}
+.toggle-container {
+    width: 20%;
+    display: flex;
+    align-items: left;
+}
+
+.toggle-button {
+    width: 24px;
+    height: 100%;
+    border: none;
+    background: #f9f9f9;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="gray"><path d="M15 19l-7-7 7-7"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+.toggle-button:hover {
+    background-color: #e0e0e0;
+}
+
+.opportunity-container {
+    flex-grow: 1;
+    background-color: #f4f6f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a clean UI */
+    transition: all 0.3s ease-in-out; /* Smooth appearance changes */
+    padding: 8px;
+    min-height: 463px;
+    overflow-y: auto;
+}
+.navigation-buttons {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+    gap: 8px;
+}
+.calendar-buttons {
+    display: flex;
+    gap: 8px; /* Add gap specifically for calendar buttons */
+}
+
+.nav-button {
+    font-size: 15px;
+    padding: 7px 10px;
+    border: 1px solid #075f50;
+    border-radius: 4px;
+    background-color: #027420;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-button:hover {
+    background-color: #003b12;
+    border-color: #003b12;
+}
+
+.nav-button:focus {
+    outline: 2px solid #80deea;
+    outline-offset: 2px;
+}
+
+.nav-button:active {
+    background-color: #002b0e;
+    transform: scale(0.95);
+}
+.tab-button {
+    font-size: 16px;
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s ease;
+}
+
+/* Hover Effect */
+.tab-button:hover {
+    background-color: #075f50;
+    border-color: #aaa;
+    color: #fff;
+}
+
+.selected-tab {
+    background-color: #075f50;
+    color: #fff;
+    border-color: #075f50;
+    outline: 2px solid #075f50;
+    outline-offset: 2px;
+}
+
+/* Focus Effect */
+.tab-button:focus {
+    outline: 2px solid #075f50;
+    outline-offset: 2px;
+}
+
+/* Active Tab Styling */
+.tab-button.active {
+    background-color: #075f50;
+    color: #fff;
+    border-color: #075f50;
+}
+
+/* Active Click Animation */
+.tab-button:active {
+    transform: scale(0.98); /* Slightly shrink the button on click */
+}
+
+
+@media screen and (max-width: 768px) {
+    .nav-button {
+        font-size: 8px;
+        padding: 3px 6px;
+    }
+     .tab-button {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}

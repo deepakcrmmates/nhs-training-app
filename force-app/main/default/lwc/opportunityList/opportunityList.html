@@ -1,0 +1,49 @@
+<template>
+    <div>
+        <div class="header">
+            <p class="highlight-total-count">
+                Applications: ({totalCount})
+                <!-- <button class="custom-sort-button" onclick={handleSort} data-field="Name">
+                                <span>{sortArrow}</span>
+                            </button> -->
+            </p>
+        </div>
+        <div class="search-container">
+            <button class="search-icon" onclick={toggleSearch}>
+        <lightning-icon icon-name="utility:search" alternative-text="Search"></lightning-icon>
+    </button>
+            <input
+        type="text"
+        class={searchInputClass}
+        oninput={handleSearchInput}
+        placeholder="Search..."
+        onblur={hideSearch}
+    />
+        </div>
+
+        <div class="application-list" onscroll={handleScroll}>
+            <template for:each={displayedOpportunities} for:item="opp">
+                <div key={opp.Id} class="application-card" data-id={opp.Id} onclick={handleOpportunityClick}>
+                    <div class="application-details">
+                        <p class="application-name">{opp.Name}</p>
+                        <!-- <p class="application-address">{opp.Address}</p> -->
+                        <div class="application-counts">
+                            <!-- <div class="circle green">{opp.TotalVendorAvailability}</div> -->
+                            <template if:false={isTab}>
+                            <div class="circle orange">{opp.TotalEvents}</div>
+                            <div class="circle red">{opp.ChasingCount}</div>
+                            <div class="circle green">{opp.TotalReturnCount}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+            <template if:true={isLoading}>
+                <div class="loading-spinner">
+                    <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

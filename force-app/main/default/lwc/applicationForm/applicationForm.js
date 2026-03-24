@@ -1,5 +1,10 @@
 import { LightningElement, wire, track } from 'lwc';
+import { getObjectInfo, getPicklistValues } from "lightning/uiObjectInfoApi";
+import OPPORTUNITY_OBJECT from "@salesforce/schema/Opportunity";
+import TYPE_FIELD from "@salesforce/schema/Opportunity.Type_of_House__c";
+import Advisor_FIELD from '@salesforce/schema/Opportunity.NHS_Sales_Advisor__c';
 import saveApplication from '@salesforce/apex/ApplicationFormController.saveApplication';
+import isHouseBuilderRecordType from '@salesforce/apex/accountController.isHouseBuilderRecordType';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getfs from '@salesforce/apex/AddressFinderController.getFieldSet';
 import { NavigationMixin } from 'lightning/navigation';
@@ -8,6 +13,7 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
 
      @track mapData = [];
     @track jsonDatas = {};
+     @track isSelectedHousebuilder = false;
     SchemeOptions = 'Scheme 1';
     @track temp1 = false;
     @track temp2 = false;
@@ -18,9 +24,14 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
     @track dis2 = false;
     @track default1 = false;
     @track doar = false;
-
+    @track recordType = '';
+    @track disable = false;
+    type = '';
+    salesAdv = '';
+        accountRecordTypeId = '';
     connectedCallback() {
         this.jsonDatas['name'] = '';
+         this.jsonDatas['type'] = '';
         this.jsonDatas['expectation'] = '';
         this.jsonDatas['scheme'] = '';
         this.jsonDatas['startDate'] = '';
@@ -59,10 +70,14 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
     @wire(getfs, { objName : 'NHS_Property__c', fieldsetname : [
         'PropertyDetails'
     ]})
+
+     
+
     getfsfields(result) {
         if(result.data) {
             for (let key in result.data) {
                 this.mapData.push({value:JSON.parse(result.data[key]), key:key});
+                console.log('OUTPUT : result.data',result.data);
             }
 
         } else if(result.error) {
@@ -76,6 +91,39 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
             { label: 'Assisted Sale', value: 'Assisted Sale' },
         ];
     }
+ @wire(getObjectInfo, { objectApiName: OPPORTUNITY_OBJECT })
+  results({ error, data }) {
+    if (data) {
+      this.accountRecordTypeId = data.defaultRecordTypeId;
+      this.error = undefined;
+    } else if (error) {
+      this.error = error;
+      this.accountRecordTypeId = undefined;
+    }
+  }
+
+  @wire(getPicklistValues, { recordTypeId: "$accountRecordTypeId", fieldApiName: TYPE_FIELD })
+  picklistResults({ error, data }) {
+    if (data) {
+      this.type = data.values;
+      this.error = undefined;
+    } else if (error) {
+      this.error = error;
+      this.type = undefined;
+    }
+  }
+ 
+ @wire(getPicklistValues, { recordTypeId: "$accountRecordTypeId", fieldApiName: Advisor_FIELD })
+  picklistResults1({ error, data }) {
+    if (data) {
+      this.salesAdv = data.values;
+      this.error = undefined;
+    } else if (error) {
+      this.error = error;
+      this.salesAdv = undefined;
+    }
+  }
+
     handleChange1(event) {
         var name = event.target.name;
         var isTrue = event.target.checked;
@@ -169,11 +217,16 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
             this.jsonDatas['name'] = event.target.value;
 
         }
+        if (name == 'house') {
+            this.jsonDatas['type'] = event.target.value;
+
+        }
         if (name == 'expectation') {
             this.jsonDatas['expectation'] = event.target.value;
         }
         if (name == 'scheme') {
             this.jsonDatas['scheme'] = event.target.value;
+            this.recordType = event.target.value;
         }
 
         if (name == 'monAM') {
@@ -221,7 +274,7 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
              const inputField = this.template.querySelector(".dateCls");;
              if(this.isFutureDate(event.target.value)){
                  this.doar = true;
-                  inputField.setCustomValidity("Future Date Not Allowed...");
+                  inputField.setCustomValidity("Future date is not allowed.");
                   inputField.reportValidity();
                  console.log('OUTPUT : True');
              }else{
@@ -261,9 +314,35 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
         console.log('OUTPUT : ', JSON.stringify(this.jsonDatas));
     }
 
-    handleValueSelectedOnAccount(event) {
+   handleValueSelectedOnAccount(event) {
         console.log('OUTPUT property: ', event.detail.id);
-        this.jsonDatas['houseBuilder'] = event.detail.id;
+        const accountId = event.detail.id;
+        
+        isHouseBuilderRecordType({ accountId })
+            .then((isHouseBuilder) => {
+                
+                console.log('OUTPUT : isHouseBuilder', isHouseBuilder);
+                if (isHouseBuilder) {
+                    this.isSelectedHousebuilder = false;
+                    console.log('OUTPUT property: ', accountId);
+                    this.jsonDatas['houseBuilder'] = accountId;
+                } else {
+                    this.isSelectedHousebuilder = true;
+                    console.warn('Selected account is not a House Builder');
+                    // Optional: display a message to the user
+                   
+                     const evt = new ShowToastEvent({
+                            title: 'Warning..!',
+                            message: 'Selected account is not a House Builder.',
+                            variant: 'warning',
+                            mode: 'Pester '
+                        });
+                        this.dispatchEvent(evt);
+                }
+            })
+            .catch((error) => {
+                console.error('Error checking account record type: ', error);
+            });
     }
 
     handleContactChange(event) {
@@ -299,21 +378,22 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
     }
 
  handleValueSelectedOnAccounts(event) {
+    console.log('OUTPUT : Ideal Postcode ',JSON.stringify(event.detail.dta));
         const street = this.template.querySelector('[data-field-name="Address__Street__s"]');
         street.value = JSON.parse(event.detail.dta).line_1 + ', '+JSON.parse(event.detail.dta).line_2;
         const city = this.template.querySelector('[data-field-name="Address__City__s"]');
-        city.value = JSON.parse(event.detail.dta).district
+        city.value = JSON.parse(event.detail.dta).post_town
         const pcode = this.template.querySelector('[data-field-name="Address__PostalCode__s"]');
         pcode.value = JSON.parse(event.detail.dta).postcode;
-        const country = this.template.querySelector('[data-field-name="Address__CountryCode__s"]');
-        country.value = JSON.parse(event.detail.dta).country;
+      //  const country = this.template.querySelector('[data-field-name="Address__CountryCode__s"]');
+       // country.value = 'United Kingdom';
 
         this.jsonDatas['street'] = street.value ;
         this.jsonDatas['city'] = city.value ;
         this.jsonDatas['pcode'] = pcode.value ;
-        this.jsonDatas['country'] = country.value ;
+        this.jsonDatas['country'] = 'United Kingdom' ;
         console.log('OUTPUT : -----',JSON.stringify(this.jsonDatas));
-       
+       console.log('OUTPUT : Ideal Postcode ',JSON.stringify(event.detail.dta));
     }
     handleSuccess(evnt) {
         this.recrdId= evnt.detail.id;
@@ -331,6 +411,18 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
 
     }
     handleSaveClick(event) {
+
+        if(this.isSelectedHousebuilder == true){
+                  const evt = new ShowToastEvent({
+                            title: 'Warning..!',
+                            message: 'Please select correct Housebuilder.',
+                            variant: 'warning',
+                            mode: 'Pester '
+                        });
+                        this.dispatchEvent(evt);
+                        return;
+        }
+
         if(this.jsonDatas.lastname =='' || this.lastname1 == '' ){
             const evt = new ShowToastEvent({
                             title: 'Warning..!',
@@ -361,7 +453,8 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
                         this.dispatchEvent(evt);
                         return
         }
-        saveApplication({ jsonData: this.jsonDatas })
+        this.disable = true;
+        saveApplication({ jsonData: this.jsonDatas, recordtype:this.recordType })
             .then(result => {
                 setTimeout(() => {
                     console.log('record successfully save... ');
@@ -374,6 +467,8 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
                             variant: 'success',
                             mode: 'Pester '
                         });
+                        this.disable = false;
+                        
                         this.dispatchEvent(evt);
 
                         this[NavigationMixin.Navigate]({
@@ -392,6 +487,7 @@ export default class ApplicationForm extends  NavigationMixin(LightningElement) 
                             variant: 'error',
                             mode: 'Pester'
                         });
+                        this.disable = false;
                         this.dispatchEvent(evt);
                         location.reload();
                     }

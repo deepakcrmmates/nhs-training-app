@@ -1,0 +1,43 @@
+.custom-box {
+    background-color: rgb(243, 243, 243);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 17%);
+    padding: 16px;
+    margin-bottom: 16px;     /* Spacing between boxes */
+}
+.account-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.image-container {
+    text-align: center;
+    padding: 10px;
+}
+
+@media only screen and (max-width: 768px) {
+    /* For tablets */
+    .slds-table {
+        font-size: 14px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    /* For mobile devices */
+    .slds-table {
+        font-size: 12px;
+    }
+    
+    .slds-table th, .slds-table td {
+        display: block;
+        text-align: left;
+        width: 100%;
+    }
+    
+    .slds-table th {
+        font-weight: bold;
+    }
+}

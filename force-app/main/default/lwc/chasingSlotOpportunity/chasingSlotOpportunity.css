@@ -1,0 +1,200 @@
+/* Container for the opportunity table */
+.custom-opportunity-table {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* Highlight for total count */
+.highlight-total-count {
+    font-weight: 400;
+    font-size: 1.4em;
+    color: #1c5db7;
+    text-align: center;
+}
+
+/* Flex container for displaying circles for counts */
+.count-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Styling for the circles (vendor availability and event counts) */
+.circle {
+    position: relative;
+    width: var(--circle-size, 30px);
+    height: var(--circle-size, 30px);
+    border-radius: 50%;
+    margin-right: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    color: white;
+    font-weight: 400;
+}
+
+.vendor-circle {
+    background-color: #4CAF50; /* Green for Vendor Availability */
+}
+
+.event-circle {
+    background-color: #FF5733; /* Orange for Events */
+}
+
+/* Tooltip styling on hover */
+.circle:hover .tooltip {
+    display: block;
+}
+
+.tooltip {
+    display: none;
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    z-index: 1;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* Container for the table */
+.table-container {
+    max-height: 321px;
+    overflow-y: auto;
+    position: relative;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: transparent transparent; /* Hide scrollbar for Firefox */
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.table-container::-webkit-scrollbar {
+    width: 0;
+}
+
+/* Table structure */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures consistent column width */
+}
+
+/* Header styling */
+.custom-table th {
+    padding: 8px;
+    text-align: left;
+    background-color: #012ffa;
+    color: white;
+    border-bottom: 3px solid #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Set specific column widths for Counts and Action */
+.custom-table th:nth-child(2), .custom-table td:nth-child(2) {
+    width: 28%; /* Width for the "Counts" column */
+}
+
+.custom-table th:nth-child(3), .custom-table td:nth-child(3) {
+        width: 22%; /* Width for the "Action" column */
+}
+
+/* Body row and cell styling */
+.custom-table td {
+    padding: 8px;
+    text-align: left;
+    color: #025a15; /* Dark green for text */
+    border-bottom: 3px solid #fff;
+}
+
+/* Alternating row background color for better readability */
+.custom-table tbody tr {
+    background-color: #f5b4be18; /* Light background */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth transitions */
+}
+
+.custom-table tbody tr:hover {
+    transform: scale(1.05); /* Zoom effect on hover */
+    box-shadow: 0px 4px 8px white; /* Add shadow on hover */
+    background-color: white; /* Change background on hover */
+    color: black; /* Change text color on hover */
+}
+
+/* Ensure text color in table cells changes on hover */
+.custom-table tbody tr:hover td {
+    color: black;
+}
+
+/* Subtle highlight for selected rows */
+.highlight-row {
+    background-color: white; /* Subtle highlight */
+}
+
+/* Input container styling */
+.custom-input-container {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Style for the input inside the input container */
+.custom-input-container lightning-input {
+    flex: 1;
+}
+
+.custom-input-container lightning-input input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #d8dde6;
+}
+
+/* Optional label styling */
+.custom-input-container lightning-input label {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Subtle focus effect for the input */
+.custom-input-container lightning-input input:focus {
+    outline: none;
+    border-color: #1589ee;
+    box-shadow: 0 0 0 1px #1589ee;
+}
+
+/* Align the "View" button to the left and change color to gray */
+.slds-button.slds-button_info {
+    background-color: #d8dde6; /* Gray color */
+    color: #333; /* Darker text color for contrast */
+    text-align: left; /* Align text and button content to the left */
+    border: none; /* Remove border */
+    padding: 1px 12px; /* Add padding for a more comfortable button size */
+    font-size: 0.875rem; /* Set font size */
+     /* Make the button stretch to fit the column width */
+    border-radius: 4px; /* Add slight rounding to the corners */
+    cursor: pointer; /* Add a pointer on hover */
+}
+
+.slds-button.slds-button_info:hover {
+    background-color: #bfc4cc; /* Slightly darker gray on hover */
+    color: black; /* Darker text color on hover */
+}

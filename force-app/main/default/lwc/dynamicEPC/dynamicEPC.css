@@ -1,0 +1,84 @@
+.energy-chart-container {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  height: 280px;
+}
+.energy-chart {
+  display: flex;
+  flex-direction: column;
+  height: 329px;
+  margin-top: 40px;
+}
+.energy-rating {
+  padding: 2px;
+  color: white;
+  width: 100px;
+  text-align: center;
+}
+.rating-a { background-color: #4CAF50; width:100%;  font-size: 10px;     padding-top: 12px; height: 40px;  margin: 2px;}
+.rating-b { background-color: #8BC34A; width:200%;  font-size: 10px;    padding-top: 12px;  height: 40px; margin: 2px;}
+.rating-c { background-color: #FFEB3B; width:300%;   font-size: 10px;    padding-top: 12px; height: 40px;  margin: 2px;}
+.rating-d { background-color: #FFC107; width:400%;   font-size: 10px;    padding-top: 12px; height: 40px; margin: 2px;}
+.rating-e { background-color: #FF9800; width:500%;  font-size: 10px;    padding-top: 12px;  height: 40px; margin: 2px;}
+.rating-f { background-color: #FF5722; width:600%;   font-size: 10px;    padding-top: 12px; height: 40px;  margin: 2px;}
+.rating-g { background-color: #F44336; width:670%;  font-size: 10px;    padding-top: 12px;  height: 40px; margin: 2px;} 
+
+/* msgBox.css */
+:host {
+    --box-color: red;
+	--box-color1: red;
+}
+.container {
+  position: relative;
+  width: 18px;
+  height: 306px;
+  margin-left: 20%;
+  
+}
+.msg {
+   width: 38px;
+    height: 30px;
+    margin-top: 20px;
+    background: red;
+    margin-left: 40px;
+    position: relative;
+          
+          }
+          .msg:before {
+          content:"";
+          position:absolute;
+          border-bottom: 15px solid transparent;
+          border-right: 16px solid var(--box-color);;
+          border-top: 16px solid transparent;
+          height: 0px;
+          width: 0px;
+          margin-left:-15px;
+          }
+
+.container1 {
+  position: relative;
+  width: 18px;
+  height: 306px;
+  margin-left: 20%;
+  
+}
+.msg1 {
+   width: 38px;
+    height: 30px;
+    margin-top: 20px;
+    background: red;
+    margin-left: 25px;
+    position: relative;
+          
+          }
+          .msg1:before {
+          content:"";
+          position:absolute;
+          border-bottom: 15px solid transparent;
+          border-right: 14px solid var(--box-color1);
+          border-top: 16px solid transparent;
+          height: 0px;
+          width: 0px;
+          margin-left:-13px;
+          }

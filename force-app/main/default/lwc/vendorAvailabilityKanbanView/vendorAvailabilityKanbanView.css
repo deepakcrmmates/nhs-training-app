@@ -1,0 +1,224 @@
+/* Kanban Container */
+.kanban-container {
+    font-family: 'Arial', sans-serif;
+    padding: 2px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+/* Header Section */
+.kanban-header {
+    text-align: center;
+    font-family: 'Salesforce Sans';
+    background-color: #f3f3f3;
+    color: #4c4c4c;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.week-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.kanban-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.week-title {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.icon-button {
+    cursor: pointer;
+    font-size: 1.25rem;
+    background: white;
+    border-radius: 6px;
+    padding: 6px 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: background 0.2s;
+}
+
+.icon-button:hover {
+    background: #e0e0e0;
+}
+
+/* Kanban View */
+.kanban-view {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    padding: 0px 0;
+}
+
+/* Kanban Column */
+.kanban-column {
+   flex: 1;
+    background-color: #ffffff;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+    display: flex;
+    flex-direction: column;
+    min-width: 225px;
+    max-height: 100%;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.kanban-column-header {
+  color: #ffffff; /* Changed to a pure white for better readability */
+    background-color: #075f50; /* Adjusted to a slightly darker green for a refined look */
+    text-align: center;
+    font-size: 20px; /* Reduced font size for better scaling */
+    font-weight: 600; /* Adjusted weight for slightly thinner text */
+    padding: 14px 15px; /* Updated padding for a balanced look */
+    vertical-align: middle; /* Changed to middle for proper vertical alignment */
+    border-radius: 8px 8px 0 0;
+    box-shadow: inset 0 -1px 0 #ccc; /* Updated shadow color for a softer effect */
+    position: sticky;
+    top: 0;
+    height: 50px; /* Increased height slightly for better spacing */
+    z-index: 2; /* Increased z-index for better layering */
+    background: linear-gradient(135deg, #075f50, #066146);
+
+}
+
+/* Column Body */
+.kanban-column-body {
+    flex-grow: 1;
+    padding: 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    height: 900px;
+    background: #f4f6f9;
+   
+}
+
+.kanban-column-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* Kanban Card */
+.kanban-card {
+    background-color: white;
+    border-radius: 0px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kanban-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Kanban Card Header */
+.kanban-card-header {
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+/* Kanban Card Body */
+.kanban-card-body {
+    font-size: 16px;
+    color: #333;
+}
+
+.kanban-card-body p {
+    margin: 8px 0;
+}
+
+.kanban-card-body strong {
+    color: #005d19;
+    /* Highlight text in green */
+}
+
+.kanban-card-actions {
+    display: flex;
+    justify-content: flex-start;
+    /* Align the button to the left */
+    margin-top: 8px;
+}
+
+/* Book Button Styling */
+.book-button {
+    background-color: #005d19;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.book-button:hover {
+    background-color: #003b12;
+    /* Slightly darker green on hover */
+}
+
+.book-button:focus {
+    outline: 2px solid #80deea;
+    /* Add a light blue focus outline */
+    outline-offset: 2px;
+}
+
+.book-button:active {
+    transform: scale(0.98);
+    /* Slight shrink effect on click */
+    background-color: #002b0e;
+    /* Darker green on active state */
+}
+.custom-modal {
+    max-width: 80%; /* Increase modal width (adjust as needed) */
+    width: 80%; /* Ensure the modal uses the available width */
+}
+
+.full-width-table {
+    width: 100%;
+    min-width: 1180px; /* Ensures proper display in scrollable container */
+}
+
+.full-width-table th,
+.full-width-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+.availability-icon {
+    display: block;
+    margin: 0 auto;
+}
+
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .kanban-view {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .kanban-column {
+        min-width: auto;
+        /* Allow columns to take full width */
+    }
+}

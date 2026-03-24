@@ -1,0 +1,55 @@
+<template>
+    <lightning-button label="Primary Images" onclick={openLightbox}></lightning-button>
+
+    <template if:true={isLightboxOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+
+                <!-- Modal Header -->
+                <div class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeLightbox}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Select Primary Image</h2>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="slds-modal__content slds-p-around_medium modal-body">
+                    <template if:true={hasImages}>
+                        <div class="image-gallery">
+                            <template for:each={images} for:item="image">
+                                <div key={image.id} class="image-container">
+                                    <img src={image.fileUrl} alt={image.title} class="image" />
+                                    <label>
+                                        <input type="radio" name="primaryImage" 
+                                               data-id={image.id} 
+                                               onclick={setPrimaryImage} 
+                                               checked={image.selected} /> 
+                                        Select as Primary
+                                    </label>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:true={error}>
+                        <div class="slds-text-color_error">{error.message}</div>
+                    </template>
+                </div>
+
+                <!-- Modal Footer -->
+               <div class="slds-modal__footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+    <lightning-button variant="neutral" label="Cancel" onclick={closeLightbox}></lightning-button>
+    <lightning-button variant="brand" label="Save Primary Image" onclick={savePrimaryImage}></lightning-button>
+</div>
+
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+      <!-- Show the Primary Image in a larger view -->
+    <template if:true={primaryImageId}>
+        <c-primary-image-display image-url={getPrimaryImageUrl}></c-primary-image-display>
+    </template>
+</template>

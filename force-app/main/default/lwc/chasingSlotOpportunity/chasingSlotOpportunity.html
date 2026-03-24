@@ -1,0 +1,55 @@
+<template>
+    <lightning-card  style="    padding: 7px;" class="custom-opportunity-table">
+      
+      <!-- Styled total count paragraph -->
+        <p class="highlight-total-count">Applications: ({totalCount})</p>
+
+        <!-- Search input -->
+         <div class="custom-input-container">
+            <!-- Search input with custom styles -->
+            <lightning-input
+            style="padding: 7px;"
+                label="Search"
+                value={searchKey}
+                placeholder="Enter application name..."
+                onchange={handleSearchKeyChange}>
+            </lightning-input>
+        </div>
+
+       <div class="table-container">
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th style="text-align: left;">Name</th>
+                <th style="text-align: left;">Counts</th>
+                <th style="text-align: left;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <template for:each={opportunities} for:item="opp">
+                <tr key={opp.Id} class={opp.rowClass}>
+                    <td>{opp.Name}</td>
+                    <td style="text-align: left;">
+                        <div class="count-container">
+                            <!-- Event Circle -->
+                            <div class="circle event-circle" title="Booked">
+                                {opp.TotalEvents}
+                                <span class="tooltip">
+                                    <strong>Booked:</strong> {opp.TotalEvents}
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="text-align: left;">
+                        <button class="slds-button slds-button_info" data-id={opp.Id} onclick={handleOpportunityClick}>
+                            View
+                        </button>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+</div>
+
+    </lightning-card>
+</template>

@@ -1,0 +1,378 @@
+.kanban-board {
+  display: flex;
+  overflow-x: auto;
+}
+
+.kanban-column {
+  flex: 1;
+  margin: 5px;
+  background: #f4f6f9;
+  border-radius: 5px;
+  min-width: 350px;
+  position: relative;
+  height: 900px;
+  overflow-y: auto;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.kanban-column::-webkit-scrollbar {
+  display: none;
+}
+.scrollable-container {
+    max-height: 800px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.slds-spinner_container {
+    position: relative;
+    padding: 10px;
+    text-align: center;
+}
+
+.scrollable-container::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollable-container:hover::-webkit-scrollbar {
+   display: none;
+}
+
+.card-header {
+  padding-bottom: 8px;
+  padding-top: 5px;
+  font-size: 16px;
+  text-wrap: auto;
+}
+
+.kanban-card-details {
+  padding-bottom: 8px;
+  padding-top: 5px;
+  font-size: 12px;
+  word-wrap: break-word;
+  /* Ensures text wraps within the container */
+}
+
+.kanban-card-details p {
+  padding: 2px;
+  /* Targets paragraph tags inside .kanban-card-details */
+}
+
+/* Kanban Column Header (Stage Name) */
+.kanban-column-header {
+  background: #075f50;
+  color: #f4f6f9;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  padding: 10px;
+  height: 50px;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  font-size: 18px;
+  z-index: 10;
+}
+
+.kanban-header-content {
+  display: flex;
+  flex-direction: row;
+  /* Ensure items are in a row */
+  align-items: center;
+  /* Align vertically */
+  justify-content: space-between;
+  width: 100%;
+  position: sticky;
+  top: 50px;
+  z-index: 10;
+  height: 50px;
+  background-color: #f4f6f9;
+  padding: 10px;
+  border-bottom: 2px solid #d1d1d1;
+}
+
+/* Search Box Styling */
+.kanban-search-box {
+  flex-grow: 1;
+  /* Allows input to take up available space */
+  width: 150%;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.kanban-search-box:focus {
+  outline: none;
+  border-color: #0070d2;
+  box-shadow: 0 0 3px rgba(0, 112, 210, 0.5);
+}
+
+/* Sort Button */
+.sort-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  visibility: visible;
+  /* Ensure it's visible */
+}
+
+.sort-button lightning-icon {
+  --slds-c-icon-color-foreground-default: #0070d2;
+  /* Salesforce Blue */
+  --slds-c-icon-size: 16px;
+  opacity: 1;
+  /* Ensure full visibility */
+}
+
+
+
+.kanban-cards {
+  min-height: 100px;
+  padding: 2px;
+}
+
+.kanban-card {
+  padding: 10px;
+  margin-bottom: 4px;
+  background: white;
+  cursor: move;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 1.1);
+  transform: translateY(-2px);
+}
+
+.kanban-card.dragging {
+  opacity: 0.5;
+}
+
+.kanban-card-placeholder {
+  display: none;
+  height: 50px;
+  border: 2px dashed #0070d2;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.kanban-column.dragover .kanban-card-placeholder {
+  display: block;
+}
+
+.combobox-container {
+  margin-bottom: 1rem;
+  text-align: center;
+  /* Center the combobox horizontally */
+}
+
+.stage-wrapper {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+  position: sticky;
+  top: -10px;
+  height: 58px;
+}
+
+.triangle-left {
+  width: 0;
+  height: 0;
+  border-top: 24px solid #1d501bcf;
+  border-bottom: 24px solid #1d501bcf;
+  border-left: 14px solid transparent;
+  transition: border-color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+.stage-box {
+  color: white;
+  font-weight: 300;
+  text-align: center;
+  font-size: 16px;
+  height: 48px;
+  background-color: #1d501bcf;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  /* Vertically center the text */
+  justify-content: center;
+  /* Horizontally center the text */
+  transition: background-color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+.triangle-right {
+  width: 0;
+  height: 0;
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-left: 25px solid #1d501bcf;
+  transition: border-color 0.3s;
+  /* Smooth transition for hover effect */
+}
+
+
+
+/* Hover effect */
+.stage-wrapper:hover .triangle-left {
+  border-top-color: #00a645;
+  /* Change color on hover */
+  border-bottom-color: #00a645;
+  /* Change color on hover */
+}
+
+.stage-wrapper:hover .stage-box {
+  background-color: #00a645;
+  /* Change color on hover */
+}
+
+.stage-wrapper:hover .triangle-right {
+  border-left-color: #00a645;
+  /* Change color on hover */
+}
+
+.custom-combobox {
+  padding-bottom: 5px;
+  font-weight: bold;
+  width: 100%;
+  max-width: 300px;
+  /* Set a max width for the combobox */
+  margin: 0 auto;
+  /* Center the combobox within the container */
+  padding: 0.5rem;
+  /* Add padding around the combobox */
+  border: 1px solid #d8dde6;
+  /* Add a border around the combobox */
+  border-radius: 4px;
+  /* Add rounded corners to the combobox */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Add a subtle shadow for better visibility */
+}
+
+.record-count {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #6b7c93;
+}
+
+a {
+  display: inline-block;
+  max-width: 250px;
+  /* Adjust the width as needed */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: initial;
+  text-decoration: dotted;
+  /* Optional: remove underline */
+}
+
+.initials-container {
+  position: absolute;
+  bottom: 1rem;
+  /* Distance from the bottom of the card */
+  right: 1rem;
+  /* Distance from the right of the card */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  /* Adjust size as needed */
+  height: 40px;
+  /* Adjust size as needed */
+  margin-bottom: 10px;
+  /* Adjust spacing as needed */
+}
+
+.circle {
+  background-color: #0070d2;
+  /* Adjust color as needed */
+  color: white;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  /* Adjust font size as needed */
+  font-weight: bold;
+}
+
+.popup {
+  position: absolute;
+  bottom: 20%;
+  /* Position the popup above the circle */
+  left: 65%;
+  transform: translateX(-50%);
+  background-color: #555;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+
+.circle:hover .popup {
+  opacity: 1;
+}
+
+/* Additional classes for background colors */
+.circle-red {
+  background-color: red;
+}
+
+.circle-green {
+  background-color: green;
+}
+
+.circle-blue {
+  background-color: blue;
+}
+
+.circle-yellow {
+  background-color: yellow;
+}
+
+.circle-orange {
+  background-color: orange;
+}
+
+.circle-purple {
+  background-color: purple;
+}
+
+.circle-pink {
+  background-color: rgb(238, 138, 154);
+}
+
+.circle-brown {
+  background-color: brown;
+}
+
+.circle-grey {
+  background-color: grey;
+}
+
+.circle-black {
+  background-color: black;
+}
+
+.circle-rose {
+  background-color: rgba(244, 11, 209, 0.899);
+}

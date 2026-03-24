@@ -1,0 +1,50 @@
+<template>
+    <div class="kanban-card"
+         draggable="true"
+         data-id={opportunity.Id}
+         ondragstart={handleDragStart}
+         ondragend={handleDragEnd}>
+
+        <div class="card-layout">
+
+            <!-- 🔹 LEFT CONTENT -->
+            <div class="card-content">
+
+                <!-- TITLE -->
+                <div class="card-header">
+                    <a href="#"
+                       class="card-link"
+                       data-id={opportunity.Id}
+                       onclick={handleNavigate}
+                       title={opportunity.Name}>
+
+                        {opportunity.Name}
+                    </a>
+                </div>
+
+                <!-- DETAILS -->
+                <div class="card-details">
+                    <p><strong>Housebuilder:</strong> {opportunity.Housebuilder} - {opportunity.City}</p>
+                    <p><strong>Plot:</strong> {opportunity.Plot}</p>
+                    <p><strong>APRN:</strong> {opportunity.Aprn}</p>
+                    <p><strong>Date:</strong> {opportunity.FormattedCreatedDate}</p>
+                </div>
+
+            </div>
+
+            <!-- 🔹 RIGHT AVATAR -->
+            <div class="card-avatar">
+                <div class={circleClass}>
+                    {opportunity.Initials}
+
+                    <!-- Tooltip -->
+                    <span class="tooltip">
+                        {opportunity.Owner}
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</template>

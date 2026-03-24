@@ -1,5 +1,7 @@
 <template>
+        <div style="padding:10px; border:1px solid black;">
     <lightning-card title="Viewings/Offers">
+      <template if:false={newContact}>
         <lightning-layout>
             <lightning-layout-item size="12">
                 <table class="slds-table slds-table_bordered slds-table_cell-buffer">
@@ -7,70 +9,114 @@
                         <tr>
                             <th>Agent</th>
                             <th>Date of Viewing</th>
-                            <th>Vendor Name</th>
+                            <th>Viewer Name</th>
+                            <th style="width=8px;"></th>
                             <th>Buying Position</th>
-                            <th>Feedback Chased</th>
                             <th>Feedback</th>
+                            <th>Feedback Recived</th>
                             <th>Offer</th>
                             <th>New Offer</th>
                             <th>Notes/Updates</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         <template for:each={viewingsOffersData} for:item="item" for:index="index">
                             <tr key={item.key}>
                                 <td >
-									<c-custom-lookup-lwc class="input" label="" selected-icon-name="standard:account" object-label="Account"
+									<c-custom-lookup-lwc name ="agent" data-id={item.Id} class="input" label="" selected-icon-name="standard:account" object-label="Account"
 										object-api-name="Account" field-api-name="Name" other-field-api-name="Industry"
-									onvalueselected={handleValueSelectedOnVendor1} data-key={item.key} data-field="Agent__c" >
+									onvalueselected={handleInputChange} selected-record-id ={item.Agent__c} data-key={item.key} data-field="Agent__c" >
 									</c-custom-lookup-lwc>
 								</td>
                                 <!-- <td>
                                     <lightning-input type="text" value={item.Agent__c} onchange={handleInputChange} data-key={item.key} data-field="agent"></lightning-input>
                                 </td> -->
                                 <td>
-                                    <lightning-input type="date" value={item.Date_of_Viewing__c} onchange={handleInputChange} data-key={item.key} data-field="dateOfViewing"></lightning-input>
+                                    <lightning-input name="dov" data-id={item.Id} type="date" value={item.Date_of_Viewing__c} onchange={handleInputChange} data-key={item.key} data-field="dateOfViewing"></lightning-input>
                                 </td>
 								<td >
-									<c-custom-lookup-lwc class="input" label="" selected-icon-name="standard:contact" object-label="Contact"
+									<c-custom-lookup-lwc name="vendor" data-id={item.Id} class="input" label="" selected-icon-name="standard:contact" object-label="Contact"
 										object-api-name="Contact" field-api-name="Name" other-field-api-name="mobilePhone"
-									onvalueselected={handleValueSelectedOnVendor1} data-key={item.key} data-field="Vendor_Name__c" >
+									onvalueselected={handleInputChange} selected-record-id ={item.Viewer_Name__c} data-key={item.key} data-field="Vendor_Name__c" >
 									</c-custom-lookup-lwc>
 								</td>
+                                <td style="padding-top: 22px;"><lightning-button style="padding: 15px 2px 2px 8px;" label="+" data-id={item.Id} data-key={item.key} onclick={onSubmit}></lightning-button></td>
                                 <!-- <td>
                                     <lightning-input type="text" value={item.Vendor_Name__c} onchange={handleInputChange} data-key={item.key} data-field="vendorName"></lightning-input>
                                 </td> -->
                                 <td>
-                                    <lightning-combobox value={item.Buying_Position__c} options={buyingPositionOptions} onchange={handleInputChange} data-key={item.key} data-field="buyingPosition"></lightning-combobox>
+                                    <lightning-combobox  name="buypos" data-id={item.Id} value={item.Buying_Position__c} options={buyingPositionOptions} onchange={handleInputChange} data-key={item.key} data-field="buyingPosition"></lightning-combobox>
+                                </td>
+                                <td>
+                                    <lightning-textarea name="feedback" data-id={item.Id} value={item.Feedback__c} onchange={handleInputChange} data-key={item.key} data-field="feedback"></lightning-textarea>
+                                </td>
+                                <td>
+                                    <lightning-input name="fdRec" data-id={item.Id} type="date" value={item.Feedback_Chased__c} onchange={handleInputChange} data-key={item.key} data-field="feedbackChased"></lightning-input>
                                 </td>
 
                                 <td>
-                                    <lightning-input type="text" value={item.Feedback_Chased__c} onchange={handleInputChange} data-key={item.key} data-field="feedbackChased"></lightning-input>
+                                    <lightning-input name="offer" data-id={item.Id} type="number" value={item.Offer__c} onchange={handleInputChange} data-key={item.key} data-field="offer"></lightning-input>
                                 </td>
                                 <td>
-                                    <lightning-textarea value={item.Feedback__c} onchange={handleInputChange} data-key={item.key} data-field="feedback"></lightning-textarea>
+                                    <lightning-input name="noffer" data-id={item.Id} type="number" value={item.New_Offer__c} onchange={handleInputChange} data-key={item.key} data-field="newoffer"></lightning-input>
                                 </td>
                                 <td>
-                                    <lightning-input type="number" value={item.Offer__c} onchange={handleInputChange} data-key={item.key} data-field="offer"></lightning-input>
-                                </td>
-                                <td>
-                                    <lightning-input type="number" value={item.New_Offer__c} onchange={handleInputChange} data-key={item.key} data-field="newoffer"></lightning-input>
-                                </td>
-                                <td>
-                                    <lightning-textarea value={item.Notes_Updates__c} onchange={handleInputChange} data-key={item.key} data-field="notesUpdates"></lightning-textarea>
+                                    <lightning-textarea  name="notesUpdates"  data-id={item.Id} value={item.Notes_Updates__c} onchange={handleInputChange} data-key={item.key} data-field="notesUpdates"></lightning-textarea>
                                 </td>
                                 <!-- <td>
                                     <input type="hidden" value={item.Availability_Report__c} />
                                 </td> -->
+                                <td >
+                                      <!-- <lightning-icon icon-name="action:delete" access-key={item.key} id={index}
+                            alternative-text="Delete Row" size=" xx-small" title="Delete Row" onclick={removeRow} >
+                        </lightning-icon> -->
+                                </td>
                             </tr>
                         </template>
                     </tbody>
                 </table>
                 <div class="slds-m-top_small">
-                    <lightning-button label="Add Row" onclick={addRow}></lightning-button>
-                    <lightning-button label="Save" onclick={saveNewRecords}></lightning-button>
+                    <lightning-button style="padding:4px;" label="+" onclick={addRow}></lightning-button>
+                    <lightning-button style="padding:4px;" label="Save" onclick={saveNewRecords}></lightning-button>
+                     <lightning-button style="padding:4px;" label="-" onclick={removeRow} disabled={isDisabled}></lightning-button>
                 </div>
             </lightning-layout-item>
         </lightning-layout>
+      </template>
+           <!-- modal start -->      
+   <template if:true={newContact}>
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+       <div class="slds-modal__container">
+        <!-- modal header start -->
+          <header class="slds-modal__header">
+             <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={hideModalBox}>
+                <lightning-icon icon-name="utility:close"
+                   alternative-text="close"
+                   variant="inverse"
+                   size="small" ></lightning-icon>
+                <span class="slds-assistive-text">Close</span>
+             </button>
+             <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Viewer</h2>
+          </header>
+      
+          <!-- modal body start -->
+          <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                <lightning-record-form object-api-name={contactObject} fields={fields} columns="2"
+				onsuccess={handleSubmit}>
+			</lightning-record-form>
+          </div>
+
+          <!-- modal footer start-->
+          <footer class="slds-modal__footer">
+             <button class="slds-button slds-button_neutral" onclick={hideModalBox}>Cancel</button>
+          </footer>
+       
+       </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+ </template>
+ <!-- modal end -->
     </lightning-card>
+        </div>
 </template>

@@ -1,0 +1,42 @@
+<template>
+   <!-- Lightning Tabset with a custom class for styling -->
+   <div style="height:64vh; width:100%;">
+        <lightning-tabset variant="scoped" class="custom-tabset" active-tab-value={activeTabValue}>
+            <!-- Tab 1 for Calendar -->
+            <lightning-tab label="All" value="4" onactive={handleTabChange}>
+                <div class="tab-content">
+                    <template if:true={flag4}>
+                        <c-kanban-all-application></c-kanban-all-application>
+                    </template>
+                </div>
+            </lightning-tab>
+
+            <!-- Tab for Part Exchange -->
+            <!-- <lightning-tab label="Part Exchange" value="1" onactive={handleTabChange}>
+                <div class="tab-content">
+                    <template if:true={flag1}>
+                        <c-drag-and-drop-lwc selectedrecordtypeid={recordType}></c-drag-and-drop-lwc>
+                    </template>
+                </div>
+            </lightning-tab> -->
+
+            <!-- Tab for New Home -->
+            <!-- <lightning-tab label="New Home" value="2" onactive={handleTabChange}>
+                <div class="tab-content">
+                    <template if:true={flag2}>
+                        <c-kanban-new-home selectedrecordtypeid={recordType}></c-kanban-new-home>
+                    </template>
+                </div>
+            </lightning-tab> -->
+
+            <!-- Tab for Assisted Sales -->
+            <!-- <lightning-tab label="Assisted Sales" value="3" onactive={handleTabChange}>
+                <div class="tab-content">
+                    <template if:true={flag3}>
+                        <c-kanban-assisted-sales selectedrecordtypeid={recordType}></c-kanban-assisted-sales>
+                    </template>
+                </div>
+            </lightning-tab> -->
+        </lightning-tabset>
+   </div>
+</template>

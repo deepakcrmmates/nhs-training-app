@@ -1,0 +1,224 @@
+<template>
+    <div class="nhs-board">
+
+        <!-- ── Toolbar ── -->
+        <div class="nhs-toolbar">
+            <div class="toolbar-left">
+                <!-- View Toggle -->
+                <div class="view-toggle">
+                    <button class={kanbanBtnClass} onclick={handleKanbanView} data-view="kanban">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="3" height="12" rx="1" fill="currentColor"/><rect x="5.5" y="1" width="3" height="12" rx="1" fill="currentColor"/><rect x="10" y="1" width="3" height="12" rx="1" fill="currentColor"/></svg>
+                        Kanban
+                    </button>
+                    <button class={tableBtnClass} onclick={handleTableView} data-view="table">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="2.5" rx="1" fill="currentColor"/><rect x="1" y="5" width="12" height="2.5" rx="1" fill="currentColor"/><rect x="1" y="9.5" width="12" height="2.5" rx="1" fill="currentColor" opacity="0.5"/></svg>
+                        Table
+                    </button>
+                </div>
+
+                <!-- Search -->
+                <div class="search-wrap">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    <input class="search-input" type="text" placeholder="Search properties..." value={searchTerm} oninput={handleSearch} />
+                    <template if:true={searchTerm}>
+                        <button class="search-clear" onclick={clearSearch}>✕</button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <!-- Priority filter -->
+                <select class="filter-select" onchange={handlePriorityFilter}>
+                    <option value="">All priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+
+                <!-- Date range -->
+                <div class="date-wrap">
+                    <input type="date" class="date-input" onchange={handleDateFrom} />
+                    <span class="date-sep">→</span>
+                    <input type="date" class="date-input" onchange={handleDateTo} />
+                </div>
+
+                <!-- Summary pill -->
+                <div class="summary-pill">
+                    <span class="summary-count">{totalCards}</span> deals ·
+                    <span class="summary-amount">£{totalFormatted}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Kanban View ── -->
+        <template if:true={isKanbanView}>
+            <div class="nhs-columns">
+                <template for:each={columns} for:item="col">
+                    <div key={col.stage}
+                         class={col.columnClass}
+                         data-stage={col.stage}
+                         ondragover={handleDragOver}
+                         ondrop={handleDrop}
+                         ondragleave={handleDragLeave}
+                         ondragenter={handleDragEnter}>
+
+                        <!-- Column Header -->
+                        <div class="col-header" style={col.headerStyle}>
+                            <div class="col-header-top">
+                                <span class="col-stage-name">{col.stage}</span>
+                                <span class="col-badge">{col.cardCount}</span>
+                            </div>
+                            <div class="col-total">£{col.totalFormatted}</div>
+                        </div>
+
+                        <!-- Drop zone hint -->
+                        <template if:true={col.isDragOver}>
+                            <div class="drop-hint">Drop here</div>
+                        </template>
+
+                        <!-- Cards -->
+                        <div class="col-cards">
+                            <template for:each={col.cards} for:item="card">
+                                <div key={card.id}
+                                     class={card.cardClass}
+                                     draggable="true"
+                                     data-id={card.id}
+                                     data-stage={col.stage}
+                                     ondragstart={handleDragStart}
+                                     ondragend={handleDragEnd}
+                                     onclick={handleCardClick}>
+
+                                    <!-- Priority bar -->
+                                    <div class={card.priorityBarClass}></div>
+
+                                    <div class="card-body">
+                                        <div class="card-title">{card.title}</div>
+                                        <div class="card-amount">£{card.amountFormatted}</div>
+
+                                        <div class="card-meta">
+                                            <!-- Assignee -->
+                                            <div class="card-assignee">
+                                                <div class="assignee-circle" style={card.assigneeStyle}>{card.assigneeInitials}</div>
+                                                <span class="assignee-name">{card.assignee}</span>
+                                            </div>
+                                            <!-- Due date -->
+                                            <div class={card.dueDateClass}>
+                                                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1" y="2" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1"/><path d="M3.5 1V3M7.5 1V3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path d="M1 5h9" stroke="currentColor" stroke-width="1"/></svg>
+                                                {card.dueDate}
+                                            </div>
+                                        </div>
+
+                                        <!-- Priority badge -->
+                                        <div class={card.priorityBadgeClass}>{card.priority}</div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Empty state -->
+                            <template if:true={col.isEmpty}>
+                                <div class="col-empty">No properties</div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ── Table View ── -->
+        <template if:false={isKanbanView}>
+            <div class="nhs-table-wrap">
+                <table class="nhs-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Stage</th>
+                            <th>Amount</th>
+                            <th>Assignee</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={allCards} for:item="card">
+                            <tr key={card.id} onclick={handleCardClick} data-id={card.id} class="table-row">
+                                <td class="td-title">{card.title}</td>
+                                <td><span class="stage-pill">{card.stage}</span></td>
+                                <td class="td-amount">£{card.amountFormatted}</td>
+                                <td>
+                                    <div class="assignee-inline">
+                                        <div class="assignee-circle sm" style={card.assigneeStyle}>{card.assigneeInitials}</div>
+                                        {card.assignee}
+                                    </div>
+                                </td>
+                                <td class={card.dueDateClass}>{card.dueDate}</td>
+                                <td><span class={card.priorityBadgeClass}>{card.priority}</span></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- ── Quick-edit panel ── -->
+        <template if:true={showPanel}>
+            <div class="panel-backdrop" onclick={closePanel}></div>
+            <div class="quick-panel">
+                <div class="panel-header">
+                    <div class="panel-title">{selectedCard.title}</div>
+                    <button class="panel-close" onclick={closePanel}>✕</button>
+                </div>
+
+                <div class="panel-body">
+                    <div class="panel-amount">£{selectedCard.amountFormatted}</div>
+                    <div class="panel-stage-badge">{selectedCard.stage}</div>
+
+                    <div class="panel-field">
+                        <label class="panel-label">Property name</label>
+                        <input class="panel-input" type="text" value={selectedCard.title} data-field="title" onchange={handleFieldChange} />
+                    </div>
+                    <div class="panel-field">
+                        <label class="panel-label">Amount (£)</label>
+                        <input class="panel-input" type="number" value={selectedCard.amount} data-field="amount" onchange={handleFieldChange} />
+                    </div>
+                    <div class="panel-field">
+                        <label class="panel-label">Assignee</label>
+                        <input class="panel-input" type="text" value={selectedCard.assignee} data-field="assignee" onchange={handleFieldChange} />
+                    </div>
+                    <div class="panel-field">
+                        <label class="panel-label">Due date</label>
+                        <input class="panel-input" type="date" value={selectedCard.dueDateRaw} data-field="dueDateRaw" onchange={handleFieldChange} />
+                    </div>
+                    <div class="panel-field">
+                        <label class="panel-label">Priority</label>
+                        <select class="panel-input" data-field="priority" onchange={handleFieldChange}>
+                            <option value="High" selected={selectedCard.isHigh}>High</option>
+                            <option value="Medium" selected={selectedCard.isMedium}>Medium</option>
+                            <option value="Low" selected={selectedCard.isLow}>Low</option>
+                        </select>
+                    </div>
+                    <div class="panel-field">
+                        <label class="panel-label">Move to stage</label>
+                        <select class="panel-input" data-field="stage" onchange={handleStageChange}>
+                            <template for:each={stageOptions} for:item="s">
+                                <option key={s.value} value={s.value} selected={s.isSelected}>{s.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="panel-footer">
+                    <button class="btn-save" onclick={saveCard}>Save changes</button>
+                    <button class="btn-cancel" onclick={closePanel}>Cancel</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Toast -->
+        <template if:true={toastVisible}>
+            <div class={toastClass}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="currentColor" opacity="0.2"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {toastMessage}
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,59 @@
+<template>
+    <div class="board">
+
+        <!-- 🔥 Toolbar (View + Date Filter) -->
+        <c-kanban-toolbar
+            onviewchange={handleViewChange}
+            ondatefilter={handleDateFilter}>
+        </c-kanban-toolbar>
+
+        <!-- 🔍 Filters (optional feature) -->
+        <template if:true={config.enableSearch}>
+            <c-kanban-filters 
+                onsearch={handleSearch}>
+            </c-kanban-filters>
+        </template>
+
+        <!-- 🔄 View Switch -->
+        
+        <!-- 🧩 KANBAN VIEW -->
+        <template if:true={isKanban}>
+            <div class="columns">
+                <template for:each={columns} for:item="col">
+                    <c-kanban-column
+                        key={col.stage}
+                        stage={col.stage}
+                        records={col.records}
+                        config={config}
+                        oncarddrop={handleCardDrop}>
+                    </c-kanban-column>
+                </template>
+            </div>
+        </template>
+
+        <!-- 📊 TABLE VIEW -->
+        <template if:true={isTable}>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Stage</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={flatData} for:item="rec">
+                            <tr key={rec.id}>
+                                <td>{rec.title}</td>
+                                <td>{rec.stage}</td>
+                                <td>{rec.amount}</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+    </div>
+</template>

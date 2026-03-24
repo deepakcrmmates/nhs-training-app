@@ -1,0 +1,37 @@
+.circle-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.circle-wrapper {
+    position: relative;
+}
+
+.circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.popup {
+    display: none;
+    position: absolute;
+    top: 60px; /* Adjust according to your needs */
+    left: 45%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 10;
+}

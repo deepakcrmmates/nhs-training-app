@@ -1,0 +1,44 @@
+.circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    color: white;
+    font-weight: normal;
+    position: relative;
+}
+
+.popup {
+    position: absolute;
+    bottom: 110%; /* Position the popup above the circle */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #555;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.circle:hover .popup {
+    opacity: 1;
+}
+
+/* Additional classes for background colors */
+.circle-red { background-color: red; }
+.circle-green { background-color: green; }
+.circle-blue { background-color: blue; }
+.circle-yellow { background-color: yellow; }
+.circle-orange { background-color: orange; }
+.circle-purple { background-color: purple; }
+.circle-pink { background-color: rgb(238, 138, 154); }
+.circle-brown { background-color: brown; }
+.circle-grey { background-color: grey; }
+.circle-black { background-color: black; }
+.circle-rose { background-color: rgba(244, 11, 209, 0.899); }
