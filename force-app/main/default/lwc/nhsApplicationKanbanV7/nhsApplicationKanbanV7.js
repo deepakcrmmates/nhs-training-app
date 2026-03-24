@@ -6,6 +6,7 @@ import getAssigneeList          from '@salesforce/apex/NhsApplicationKanbanContr
 import updateOpportunityStage   from '@salesforce/apex/NhsApplicationKanbanController.updateOpportunityStage';
 import archiveOpportunity       from '@salesforce/apex/NhsApplicationKanbanController.archiveOpportunity';
 import togglePin from '@salesforce/apex/NhsApplicationKanbanController.togglePin';
+import updateCardOrder from '@salesforce/apex/NhsApplicationKanbanController.updateCardOrder';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 /* ── Top-level stage nav ─────────────────────────────────────────────── */
@@ -163,23 +164,26 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
         const stages = ['To be contacted','1st Contact','2nd Contact','3rd Contact','Sale Cancelled'];
         const items = [];
         stages.forEach((label,i) => {
+            const displayLabel = label === 'Sale Cancelled' ? 'Application Cancelled' : label;
             const s = PILL_STYLES[label.toLowerCase()] || { bg:'#f1f5f9',text:'#475569',border:'#e2e8f0' };
-            items.push({ key:'pill-'+i, label, isArrow:false, style:`background:${s.bg};color:${s.text};border-color:${s.border};` });
+            items.push({ key:'pill-'+i, label:displayLabel, isArrow:false, style:`background:${s.bg};color:${s.text};border-color:${s.border};` });
             if (i < stages.length-1) items.push({ key:'arr-'+i, isArrow:true, label:'' });
         });
         return items;
     }
     get showBoard()      { return !this.isLoading && !this.hasError; }
     get totalCards()     { return this.rawColumns.reduce((s,c)=>s+(c.cardCount||0),0); }
-    get cancelledCards() { const c=this.rawColumns.find(x=>x.stageName==='Sales Cancelled'); return c?c.cardCount:0; }
+    get cancelledCards() { const c=this.rawColumns.find(x=>x.stageName==='Sale Cancelled'); return c?c.cardCount:0; }
     get activeCards()    { return this.totalCards - this.cancelledCards; }
     get contactedCards() { return this.rawColumns.filter(c=>['1st Contact','2nd Contact','3rd Contact'].includes(c.stageName)).reduce((s,c)=>s+(c.cardCount||0),0); }
     get columns() {
         return this.rawColumns.map(col => {
             const colour = stageColour(col.stageName);
             const isOver = this.dragOverStage === col.stageName;
-            const isCan  = col.stageName === 'Sales Cancelled';
-            const cards  = (col.cards||[]).map(c => {
+            const isCan  = col.stageName === 'Sale Cancelled';
+            const displayStageName = isCan ? 'Application Cancelled' : col.stageName;
+            let index = 0;
+            const cards = (col.cards||[]).map(c => {
                 const pinIcon = c.pinned ? 'utility:pinned' : 'utility:pin';
                 const pinTitle = c.pinned ? 'Unpin application' : 'Pin application';
                 const pinBtnClass = c.pinned ? 'pin-btn is-pinned' : 'pin-btn';
@@ -190,6 +194,7 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
 
                 return {
                     ...c,
+                    index: index++,
                     appRefNumber:c.appRefNumber||'—',
                     closeDateFormatted:fmtD(c.closeDate),
                     avInitials:ini(c.ownerName),
@@ -202,7 +207,7 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
                     cardClass
                 };
             });
-            return { stageName:col.stageName, cardCount:col.cardCount||0, totalFormatted:fmt(col.totalAmount), showTotal:col.totalAmount>0, isEmpty:(col.cards||[]).length===0, isDragOver:isOver, colClass:'kcol'+(isCan?' col-can':'')+(isOver?' col-ov':''), accentStyle:`border-top:3px solid ${colour};`, accentBarStyle:`background:${colour};`, dotStyle:`background:${colour};`, cards };
+            return { stageName:displayStageName, internalStageName:col.stageName, cardCount:col.cardCount||0, totalFormatted:fmt(col.totalAmount), showTotal:col.totalAmount>0, isEmpty:(col.cards||[]).length===0, isDragOver:isOver, colClass:'kcol'+(isCan?' col-can':'')+(isOver?' col-ov':''), accentStyle:`border-top:3px solid ${colour};`, accentBarStyle:`background:${colour};`, dotStyle:`background:${colour};`, cards };
         });
     }
 
@@ -216,19 +221,83 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     handleDragStart(e) { this.draggedId=e.currentTarget.dataset.id; e.dataTransfer.setData('text/plain',this.draggedId); }
     handleDragEnd()    { this.draggedId=null; this.dragOverStage=null; }
     handleDragEnter(e) { e.preventDefault(); this.dragOverStage=e.currentTarget.dataset.stage; }
-    handleDragOver(e)  { e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+    handleDragOver(e)  { 
+        e.preventDefault(); 
+        e.dataTransfer.dropEffect='move'; 
+    }
     handleDragLeave(e) { if(!e.currentTarget.contains(e.relatedTarget)) this.dragOverStage=null; }
+
     handleDrop(e) {
         e.preventDefault();
         const targetStage = e.currentTarget.dataset.stage;
         const cardId = e.dataTransfer.getData('text/plain')||this.draggedId;
         this.draggedId=null; this.dragOverStage=null;
+        
         if(!cardId||!targetStage) return;
-        let sourceStage=null,movedCard=null;
-        for(const col of this.rawColumns){ const found=(col.cards||[]).find(c=>c.id===cardId); if(found){sourceStage=col.stageName;movedCard=found;break;} }
-        if(!sourceStage||sourceStage===targetStage) return;
-        this.rawColumns=this.rawColumns.map(col=>{ if(col.stageName===sourceStage){const cards=(col.cards||[]).filter(c=>c.id!==cardId);return{...col,cards,cardCount:cards.length};} if(col.stageName===targetStage){const cards=[{...movedCard,stageName:targetStage},...(col.cards||[])];return{...col,cards,cardCount:cards.length};} return col; });
-        updateOpportunityStage({opportunityId:cardId,newStageName:targetStage}).then(()=>{this.showToast(`Moved to "${targetStage}"`);this.doRefresh();}).catch(err=>{this.showToast(err.body?.message||'Move failed','error');this.doRefresh();});
+
+        // Calc drop position (optional: if dropped on a card, we use its index)
+        const rect = e.currentTarget.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        // In a simple Kanban, we might just append to the end if dropped on the column.
+        // But for intra-reorder, we should find the sibling cards.
+        
+        let sourceStage=null, movedCard=null;
+        for(const col of this.rawColumns){ 
+            const found=(col.cards||[]).find(c=>c.id===cardId); 
+            if(found){sourceStage=col.stageName; movedCard=found; break;} 
+        }
+        if(!sourceStage) return;
+
+        // Determine new card list for target stage
+        let targetCol = this.rawColumns.find(col => col.stageName === targetStage);
+        if (!targetCol) return;
+
+        let newCards = [...(targetCol.cards || [])].filter(c => c.id !== cardId);
+        
+        // Find drop index based on card elements
+        const cardEls = [...e.currentTarget.querySelectorAll('.kcard')];
+        let dropIdx = newCards.length;
+        for (let i = 0; i < cardEls.length; i++) {
+            const el = cardEls[i];
+            if (el.dataset.id === cardId) continue;
+            const b = el.getBoundingClientRect();
+            if (e.clientY < b.top + b.height/2) {
+                dropIdx = i;
+                break;
+            }
+        }
+        newCards.splice(dropIdx, 0, { ...movedCard, stageName: targetStage });
+
+        // Update local state immediately
+        this.rawColumns = this.rawColumns.map(col => {
+            if (col.stageName === sourceStage && sourceStage !== targetStage) {
+                const cards = (col.cards||[]).filter(c => c.id !== cardId);
+                return { ...col, cards, cardCount: cards.length };
+            }
+            if (col.stageName === targetStage) {
+                return { ...col, cards: newCards, cardCount: newCards.length };
+            }
+            return col;
+        });
+
+        const promises = [];
+        if (sourceStage !== targetStage) {
+            promises.push(updateOpportunityStage({ opportunityId: cardId, newStageName: targetStage }));
+        }
+        
+        // Update sort order for all cards in the target column
+        const orderedIds = newCards.map(c => c.id);
+        promises.push(updateCardOrder({ opportunityIds: orderedIds }));
+
+        Promise.all(promises)
+            .then(() => {
+                this.showToast(sourceStage === targetStage ? 'Order updated' : `Moved to "${targetStage}"`);
+                this.doRefresh();
+            })
+            .catch(err => {
+                this.showToast(err.body?.message || 'Update failed', 'error');
+                this.doRefresh();
+            });
     }
 
     /* ══ Vendor Availability getters ═════════════════════════════════════ */

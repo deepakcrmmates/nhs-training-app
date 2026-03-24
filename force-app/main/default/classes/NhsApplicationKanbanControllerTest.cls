@@ -191,4 +191,22 @@ public class NhsApplicationKanbanControllerTest {
         
         System.assertNotEquals(0, assignees.size(), 'Should return at least one assignee');
     }
+
+    @IsTest
+    static void testUpdateCardOrder() {
+        Opportunity o1 = new Opportunity(Name='Order 1', StageName='1st Contact', CloseDate=Date.today(), NHS_Process__c='Application');
+        Opportunity o2 = new Opportunity(Name='Order 2', StageName='1st Contact', CloseDate=Date.today(), NHS_Process__c='Application');
+        insert new List<Opportunity>{o1, o2};
+
+        List<Id> orderedIds = new List<Id>{o2.Id, o1.Id};
+        Test.startTest();
+        String res = NhsApplicationKanbanController.updateCardOrder(orderedIds);
+        Test.stopTest();
+
+        System.assertEquals('OK', res);
+        Opportunity checkO1 = [SELECT SortOrder__c FROM Opportunity WHERE Id = :o1.Id];
+        Opportunity checkO2 = [SELECT SortOrder__c FROM Opportunity WHERE Id = :o2.Id];
+        System.assertEquals(1, checkO1.SortOrder__c);
+        System.assertEquals(0, checkO2.SortOrder__c);
+    }
 }

@@ -17,7 +17,7 @@ public with sharing class NhsApplicationKanbanController {
         Boolean showArchived
     ) {
         String query =
-            'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, Pinned__c, ' +
+            'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, Pinned__c, SortOrder__c, ' +
             'House_Builder__c, House_Builder__r.Name, House_Builder__r.BillingCity, ' +
             'Plot__c, Application_Reference_Number__c, CloseDate, CreatedDate, ' +
             'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
@@ -39,7 +39,7 @@ public with sharing class NhsApplicationKanbanController {
             query += ' AND Owner.Name = \'' + String.escapeSingleQuotes(assigneeFilter) + '\' ';
         }
 
-        query += ' ORDER BY Pinned__c DESC, CreatedDate DESC LIMIT 200';
+        query += ' ORDER BY Pinned__c DESC, SortOrder__c ASC NULLS LAST, CreatedDate DESC LIMIT 200';
 
         List<Opportunity> opps = Database.query(query);
 
@@ -127,6 +127,23 @@ public with sharing class NhsApplicationKanbanController {
         }
     }
 
+    @AuraEnabled
+    public static String updateCardOrder(List<Id> opportunityIds) {
+        if (opportunityIds == null || opportunityIds.isEmpty()) {
+            return 'OK';
+        }
+        List<Opportunity> toUpdate = new List<Opportunity>();
+        for (Integer i = 0; i < opportunityIds.size(); i++) {
+            toUpdate.add(new Opportunity(Id = opportunityIds[i], SortOrder__c = i));
+        }
+        try {
+            update toUpdate;
+            return 'OK';
+        } catch (Exception e) {
+            throw new AuraHandledException('Failed to update order: ' + e.getMessage());
+        }
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<String> getAssigneeList() {
         List<String> names = new List<String>();
@@ -175,6 +192,7 @@ public with sharing class NhsApplicationKanbanController {
         @AuraEnabled public DateTime createdDate  { get; set; }
         @AuraEnabled public Boolean  archived     { get; set; }
         @AuraEnabled public Boolean  pinned       { get; set; }
+        @AuraEnabled public Decimal  sortOrder    { get; set; }
         @AuraEnabled public String   development  { get; set; }
 
         public CardWrapper(Opportunity opp) {
@@ -192,6 +210,7 @@ public with sharing class NhsApplicationKanbanController {
             this.createdDate  = opp.CreatedDate;
             this.archived     = opp.Archived__c;
             this.pinned       = opp.Pinned__c;
+            this.sortOrder    = opp.SortOrder__c;
             this.development  = opp.Development__c;
         }
     }
