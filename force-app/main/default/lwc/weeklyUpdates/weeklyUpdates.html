@@ -1,0 +1,13 @@
+<template>
+    <lightning-card title="Weekly Updates">
+        <div class="slds-m-around_medium">
+            <lightning-datatable
+                key-field="id"
+                data={data}
+                columns={columns}
+                onsave={handleSave}
+                draft-values={draftValues}>
+            </lightning-datatable>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,24 @@
+<template>
+    <lightning-card title="Address Lookup" icon-name="custom:custom14">
+        <div class="slds-m-around_medium">
+            <lightning-input label="Enter postcode"
+                             value={postcode}
+                             onchange={handlePostcodeChange}>
+            </lightning-input>
+            <template if:true={addressList}>
+                <lightning-combobox name="addresses"
+                                    label="Select an Address"
+                                    value={selectedAddress}
+                                    placeholder="Choose an address"
+                                    options={addressList}
+                                    onchange={handleAddressChange}>
+                </lightning-combobox>
+            </template>
+            <template if:true={finalAddress}>
+                <p class="slds-p-horizontal_small">
+                    Selected Address: {finalAddress}
+                </p>
+            </template>
+        </div>
+    </lightning-card>
+</template>

@@ -1,0 +1,9 @@
+<!-- addressAutocomplete.html -->
+<template>
+    <lightning-input label="Address" type="text" value={address} onchange={handleInputChange}></lightning-input>
+    <ul if:true={showSuggestions}>
+        <template for:each={suggestions} for:item="suggestion">
+            <li key={suggestion} onclick={handleSuggestionClick}>{suggestion}</li>
+        </template>
+    </ul>
+</template>

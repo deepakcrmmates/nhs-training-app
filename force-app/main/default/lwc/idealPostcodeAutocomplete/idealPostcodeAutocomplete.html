@@ -1,0 +1,9 @@
+<!-- idealPostcodeAutocomplete.html -->
+<template>
+    <lightning-input type="text" label="Search Address" onchange={handleSearch}></lightning-input>
+    <ul if:true={showDropdown}>
+        <template for:each={addressSuggestions} for:item="address">
+            <li key={address.id} onclick={handleSelection}>{address.text}</li>
+        </template>
+    </ul>
+</template>

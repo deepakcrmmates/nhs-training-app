@@ -1,0 +1,12 @@
+<template>
+    <lightning-input type="text" label={label} value={searchKey} onchange={handleKeyChange}></lightning-input>
+    <template if:true={searchResults}>
+        <ul class="slds-listbox slds-listbox_vertical">
+            {searchResults.data}.map(result => 
+                <li key={result.Id} onclick={handleSelect} data-id={result.Id} class="slds-listbox__item">
+                    {result.Name}
+                </li>
+            )
+        </ul>
+    </template>
+</template>

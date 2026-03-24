@@ -1,0 +1,29 @@
+<template>
+    <lightning-card title="Create Opportunity" icon-name="standard:opportunity">
+        <div class="slds-p-around_medium">
+            <lightning-combobox name="scheme" label="Scheme"
+                value={schemeValue} options={schemeOptions}
+                onchange={handleSchemeChange}></lightning-combobox>
+
+            <c-date-range-slider label="ETA Comp Date"
+                start-date={startDate} end-date={endDate}
+                ondatechange={handleDateChange}></c-date-range-slider>
+
+            <c-custom-lookup object-api-name="Property__c"
+                label="Property" onselect={handlePropertySelect}></c-custom-lookup>
+
+            <lightning-input type="date" label="Date of Application Received"
+                value={applicationDate} onchange={handleApplicationDateChange}>
+            </lightning-input>
+
+            <c-custom-lookup object-api-name="Contact"
+                label="Vendor 1" onselect={handleVendor1Select}></c-custom-lookup>
+
+            <c-custom-lookup object-api-name="Contact"
+                label="Vendor 2" onselect={handleVendor2Select}></c-custom-lookup>
+
+            <lightning-button variant="brand" label="Create Opportunity" title="Create Opportunity"
+                onclick={createOpportunity} class="slds-m-top_medium"></lightning-button>
+        </div>
+    </lightning-card>
+</template>

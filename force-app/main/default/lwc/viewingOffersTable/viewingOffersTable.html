@@ -1,0 +1,76 @@
+<template>
+    <lightning-card title="Viewings/Offers">
+        <lightning-layout>
+            <lightning-layout-item size="12">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Date of Viewing</th>
+                            <th>Vendor Name</th>
+                            <th>Buying Position</th>
+                            <th>Feedback Chased</th>
+                            <th>Feedback</th>
+                            <th>Offer</th>
+                            <th>New Offer</th>
+                            <th>Notes/Updates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={viewingsOffersData} for:item="item" for:index="index">
+                            <tr key={item.key}>
+                                <td >
+									<c-custom-lookup-lwc class="input" label="" selected-icon-name="standard:account" object-label="Account"
+										object-api-name="Account" field-api-name="Name" other-field-api-name="Industry"
+									onvalueselected={handleValueSelectedOnVendor1} data-key={item.key} data-field="Agent__c" >
+									</c-custom-lookup-lwc>
+								</td>
+                                <!-- <td>
+                                    <lightning-input type="text" value={item.Agent__c} onchange={handleInputChange} data-key={item.key} data-field="agent"></lightning-input>
+                                </td> -->
+                                <td>
+                                    <lightning-input type="date" value={item.Date_of_Viewing__c} onchange={handleInputChange} data-key={item.key} data-field="dateOfViewing"></lightning-input>
+                                </td>
+								<td >
+									<c-custom-lookup-lwc class="input" label="" selected-icon-name="standard:contact" object-label="Contact"
+										object-api-name="Contact" field-api-name="Name" other-field-api-name="mobilePhone"
+									onvalueselected={handleValueSelectedOnVendor1} data-key={item.key} data-field="Vendor_Name__c" >
+									</c-custom-lookup-lwc>
+								</td>
+                                <!-- <td>
+                                    <lightning-input type="text" value={item.Vendor_Name__c} onchange={handleInputChange} data-key={item.key} data-field="vendorName"></lightning-input>
+                                </td> -->
+                                <td>
+                                    <lightning-combobox value={item.Buying_Position__c} options={buyingPositionOptions} onchange={handleInputChange} data-key={item.key} data-field="buyingPosition"></lightning-combobox>
+                                </td>
+
+                                <td>
+                                    <lightning-input type="text" value={item.Feedback_Chased__c} onchange={handleInputChange} data-key={item.key} data-field="feedbackChased"></lightning-input>
+                                </td>
+                                <td>
+                                    <lightning-textarea value={item.Feedback__c} onchange={handleInputChange} data-key={item.key} data-field="feedback"></lightning-textarea>
+                                </td>
+                                <td>
+                                    <lightning-input type="number" value={item.Offer__c} onchange={handleInputChange} data-key={item.key} data-field="offer"></lightning-input>
+                                </td>
+                                <td>
+                                    <lightning-input type="number" value={item.New_Offer__c} onchange={handleInputChange} data-key={item.key} data-field="newoffer"></lightning-input>
+                                </td>
+                                <td>
+                                    <lightning-textarea value={item.Notes_Updates__c} onchange={handleInputChange} data-key={item.key} data-field="notesUpdates"></lightning-textarea>
+                                </td>
+                                <!-- <td>
+                                    <input type="hidden" value={item.Availability_Report__c} />
+                                </td> -->
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div class="slds-m-top_small">
+                    <lightning-button label="Add Row" onclick={addRow}></lightning-button>
+                    <lightning-button label="Save" onclick={saveNewRecords}></lightning-button>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+</template>

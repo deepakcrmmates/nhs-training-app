@@ -1,0 +1,8 @@
+<template>
+    <lightning-card title="Select Date Range" icon-name="utility:event">
+        <div class="slds-p-around_medium">
+            <lightning-input type="month" label="Start Date" value={startDate} onchange={handleStartChange}></lightning-input>
+            <lightning-input type="month" label="End Date" value={endDate} onchange={handleEndChange}></lightning-input>
+        </div>
+    </lightning-card>
+</template>

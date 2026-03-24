@@ -1,0 +1,19 @@
+<!-- idealPostcodesComponent.html -->
+<template>
+    <lightning-card title="Ideal Postcodes Lookup" icon-name="custom:custom14">
+        <div class="slds-m-around_medium">
+            <lightning-input label="Enter Postcode"
+                             value={postcode}
+                             onchange={handlePostcodeChange}>
+            </lightning-input>
+            <lightning-button label="Find Address"
+                              onclick={findAddress}
+                              variant="brand"
+                              class="slds-m-top_medium">
+            </lightning-button>
+            <template if:true={address}>
+                <p class="slds-p-horizontal_medium">{address}</p>
+            </template>
+        </div>
+    </lightning-card>
+</template>

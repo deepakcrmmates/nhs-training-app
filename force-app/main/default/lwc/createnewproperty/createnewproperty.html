@@ -1,0 +1,58 @@
+<template>
+    <div class="slds-align_absolute-center">
+        <div style="width:60%">
+            <div class="slds-box slds-box_x-small slds-m-around_medium">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                      <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                          <span class="slds-icon_container slds-icon-standard-account" title="property">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                              <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#account"></use>
+                            </svg>
+                            <span class="slds-assistive-text">property</span>
+                          </span>
+                        </div>
+                        <div class="slds-media__body">
+                          <h2 class="slds-card__header-title">New Property</h2>
+                        </div>
+                      </header>
+                    </div>
+                </article>
+                <!--<div class="create-form-container">-->
+                    <div class="slds-section slds-is-open slds-m-around_medium">
+                        <h3 class="slds-section__title slds-theme_shade">
+                        <span class="slds-truncate slds-p-horizontal_small" title="Section Title">Address Search</span>
+                        </h3>
+                        <div class="slds-section__content">
+                            <c-idealaddresslookup selected-icon-name="standard:account" object-label="Property"
+                                object-api-name="NHS_Property__c" field-api-name="Name" other-field-api-name="Industry"
+                                onvalueselected={handleValueSelectedOnAccount}>
+                            </c-idealaddresslookup>
+                        </div>
+                    </div>
+                    <lightning-record-edit-form object-api-name="NHS_Property__c" record-id={recordId} onsuccess={handleSuccess}>
+                        <template for:each={mapData} for:item="keyValue">    
+                            <div class="slds-section slds-is-open slds-m-around_medium" key={keyValue.key}>
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate slds-p-horizontal_small" title="Section Title">{keyValue.key}</span>
+                                </h3>
+                                <div class="slds-section__content">
+                                    <div class="slds-grid slds-form__row">
+                                        <template for:each={keyValue.value} for:item="field">
+                                            <lightning-input-field key={field.fieldPath} field-name={field.fieldPath} value={field.value} data-field-name={field.fieldPath} class="slds-col slds-size_1-of-2"></lightning-input-field>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <footer class="slds-card__footer">
+                            <lightning-button class="slds-button_neutral slds-m-around_medium" label="Cancel" onclick={cancelhandle}></lightning-button>
+                            <lightning-button class="slds-m-around_medium" variant="brand" type="submit" label="Save"></lightning-button>
+                        </footer>
+                    </lightning-record-edit-form>
+                <!---</div>-->
+            </div>
+        </div>
+    </div>
+</template>
