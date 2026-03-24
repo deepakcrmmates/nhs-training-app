@@ -97,7 +97,15 @@
                                          ondragstart={handleDragStart} ondragend={handleDragEnd}>
                                         <div class="c-bar" style={col.accentBarStyle}></div>
                                         <div class="c-in">
-                                            <div class="c-top-row"><span class="c-ref">{card.appRefNumber}</span><template if:true={card.archived}><span class="arc-chip">Archived</span></template></div>
+                                            <div class="c-top-row">
+                                                <span class="c-ref">{card.appRefNumber}</span>
+                                                <div class="c-pin-box">
+                                                    <button class={card.pinBtnClass} data-id={card.id} onclick={handlePinClick} title={card.pinTitle}>
+                                                        <lightning-icon icon-name={card.pinIcon} size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                                <template if:true={card.archived}><span class="arc-chip">Archived</span></template>
+                                            </div>
                                             <div class="c-name" data-id={card.id} onclick={handleCardClick}>{card.name}</div>
                                             <div class="c-chips">
                                                 <template if:true={card.plot}><span class="chip cp">Plot {card.plot}</span></template>

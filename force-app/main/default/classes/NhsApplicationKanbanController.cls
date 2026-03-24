@@ -17,7 +17,7 @@ public with sharing class NhsApplicationKanbanController {
         Boolean showArchived
     ) {
         String query =
-            'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, ' +
+            'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, Pinned__c, ' +
             'House_Builder__c, House_Builder__r.Name, House_Builder__r.BillingCity, ' +
             'Plot__c, Application_Reference_Number__c, CloseDate, CreatedDate, ' +
             'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
@@ -39,7 +39,7 @@ public with sharing class NhsApplicationKanbanController {
             query += ' AND Owner.Name = \'' + String.escapeSingleQuotes(assigneeFilter) + '\' ';
         }
 
-        query += ' ORDER BY CreatedDate DESC LIMIT 200';
+        query += ' ORDER BY Pinned__c DESC, CreatedDate DESC LIMIT 200';
 
         List<Opportunity> opps = Database.query(query);
 
@@ -98,6 +98,35 @@ public with sharing class NhsApplicationKanbanController {
         }
     }
 
+    @AuraEnabled
+    public static String togglePin(Id opportunityId) {
+        if (opportunityId == null) {
+            throw new AuraHandledException('Opportunity ID is required.');
+        }
+        
+        Opportunity opp = [SELECT Id, Pinned__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+        Boolean newState = !opp.Pinned__c;
+        
+        if (newState) {
+            // Check count of pinned apps (only for Application process)
+            Integer pinnedCount = [SELECT count() 
+                                   FROM Opportunity 
+                                   WHERE Pinned__c = true 
+                                   AND NHS_Process__c = 'Application' 
+                                   AND Archived__c = false];
+            if (pinnedCount >= 3) {
+                throw new AuraHandledException('You can only pin up to 3 applications.');
+            }
+        }
+        
+        try {
+            update new Opportunity(Id = opportunityId, Pinned__c = newState);
+            return newState ? 'PINNED' : 'UNPINNED';
+        } catch (Exception e) {
+            throw new AuraHandledException('Failed to update pin status: ' + e.getMessage());
+        }
+    }
+
     @AuraEnabled(cacheable=true)
     public static List<String> getAssigneeList() {
         List<String> names = new List<String>();
@@ -145,6 +174,7 @@ public with sharing class NhsApplicationKanbanController {
         @AuraEnabled public Date     closeDate    { get; set; }
         @AuraEnabled public DateTime createdDate  { get; set; }
         @AuraEnabled public Boolean  archived     { get; set; }
+        @AuraEnabled public Boolean  pinned       { get; set; }
         @AuraEnabled public String   development  { get; set; }
 
         public CardWrapper(Opportunity opp) {
@@ -161,6 +191,7 @@ public with sharing class NhsApplicationKanbanController {
             this.closeDate    = opp.CloseDate;
             this.createdDate  = opp.CreatedDate;
             this.archived     = opp.Archived__c;
+            this.pinned       = opp.Pinned__c;
             this.development  = opp.Development__c;
         }
     }

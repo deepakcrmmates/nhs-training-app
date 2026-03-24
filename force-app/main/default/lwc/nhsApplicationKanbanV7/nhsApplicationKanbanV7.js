@@ -5,6 +5,8 @@ import getApplicationKanbanData from '@salesforce/apex/NhsApplicationKanbanContr
 import getAssigneeList          from '@salesforce/apex/NhsApplicationKanbanController.getAssigneeList';
 import updateOpportunityStage   from '@salesforce/apex/NhsApplicationKanbanController.updateOpportunityStage';
 import archiveOpportunity       from '@salesforce/apex/NhsApplicationKanbanController.archiveOpportunity';
+import togglePin from '@salesforce/apex/NhsApplicationKanbanController.togglePin';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 /* ── Top-level stage nav ─────────────────────────────────────────────── */
 const TOP_STAGES = [
@@ -130,6 +132,22 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
 
     doRefresh() { this.isLoading = true; refreshApex(this._wiredKanbanResult).then(()=>{this.isLoading=false;}).catch(()=>{this.isLoading=false;}); }
 
+    handlePinClick(e) {
+        e.stopPropagation();
+        const id = e.currentTarget.dataset.id;
+        this.isLoading = true;
+        togglePin({ opportunityId: id })
+            .then(res => {
+                const msg = res === 'PINNED' ? 'Application pinned (Max 3)' : 'Application unpinned';
+                this.showToast(msg, 'success');
+                this.doRefresh();
+            })
+            .catch(err => {
+                this.showToast(err.body?.message || 'Error pinning application', 'error');
+            })
+            .finally(() => { this.isLoading = false; });
+    }
+
     /* ══ Nav getters ═════════════════════════════════════════════════════ */
     get stageNav() {
         return TOP_STAGES.map(s => ({ ...s, cls:'sn-tab'+(s.key===this.activeNav?' sn-active':''), dotStyle:`background:${s.colour};` }));
@@ -161,7 +179,29 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
             const colour = stageColour(col.stageName);
             const isOver = this.dragOverStage === col.stageName;
             const isCan  = col.stageName === 'Sales Cancelled';
-            const cards  = (col.cards||[]).map(c => ({ ...c, appRefNumber:c.appRefNumber||'—', closeDateFormatted:fmtD(c.closeDate), avInitials:ini(c.ownerName), avStyle:avSt(c.ownerName), arcIcon:c.archived?'utility:undelete':'utility:archive', arcLabel:c.archived?'Unarchive':'Archive', cardClass:'kcard'+(c.archived?' card-arc':'')+(this.draggedId===c.id?' card-drag':'') }));
+            const cards  = (col.cards||[]).map(c => {
+                const pinIcon = c.pinned ? 'utility:pinned' : 'utility:pin';
+                const pinTitle = c.pinned ? 'Unpin application' : 'Pin application';
+                const pinBtnClass = c.pinned ? 'pin-btn is-pinned' : 'pin-btn';
+                let cardClass = 'kcard';
+                if (c.archived) cardClass += ' card-arc';
+                if (this.draggedId === c.id) cardClass += ' card-drag';
+                if (c.pinned) cardClass += ' pinned-card';
+
+                return {
+                    ...c,
+                    appRefNumber:c.appRefNumber||'—',
+                    closeDateFormatted:fmtD(c.closeDate),
+                    avInitials:ini(c.ownerName),
+                    avStyle:avSt(c.ownerName),
+                    arcIcon:c.archived?'utility:undelete':'utility:archive',
+                    arcLabel:c.archived?'Unarchive':'Archive',
+                    pinIcon,
+                    pinTitle,
+                    pinBtnClass,
+                    cardClass
+                };
+            });
             return { stageName:col.stageName, cardCount:col.cardCount||0, totalFormatted:fmt(col.totalAmount), showTotal:col.totalAmount>0, isEmpty:(col.cards||[]).length===0, isDragOver:isOver, colClass:'kcol'+(isCan?' col-can':'')+(isOver?' col-ov':''), accentStyle:`border-top:3px solid ${colour};`, accentBarStyle:`background:${colour};`, dotStyle:`background:${colour};`, cards };
         });
     }

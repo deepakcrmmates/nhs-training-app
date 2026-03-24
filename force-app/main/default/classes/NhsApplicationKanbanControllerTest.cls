@@ -120,6 +120,70 @@ public class NhsApplicationKanbanControllerTest {
     }
 
     @isTest
+    static void testTogglePin() {
+        Opportunity opp = [SELECT Id FROM Opportunity WHERE Application_Name__c = 'Test App 1' LIMIT 1];
+        
+        Test.startTest();
+        String res1 = NhsApplicationKanbanController.togglePin(opp.Id);
+        System.assertEquals('PINNED', res1);
+        String res2 = NhsApplicationKanbanController.togglePin(opp.Id);
+        System.assertEquals('UNPINNED', res2);
+        Test.stopTest();
+    }
+
+    @isTest
+    static void testTogglePinLimit() {
+        // Pinned 3 apps
+        List<Opportunity> opps = [SELECT Id FROM Opportunity WHERE Application_Name__c LIKE 'Test App%'];
+        // Note: we have Test App 1, 2, 3 (archived), 4 (non-app)
+        // Actually setup created Test App 1, 2, 3 (archived), 4 (Vendor Avail)
+        
+        // Let's create one more to test limit
+        insert new Opportunity(
+            Name = 'Limit Test',
+            Application_Name__c = 'Limit Test',
+            StageName = 'To be contacted',
+            NHS_Process__c = 'Application',
+            CloseDate = Date.today().addDays(30)
+        );
+
+        NhsApplicationKanbanController.togglePin(opps[0].Id);
+        NhsApplicationKanbanController.togglePin(opps[1].Id);
+        
+        // Now pin the 3rd one
+        Opportunity limitOpp = [SELECT Id FROM Opportunity WHERE Application_Name__c = 'Limit Test' LIMIT 1];
+        NhsApplicationKanbanController.togglePin(limitOpp.Id);
+        
+        // Try to pin the 4th one (which is currently unpinned)
+        // Wait, setup only has 2 active app ones. 
+        // 1. Test App 1 (active)
+        // 2. Test App 2 (active)
+        // 3. Limit Test (active)
+        // All 3 pinned now. 
+        
+        // Create 4th active app
+        Opportunity fourth = new Opportunity(
+            Name = 'Fourth',
+            Application_Name__c = 'Fourth',
+            StageName = 'To be contacted',
+            NHS_Process__c = 'Application',
+            CloseDate = Date.today().addDays(30)
+        );
+        insert fourth;
+
+        Test.startTest();
+        Boolean exceptionThrown = false;
+        try {
+            NhsApplicationKanbanController.togglePin(fourth.Id);
+        } catch (Exception e) {
+            exceptionThrown = true;
+            System.debug('Exception message: ' + e.getMessage());
+        }
+        System.assert(exceptionThrown, 'Should have thrown exception for limit');
+        Test.stopTest();
+    }
+
+    @isTest
     static void testGetAssigneeList() {
         Test.startTest();
         List<String> assignees = NhsApplicationKanbanController.getAssigneeList();

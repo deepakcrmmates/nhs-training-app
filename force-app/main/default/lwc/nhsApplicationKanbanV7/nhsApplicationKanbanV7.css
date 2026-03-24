@@ -83,9 +83,10 @@
 @keyframes dp{from{opacity:.5}to{opacity:1}}
 .col-body{padding:8px;display:flex;flex-direction:column;gap:7px;}
 .col-empty{text-align:center;padding:22px 8px;font-size:11px;color:#94a3b8;display:flex;flex-direction:column;align-items:center;gap:5px;}
-.kcard{background:#fff;border:1px solid #e9eef4;border-radius:10px;cursor:grab;transition:transform .18s,box-shadow .18s,opacity .18s;overflow:hidden;}
 .kcard:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08);border-color:#c7d6e8;}
 .card-arc{opacity:.65;border-style:dashed;}.card-drag{opacity:.4;transform:rotate(2deg) scale(1.03);}
+.pinned-card{border:1.5px solid #1a4fcc;box-shadow:0 2px 10px rgba(26,79,204,.15);}
+.pinned-card:hover{border-color:#0d2e8a;}
 .c-bar{height:3px;}.c-in{padding:9px 11px;}
 .c-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
 .c-ref{font-size:10px;font-weight:700;color:#94a3b8;font-family:monospace;letter-spacing:.04em;}
@@ -104,6 +105,11 @@
 .c-acts{display:flex;gap:2px;}
 .act-btn{background:none;border:none;cursor:pointer;color:#94a3b8;padding:3px;border-radius:3px;display:flex;align-items:center;transition:background .1s,color .1s;line-height:1;}
 .act-btn:hover{background:#f1f5f9;color:#475569;}
+.pin-btn{background:none;border:none;cursor:pointer;color:#cbd5e1;padding:2px;border-radius:4px;display:flex;align-items:center;transition:all .15s;}
+.pin-btn:hover{background:#f1f5f9;color:#94a3b8;}
+.pin-btn.is-pinned{color:#1a4fcc;}
+.pin-btn.is-pinned:hover{color:#0d2e8a;}
+.c-pin-box{margin-left:auto;margin-right:2px;display:flex;align-items:center;}
 
 /* ── Vendor Availability split view ──────────────────────────────────── */
 .va-split{display:flex;flex:1;overflow:hidden;}
