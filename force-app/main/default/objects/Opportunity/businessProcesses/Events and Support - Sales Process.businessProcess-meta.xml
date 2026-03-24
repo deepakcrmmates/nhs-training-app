@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessProcess xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Events and Support - Sales Process</fullName>
+    <isActive>true</isActive>
+    <values>
+        <fullName>1st Contact</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>3rd Contact</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Archive</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Closed Lost</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Closed Won</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Meet %26 Present</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Negotiate</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Propose</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Sale Cancelled</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>To be contacted</fullName>
+        <default>false</default>
+    </values>
+</BusinessProcess>

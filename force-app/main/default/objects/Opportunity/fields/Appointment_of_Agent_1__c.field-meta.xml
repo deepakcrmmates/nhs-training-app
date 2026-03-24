@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Appointment_of_Agent_1__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE( 
+    MOD(DAY(DATEVALUE(Agent_1_Appointment__c)), 10), 
+    1, TEXT(DAY(DATEVALUE(Agent_1_Appointment__c))) &amp; &apos;st&apos;, 
+    2, TEXT(DAY(DATEVALUE(Agent_1_Appointment__c))) &amp; &apos;nd&apos;, 
+    3, TEXT(DAY(DATEVALUE(Agent_1_Appointment__c))) &amp; &apos;rd&apos;, 
+    TEXT(DAY(DATEVALUE(Agent_1_Appointment__c))) &amp; &apos;th&apos; 
+) &amp; &apos; &apos; &amp; 
+CASE( 
+    MONTH(DATEVALUE(Agent_1_Appointment__c)), 
+    1, &quot;January&quot;, 
+    2, &quot;February&quot;, 
+    3, &quot;March&quot;, 
+    4, &quot;April&quot;, 
+    5, &quot;May&quot;, 
+    6, &quot;June&quot;, 
+    7, &quot;July&quot;, 
+    8, &quot;August&quot;, 
+    9, &quot;September&quot;, 
+    10, &quot;October&quot;, 
+    11, &quot;November&quot;, 
+    12, &quot;December&quot;, 
+    &quot;&quot;
+) &amp; 
+&apos; &apos; &amp; TEXT(YEAR(DATEVALUE(Agent_1_Appointment__c))) &amp; &apos; @ &apos; &amp; 
+TEXT(IF(MOD(HOUR(TIMEVALUE(Agent_1_Appointment__c)),12)=0, 12, MOD(HOUR(TIMEVALUE(Agent_1_Appointment__c)),12))) &amp; &apos;:&apos; &amp; 
+LPAD(TEXT(MINUTE(TIMEVALUE(Agent_1_Appointment__c))), 2, &apos;0&apos;) &amp; 
+IF(HOUR(TIMEVALUE(Agent_1_Appointment__c)) &lt; 12, &apos;am&apos;, &apos;pm&apos;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Appointment of Agent 1</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

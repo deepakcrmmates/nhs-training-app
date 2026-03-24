@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AllOpportunities</fullName>
+    <columns>Property_Address__c</columns>
+    <columns>OPPORTUNITY.NAME</columns>
+    <columns>Archived__c</columns>
+    <columns>ACCOUNT.NAME</columns>
+    <columns>CORE.USERS.FULL_NAME</columns>
+    <columns>OPPORTUNITY.RECORDTYPE</columns>
+    <columns>OPPORTUNITY.CREATED_DATE</columns>
+    <columns>OPPORTUNITY.LAST_UPDATE</columns>
+    <columns>Agent_1_Appointment__c</columns>
+    <columns>Agent_2_Appointment__c</columns>
+    <columns>Agent_3_Appointment__c</columns>
+    <columns>NHS_Process__c</columns>
+    <columns>Agent_1__c</columns>
+    <columns>Agent_2__c</columns>
+    <columns>Agent_3__c</columns>
+    <filterScope>Everything</filterScope>
+    <label>All Applications</label>
+</ListView>

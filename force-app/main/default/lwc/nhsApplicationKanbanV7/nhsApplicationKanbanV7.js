@@ -23,11 +23,11 @@ const PILL_STYLES = {
     '1st contact':     { bg:'#f0f9ff', text:'#0369a1', border:'#bae6fd' },
     '2nd contact':     { bg:'#fffbeb', text:'#b45309', border:'#fde68a' },
     '3rd contact':     { bg:'#fff7ed', text:'#c2410c', border:'#fed7aa' },
-    'sales cancelled': { bg:'#fef2f2', text:'#b91c1c', border:'#fecaca' },
+    'sale cancelled': { bg:'#fef2f2', text:'#b91c1c', border:'#fecaca' },
 };
 const SUB_COLOURS = {
     'to be contacted': '#6366f1', '1st contact': '#0ea5e9',
-    '2nd contact': '#f59e0b', '3rd contact': '#f97316', 'sales cancelled': '#ef4444',
+    '2nd contact': '#f59e0b', '3rd contact': '#f97316', 'sale cancelled': '#ef4444',
 };
 const AV_COLS = [
     {bg:'#DCE8FF',t:'#1A4FCC'},{bg:'#E1F5EE',t:'#0F6E56'},
@@ -142,7 +142,7 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
 
     /* ══ Kanban getters ══════════════════════════════════════════════════ */
     get flowPills() {
-        const stages = ['To be Contacted','1st Contact','2nd Contact','3rd Contact','Sales Cancelled'];
+        const stages = ['To be contacted','1st Contact','2nd Contact','3rd Contact','Sale Cancelled'];
         const items = [];
         stages.forEach((label,i) => {
             const s = PILL_STYLES[label.toLowerCase()] || { bg:'#f1f5f9',text:'#475569',border:'#e2e8f0' };

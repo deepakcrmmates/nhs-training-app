@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NHS_Sales_Advisor__c</fullName>
+    <externalId>false</externalId>
+    <label>NHS Advisor</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Jordan Edmondson</fullName>
+                <default>false</default>
+                <label>Jordan Edmondson</label>
+            </value>
+            <value>
+                <fullName>Natasha Turner</fullName>
+                <default>false</default>
+                <label>Natasha Turner</label>
+            </value>
+            <value>
+                <fullName>Ruth O’Connell</fullName>
+                <default>false</default>
+                <label>Ruth O’Connell</label>
+            </value>
+            <value>
+                <fullName>Amy Jackson</fullName>
+                <default>false</default>
+                <label>Amy Jackson</label>
+            </value>
+            <value>
+                <fullName>Sarah Binns</fullName>
+                <default>false</default>
+                <label>Sarah Binns</label>
+            </value>
+            <value>
+                <fullName>Charlotte Horwell</fullName>
+                <default>false</default>
+                <label>Charlotte Horwell</label>
+            </value>
+            <value>
+                <fullName>Gina Brookes</fullName>
+                <default>false</default>
+                <label>Gina Brookes</label>
+            </value>
+            <value>
+                <fullName>Akash G</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Akash G</label>
+            </value>
+            <value>
+                <fullName>Deepak R</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Deepak R</label>
+            </value>
+            <value>
+                <fullName>Gokul S</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Gokul S</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

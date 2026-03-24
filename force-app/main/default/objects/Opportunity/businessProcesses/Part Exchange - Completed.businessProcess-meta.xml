@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessProcess xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Part Exchange - Completed</fullName>
+    <isActive>true</isActive>
+    <values>
+        <fullName>Archive</fullName>
+        <default>false</default>
+    </values>
+    <values>
+        <fullName>Completed</fullName>
+        <default>false</default>
+    </values>
+</BusinessProcess>
