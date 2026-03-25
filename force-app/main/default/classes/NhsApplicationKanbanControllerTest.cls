@@ -62,13 +62,13 @@ public class NhsApplicationKanbanControllerTest {
         Test.startTest();
         // Test basic fetch
         List<NhsApplicationKanbanController.KanbanColumnWrapper> results = 
-            NhsApplicationKanbanController.getApplicationKanbanData(null, null, false);
+            NhsApplicationKanbanController.getApplicationKanbanData(null, null, false, null, null, null, null);
         
         System.assertNotEquals(0, results.size(), 'Should return kanban columns');
         
-        // Test search (searching by Application_Name__c which should now be in the Name field)
+        // Test search
         List<NhsApplicationKanbanController.KanbanColumnWrapper> searchResults = 
-            NhsApplicationKanbanController.getApplicationKanbanData('Test App 1', null, false);
+            NhsApplicationKanbanController.getApplicationKanbanData('Test App 1', null, false, null, null, null, null);
         
         // Find which column has the card
         Boolean found = false;
@@ -82,7 +82,7 @@ public class NhsApplicationKanbanControllerTest {
 
         // Test showArchived
         List<NhsApplicationKanbanController.KanbanColumnWrapper> archivedResults = 
-            NhsApplicationKanbanController.getApplicationKanbanData(null, null, true);
+            NhsApplicationKanbanController.getApplicationKanbanData(null, null, true, null, null, null, null);
         Integer totalCards = 0;
         for(NhsApplicationKanbanController.KanbanColumnWrapper col : archivedResults) {
             totalCards += col.cards.size();
@@ -208,5 +208,42 @@ public class NhsApplicationKanbanControllerTest {
         Opportunity checkO2 = [SELECT SortOrder__c FROM Opportunity WHERE Id = :o2.Id];
         System.assertEquals(1, checkO1.SortOrder__c);
         System.assertEquals(0, checkO2.SortOrder__c);
+    }
+
+    @IsTest
+    static void testGetHouseBuilderOptions() {
+        Test.startTest();
+        List<Map<String, String>> options = NhsApplicationKanbanController.getHouseBuilderOptions();
+        Test.stopTest();
+        System.assertNotEquals(0, options.size());
+    }
+
+    @IsTest
+    static void testFilters() {
+        Account hb = [SELECT Id FROM Account LIMIT 1];
+        Date today = Date.today();
+        
+        Opportunity o = [SELECT Id FROM Opportunity WHERE Application_Name__c = 'Test App 1' LIMIT 1];
+        o.Date_of_Application_Received__c = today;
+        update o;
+
+        Test.startTest();
+        // 1. Filter by HouseBuilder
+        List<NhsApplicationKanbanController.KanbanColumnWrapper> resHb = 
+            NhsApplicationKanbanController.getApplicationKanbanData(null, null, false, String.valueOf(hb.Id), null, null, null);
+        
+        // 2. Filter by Specific Date
+        List<NhsApplicationKanbanController.KanbanColumnWrapper> resDate = 
+            NhsApplicationKanbanController.getApplicationKanbanData(null, null, false, null, String.valueOf(today), null, null);
+
+        // 3. Filter by Range
+        List<NhsApplicationKanbanController.KanbanColumnWrapper> resRange = 
+            NhsApplicationKanbanController.getApplicationKanbanData(null, null, false, null, null, String.valueOf(today.addDays(-1)), String.valueOf(today.addDays(1)));
+        
+        Test.stopTest();
+        
+        System.assertNotEquals(0, resHb[0].cards.size() + resHb[1].cards.size());
+        System.assertNotEquals(0, resDate[0].cards.size() + resDate[1].cards.size());
+        System.assertNotEquals(0, resRange[0].cards.size() + resRange[1].cards.size());
     }
 }

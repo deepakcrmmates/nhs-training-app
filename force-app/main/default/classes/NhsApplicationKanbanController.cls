@@ -14,14 +14,22 @@ public with sharing class NhsApplicationKanbanController {
     public static List<KanbanColumnWrapper> getApplicationKanbanData(
         String searchTerm,
         String assigneeFilter,
-        Boolean showArchived
+        Boolean showArchived,
+        String housebuilderId,
+        String applicationDateStr,
+        String startDateStr,
+        String endDateStr
     ) {
+        Date applicationDate = String.isNotBlank(applicationDateStr) ? Date.valueOf(applicationDateStr) : null;
+        Date startDate = String.isNotBlank(startDateStr) ? Date.valueOf(startDateStr) : null;
+        Date endDate = String.isNotBlank(endDateStr) ? Date.valueOf(endDateStr) : null;
+
         String query =
             'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, Pinned__c, SortOrder__c, ' +
             'House_Builder__c, House_Builder__r.Name, House_Builder__r.BillingCity, ' +
             'Plot__c, Application_Reference_Number__c, CloseDate, CreatedDate, ' +
             'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
-            'Development__c ' +
+            'Development__c, Date_of_Application_Received__c ' +
             'FROM Opportunity ' +
             'WHERE NHS_Process__c = \'Application\' ';
 
@@ -37,6 +45,21 @@ public with sharing class NhsApplicationKanbanController {
 
         if (String.isNotBlank(assigneeFilter)) {
             query += ' AND Owner.Name = \'' + String.escapeSingleQuotes(assigneeFilter) + '\' ';
+        }
+
+        if (String.isNotBlank(housebuilderId)) {
+            query += ' AND House_Builder__c = \'' + String.escapeSingleQuotes(housebuilderId) + '\' ';
+        }
+
+        if (applicationDate != null) {
+            query += ' AND Date_of_Application_Received__c = :applicationDate ';
+        } else {
+            if (startDate != null) {
+                query += ' AND Date_of_Application_Received__c >= :startDate ';
+            }
+            if (endDate != null) {
+                query += ' AND Date_of_Application_Received__c <= :endDate ';
+            }
         }
 
         query += ' ORDER BY Pinned__c DESC, SortOrder__c ASC NULLS LAST, CreatedDate DESC LIMIT 200';
@@ -142,6 +165,25 @@ public with sharing class NhsApplicationKanbanController {
         } catch (Exception e) {
             throw new AuraHandledException('Failed to update order: ' + e.getMessage());
         }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getHouseBuilderOptions() {
+        List<Map<String, String>> options = new List<Map<String, String>>();
+        for (AggregateResult ar : [
+            SELECT House_Builder__c hbId, House_Builder__r.Name hbName
+            FROM Opportunity
+            WHERE NHS_Process__c = 'Application' 
+              AND House_Builder__c != null
+            GROUP BY House_Builder__c, House_Builder__r.Name
+            ORDER BY House_Builder__r.Name
+        ]) {
+            options.add(new Map<String, String>{
+                'value' => (String) ar.get('hbId'),
+                'label' => (String) ar.get('hbName')
+            });
+        }
+        return options;
     }
 
     @AuraEnabled(cacheable=true)

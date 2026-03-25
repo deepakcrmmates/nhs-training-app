@@ -67,68 +67,243 @@
                         <input class="s-inp" type="text" placeholder="Search by name or ref..." value={searchTerm} oninput={handleSearch} />
                         <template if:true={searchTerm}><button class="clr" onclick={clearSearch}><lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon></button></template>
                     </div>
+                    
                     <select class="f-sel" onchange={handleAssignee}>
                         <option value="">All assignees</option>
                         <template for:each={assigneeList} for:item="a"><option key={a} value={a}>{a}</option></template>
                     </select>
+
+                    <select class="f-sel hb-sel" onchange={handleHbChange}>
+                        <option value="">All Housebuilders</option>
+                        <template for:each={hbOptions} for:item="h">
+                            <option key={h.value} value={h.value}>{h.label}</option>
+                        </template>
+                    </select>
+
+                    <div class="dt-filters">
+                        <div class="dt-f">
+                            <span class="dt-lbl">Date</span>
+                            <input type="date" class="d-inp" value={appDateFilter} onchange={handleAppDate} />
+                        </div>
+                        <div class="dt-f">
+                            <span class="dt-lbl">From</span>
+                            <input type="date" class="d-inp" value={startDateFilter} onchange={handleStartDate} />
+                        </div>
+                        <div class="dt-f">
+                            <span class="dt-lbl">To</span>
+                            <input type="date" class="d-inp" value={endDateFilter} onchange={handleEndDate} />
+                        </div>
+                    </div>
+
                     <label class="arc-lbl"><input type="checkbox" checked={showArchived} onchange={handleArchived} /> Show archived</label>
+                    <button class="clr-f-btn" onclick={clearFilters}>Clear Filters</button>
+                    
+                    <div class="v-toggle">
+                        <button class="{kanbanBtnClass}" data-mode="kanban" onclick={toggleViewMode} title="Kanban Board"><lightning-icon icon-name="utility:kanban" size="xx-small" variant="{kanbanIconVariant}"></lightning-icon></button>
+                        <button class="{listBtnClass}" data-mode="list" onclick={toggleViewMode} title="List View"><lightning-icon icon-name="utility:list" size="xx-small" variant="{listIconVariant}"></lightning-icon></button>
+                    </div>
                 </div>
                 <div class="tr"><button class="icon-btn" onclick={handleRefresh} title="Refresh"><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon></button></div>
             </div>
+
             <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner><p>Loading applications...</p></div></template>
             <template if:true={hasError}><div class="err-box"><lightning-icon icon-name="utility:error" size="small" variant="error"></lightning-icon><span>{errorMessage}</span><button class="retry-btn" onclick={handleRefresh}>Retry</button></div></template>
+            
             <template if:true={showBoard}>
-                <div class="board">
-                    <template for:each={columns} for:item="col">
-                        <div key={col.stageName} class={col.colClass} data-stage={col.stageName}
-                             ondragover={handleDragOver} ondrop={handleDrop}
-                             ondragleave={handleDragLeave} ondragenter={handleDragEnter}>
-                            <div class="col-hdr" style={col.accentStyle}>
-                                <div class="col-top">
-                                    <div class="col-nw"><span class="col-dot" style={col.dotStyle}></span><span class="col-nm">{col.stageName}</span></div>
-                                    <span class="col-cnt">{col.cardCount}</span>
+                <!-- BOARD VIEW -->
+                <template if:true={isKanbanView}>
+                    <div class="board">
+                        <template for:each={columns} for:item="col">
+                            <div key={col.stageName} class={col.colClass} data-stage={col.internalStageName}
+                                 ondragover={handleDragOver} ondrop={handleDrop}
+                                 ondragleave={handleDragLeave} ondragenter={handleDragEnter}>
+                                <div class="col-hdr" style={col.accentStyle}>
+                                    <div class="col-top">
+                                        <div class="col-nw"><span class="col-dot" style={col.dotStyle}></span><span class="col-nm">{col.stageName}</span></div>
+                                        <span class="col-cnt">{col.cardCount}</span>
+                                    </div>
+                                    <template if:true={col.showTotal}><div class="col-tot">&#163;{col.totalFormatted}</div></template>
                                 </div>
-                                <template if:true={col.showTotal}><div class="col-tot">&#163;{col.totalFormatted}</div></template>
-                            </div>
-                            <template if:true={col.isDragOver}><div class="drop-h"><lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>Drop here</div></template>
-                            <div class="col-body">
-                                <template for:each={col.cards} for:item="card">
-                                    <div key={card.id} class={card.cardClass} draggable="true" data-id={card.id}
-                                         ondragstart={handleDragStart} ondragend={handleDragEnd}>
-                                        <div class="c-bar" style={col.accentBarStyle}></div>
-                                        <div class="c-in">
-                                            <div class="c-top-row">
-                                                <span class="c-ref">{card.appRefNumber}</span>
-                                                <div class="c-pin-box">
-                                                    <button class={card.pinBtnClass} data-id={card.id} onclick={handlePinClick} title={card.pinTitle}>
-                                                        <lightning-icon icon-name={card.pinIcon} size="xx-small"></lightning-icon>
-                                                    </button>
+                                <template if:true={col.isDragOver}><div class="drop-h"><lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>Drop here</div></template>
+                                <div class="col-body">
+                                    <template for:each={col.cards} for:item="card">
+                                        <div key={card.id} class={card.cardClass} draggable="true" data-id={card.id}
+                                             ondragstart={handleDragStart} ondragend={handleDragEnd}>
+                                            <div class="c-bar" style={col.accentBarStyle}></div>
+                                            <div class="c-in">
+                                                <div class="c-top-row">
+                                                    <span class="c-ref">{card.appRefNumber}</span>
+                                                    <div class="c-pin-box">
+                                                        <button class={card.pinBtnClass} data-id={card.id} onclick={handlePinClick} title={card.pinTitle}>
+                                                            <lightning-icon icon-name={card.pinIcon} size="xx-small"></lightning-icon>
+                                                        </button>
+                                                    </div>
+                                                    <template if:true={card.archived}><span class="arc-chip">Archived</span></template>
                                                 </div>
-                                                <template if:true={card.archived}><span class="arc-chip">Archived</span></template>
-                                            </div>
-                                            <div class="c-name" data-id={card.id} onclick={handleCardClick}>{card.name}</div>
-                                            <div class="c-chips">
-                                                <template if:true={card.plot}><span class="chip cp">Plot {card.plot}</span></template>
-                                                <template if:true={card.houseBuilder}><span class="chip cb">{card.houseBuilder}</span></template>
-                                            </div>
-                                            <div class="c-dets">
-                                                <template if:true={card.city}><div class="c-det"><lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon><span>{card.city}</span></div></template>
-                                                <template if:true={card.closeDateFormatted}><div class="c-det"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon><span>{card.closeDateFormatted}</span></div></template>
-                                            </div>
-                                            <div class="c-foot">
-                                                <div class="c-own"><div class="ava" style={card.avStyle}>{card.avInitials}</div><span class="ow-n">{card.ownerName}</span></div>
-                                                <div class="c-acts">
-                                                    <button class="act-btn" data-id={card.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
-                                                    <button class="act-btn" data-id={card.id} data-archived={card.archived} onclick={handleArchiveClick} title={card.arcLabel}><lightning-icon icon-name={card.arcIcon} size="xx-small"></lightning-icon></button>
+                                                <div class="c-name" data-id={card.id} onclick={handleCardClick}>{card.name}</div>
+                                                <div class="c-chips">
+                                                    <template if:true={card.plot}><span class="chip cp">Plot {card.plot}</span></template>
+                                                    <template if:true={card.houseBuilder}><span class="chip cb">{card.houseBuilder}</span></template>
+                                                </div>
+                                                <div class="c-dets">
+                                                    <template if:true={card.city}><div class="c-det"><lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon><span>{card.city}</span></div></template>
+                                                    <template if:true={card.closeDateFormatted}><div class="c-det"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon><span>{card.closeDateFormatted}</span></div></template>
+                                                </div>
+                                                <div class="c-foot">
+                                                    <div class="c-own"><div class="ava" style={card.avStyle}>{card.avInitials}</div><span class="ow-n">{card.ownerName}</span></div>
+                                                    <div class="c-acts">
+                                                        <button class="act-btn" data-id={card.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
+                                                        <button class="act-btn" data-id={card.id} data-archived={card.archived} onclick={handleArchiveClick} title={card.arcLabel}><lightning-icon icon-name={card.arcIcon} size="xx-small"></lightning-icon></button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </template>
-                                <template if:true={col.isEmpty}><div class="col-empty"><lightning-icon icon-name="utility:inbox" size="small"></lightning-icon><p>No applications</p></div></template>
+                                    </template>
+                                    <template if:true={col.isEmpty}><div class="col-empty"><lightning-icon icon-name="utility:inbox" size="small"></lightning-icon><p>No applications</p></div></template>
+                                </div>
                             </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- LIST VIEW -->
+                <template if:true={isListView}>
+                    <div class="list-view-wrap">
+                        <div class="lv-tabs">
+                            <template for:each={listStages} for:item="tab">
+                                <button key={tab.value} class={tab.cls} data-stage={tab.value} onclick={handleListStageClick}>{tab.label}</button>
+                            </template>
                         </div>
-                    </template>
+                        <div class="lv-content">
+                            <table class="sf-dt">
+                                <thead>
+                                    <tr>
+                                        <th>Ref</th>
+                                        <th>Application Name</th>
+                                        <th>Plot</th>
+                                        <th>Housebuilder</th>
+                                        <th>Date</th>
+                                        <th>Owner</th>
+                                        <th style="width:80px">Acts</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={listCards} for:item="c">
+                                        <tr key={c.id}>
+                                            <td class="c-ref">{c.appRefNumber}</td>
+                                            <td class="lnk" data-id={c.id} onclick={handleCardClick}>
+                                                <div style="display:flex;align-items:center;gap:8px">
+                                                    <template if:true={c.pinned}><lightning-icon icon-name="utility:pinned" size="xx-small" variant="info"></lightning-icon></template>
+                                                    {c.name}
+                                                </div>
+                                            </td>
+                                            <td>{c.plot}</td>
+                                            <td>{c.houseBuilder}</td>
+                                            <td>{c.closeDateFormatted}</td>
+                                            <td>
+                                                <div class="c-own"><div class="ava" style={c.avStyle}>{c.avInitials}</div><span class="ow-n">{c.ownerName}</span></div>
+                                            </td>
+                                            <td>
+                                                <div class="c-acts">
+                                                    <button class="act-btn" data-id={c.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
+                                                    <button class="act-btn" data-id={c.id} data-archived={c.archived} onclick={handleArchiveClick} title={c.arcLabel}><lightning-icon icon-name={c.arcIcon} size="xx-small"></lightning-icon></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template if:false={listCards.length}>
+                                        <tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8">No applications in this stage</td></tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </template>
+
+        <!-- ══════════════════════════════════════════
+             ARCHIVED VIEW
+        ══════════════════════════════════════════ -->
+        <template if:true={isArchived}>
+            <div class="page-hdr">
+                <div class="hdr-top">
+                    <div class="hdr-ctx">
+                        <div class="org-pill"><div class="org-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 3.5V6.5L5 9L1 6.5V3.5L5 1Z" stroke="white" stroke-width="1" fill="none"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg></div>New Home Solutions - Training</div>
+                        <div class="bc"><span class="bc-link">New Applications</span><span style="color:#cbd5e1;margin:0 2px">›</span><span class="bc-cur">Archived</span></div>
+                    </div>
+                    <div class="hdr-acts"><button class="hdr-btn" onclick={handleRefresh}><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon> Refresh</button></div>
+                </div>
+                <div class="va-hdr-body">
+                    <div class="va-title-wrap">
+                        <div class="va-obj-icon">📁</div>
+                        <div>
+                            <div class="va-title">Archived Applications</div>
+                            <div class="va-subtitle">View and manage all records that have been marked as archived</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="toolbar">
+                <div class="tl">
+                    <div class="sw">
+                        <lightning-icon icon-name="utility:search" size="xx-small" class="si"></lightning-icon>
+                        <input class="s-inp" type="text" placeholder="Search archived..." value={searchTerm} oninput={handleSearch} />
+                    </div>
+                    <select class="f-sel hb-sel" onchange={handleHbChange}>
+                        <option value="">All Housebuilders</option>
+                        <template for:each={hbOptions} for:item="h">
+                            <option key={h.value} value={h.value}>{h.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="tr"><button class="clr-f-btn" onclick={clearFilters}>Clear Search</button></div>
+            </div>
+
+            <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner><p>Loading archived...</p></div></template>
+            <template if:true={showBoard}>
+                <div class="list-view-wrap">
+                    <div class="lv-content">
+                        <table class="sf-dt">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Application Name</th>
+                                    <th>Original Stage</th>
+                                    <th>Plot</th>
+                                    <th>Housebuilder</th>
+                                    <th>Date</th>
+                                    <th>Owner</th>
+                                    <th style="width:100px">Acts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={archivedCards} for:item="c">
+                                    <tr key={c.id}>
+                                        <td class="c-ref">{c.appRefNumber}</td>
+                                        <td class="lnk" data-id={c.id} onclick={handleCardClick}>{c.name}</td>
+                                        <td><span class="chip cb">{c.stageName}</span></td>
+                                        <td>{c.plot}</td>
+                                        <td>{c.houseBuilder}</td>
+                                        <td>{c.closeDateFormatted}</td>
+                                        <td>
+                                            <div class="c-own"><div class="ava" style={c.avStyle}>{c.avInitials}</div><span class="ow-n">{c.ownerName}</span></div>
+                                        </td>
+                                        <td>
+                                            <div class="c-acts">
+                                                <button class="act-btn" data-id={c.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
+                                                <button class="act-btn" data-id={c.id} data-archived="true" onclick={handleArchiveClick} title="Unarchive"><lightning-icon icon-name="utility:undelete" size="xx-small"></lightning-icon> Unarchive</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template if:false={archivedCards.length}>
+                                    <tr><td colspan="8" style="text-align:center;padding:40px;color:#94a3b8">No archived applications found</td></tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </template>
         </template>

@@ -1,248 +1,271 @@
-.table-container {
-        overflow-x: auto;
-    }
- .property-table-container {
-        overflow-x: auto;
-    }
-    .property-table {
-        width: 100%;
-        border :  1px solid #0000006e;
-        border-collapse: collapse;
-    }
-    .property-table th, .property-table td {
-        border: 1px solid #0000006e;
-        padding: 8px;
-        font-size: 14px;
-        text-align: left;
-    }
+/* Modern Design System for NHS Application Form */
 
-      .availability-table th, .availability-table td {
-        border: 1px solid #0000006e;
-        padding: 8px;
-        font-size: 14px;
-        
-        text-align: center !important;
-    }
-
-        .vendor-table th, .vendor-table td {
-        border: 1px solid #0000006e;
-        padding: 8px;
-        font-size: 14px;
-            line-height: 20px;
-        text-align: left !important;
-    }
-    .warning-text {
-        color: red;
-        font-weight: bold;
-    }
-    .property-table lightning-input {
-        width: 100%;
-       
-        box-sizing: border-box;
-    }
-
-    .propertyLabel{
-        text-align: left !important;
-        font-weight: bold;
-        
-    }
-    .propertyInputs{
-        background-color: white;
-       
-    }
-    
-    .availabilityLabel{
-        text-align: center !important;
-        font-weight: bold;
-        
-    }
-
-    .availabilityInputs{
-        text-align: center !important;
-        background-color: white;
-        
-    }
-
-/* General Form Container Styling */
-.agent-offer-form {
-    background: #f3f3f321;
-    padding: 20px;
-    border-radius: 8px;
-    width:90%;
-    margin: 0 auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+:host {
+    --brand-primary: #075f50;
+    --brand-secondary: #0a8a75;
+    --bg-light: #f8fafc;
+    --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --border-radius: 8px;
+    --input-height: 32px;
 }
 
-/* Form Header */
-.form-header {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    font-size: 1.5rem;
-    width: auto;
-    padding: 20px 20px 20px 120px; /* Add left padding to make space for the image */
-    background-color: #075f50;
-    color: white;
-    text-align: right;
-    font-family: 'Salesforce Sans', Arial, sans-serif;
-    margin-bottom: 20px;
-    font-weight: lighter;
-
-    /* Add background image */
-    background-image: url('https://nhsolutions--training.sandbox.file.force.com/sfc/dist/version/renditionDownload?rendition=ORIGINAL_Png&versionId=068KG000000Lajz&operationContext=DELIVERY&contentId=05TKG0000009shl&page=0&d=/a/KG000000CfdF/q0V5qK8wc30.C7xSGliuF0oJDLUU7Pv_5majI3Z2NzI&oid=00D7a0000005DDN&dpt=null&viewId='); /* Use the provided URL */
-    background-position: left center; /* Align the image to the left */
-    background-size: 300px; /* Set a specific size for the image */
-    background-repeat: no-repeat; /* Prevent the image from repeating */
+.form-wrapper {
+    background-color: var(--bg-light);
+    min-height: 100vh;
 }
 
-/* Section Header */
-.section-header {
-    font-size: 20px;
-    font-weight: bold;
-     color: #333;   
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #d8dde6;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Section Container */
-.section-container {
-    background-color: #f3f3f3;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    padding: 16px;
-    margin-bottom: 60px;
-}
-
-/* Label Styling */
-.label-class {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 8px;
-    display: block;
-    font-size: 18px;
-}
-.custom-label {
-     font-weight: 300;
-    color: #333;
-    margin-bottom: -2px;
-    display: block;
-    font-size: 14px;
-}
-.Vendor-label-class{
-    font-weight: bold;
-    color: #333;
-    padding: 10px;
-    text-align: center !important;
-    display: block;
-    font-size: 18px;
-}
-
-/* Input Fields Styling */
-lightning-input, lightning-textarea, lightning-combobox, c-custom-lookup-lwc {
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-lightning-input::part(input), lightning-textarea::part(textarea), lightning-combobox::part(input) {
-    width: 100%;
-    padding: 8px;
-    font-size: 0.875rem;
-    border: 1px solid #d8dde6;
-    border-radius: 4px;
-    background-color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-lightning-input::part(input):focus, lightning-textarea::part(textarea):focus, lightning-combobox::part(input):focus {
-    border-color: #0070d2;
-    box-shadow: 0 0 5px rgba(0, 112, 210, 0.3);
-}
-
-/* Checkbox Styling */
-lightning-input[type="checkbox"]::part(input) {
-    margin-right: 8px;
-}
-
-/* Form Actions */
-.form-actions {
+/* Sticky Header */
+.form-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.button {
-    padding: 10px 20px;
-    font-size: 0.875rem;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.button-primary {
-    background-color: #0070d2;
-    color: #ffffff;
-}
-
-.button-primary:hover {
-    background-color: #005fb2;
-    transform: translateY(-2px);
-}
-/* Custom gap between columns */
-.custom-gap {
-    gap: 20px; /* Adjust the gap size as needed */
-}
-/* Constrain input width */
-.input-width {
-    width: 96%; /* Ensure inputs take full width of their container */
-    max-width: 96%; /* Prevent inputs from overflowing */
-}
-.image-container {
-    /* Matches the image height */
-    display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
-
-/* Ensure textarea and combobox also respect the width */
-lightning-textarea.input-width,
-lightning-combobox.input-width,
-c-custom-lookup-lwc.input-width {
-    width: 96%;
-    max-width: 96%;
+.form-footer {
+    position: sticky;
+    bottom: 0px;
+    z-index: 100;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 -1px 4px rgba(0,0,0,0.05);
+    margin-top: 2rem;
 }
 
-/* Apply custom gap to the grid */
-.slds-grid.slds-gutters.custom-gap {
-    margin-right: -10px; /* Adjust based on the gap size */
-    margin-left: -10px;  /* Adjust based on the gap size */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
 }
 
-.slds-grid.slds-gutters.custom-gap > .slds-col {
-    padding-right: 10px; /* Adjust based on the gap size */
-    padding-left: 10px;  /* Adjust based on the gap size */
+.header-left h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin: 0;
 }
 
-.uploaded-files {
-    margin-top: 1rem;
+.header-logo {
+    height: 40px;
+    object-fit: contain;
 }
 
-.file-item {
-    margin-bottom: 0.5rem;
+/* Layout Container */
+.layout-container {
+    display: flex;
+    max-width: 1400px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    gap: 1.5rem;
 }
 
-.file-name {
-    font-weight: bold;
+/* Side Navigation */
+.side-nav-container {
+    flex: 0 0 220px;
+    position: sticky;
+    top: 80px;
+    height: calc(100vh - 100px);
 }
 
-.file-field {
-    color: #666;
+.nav-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #f1f5f9;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 6px;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-bottom: 0.125rem;
+    font-weight: 500;
     font-size: 0.875rem;
 }
 
-/***********Modal CSS********************/
+.nav-item:hover {
+    background: #f1f5f9;
+    color: var(--brand-primary);
+}
+
+.nav-item.active {
+    background: #e6f4f2;
+    color: var(--brand-primary);
+}
+
+.nav-item lightning-icon {
+    --sds-c-icon-color-foreground: currentColor;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.section-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #f1f5f9;
+}
+
+.section-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.section-header-modern h2 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Grid & Form Elements */
+.modern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem 1.25rem;
+}
+
+.modern-grid.full {
+    grid-template-columns: 1fr;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.vendor-expectation-input {
+    --sds-c-input-font-size: 1.15rem;
+    --sds-c-input-text-color: var(--brand-primary);
+    font-weight: 700;
+}
+
+.modern-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+
+/* Compact Overrides for SLDS/LWC Components */
+lightning-input,
+lightning-combobox,
+lightning-textarea,
+lightning-input-field {
+    --sds-c-input-line-height: 1;
+    --sds-c-textarea-line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.modern-grid lightning-input,
+.modern-grid lightning-combobox,
+.modern-grid lightning-textarea {
+    width: 100%;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.modern-grid c-custom-lookup-lwc {
+    margin-top: -12px;
+}
+
+.modern-grid c-idealaddresslookup {
+    margin-top: -8px;
+}
+
+.full-width {
+    grid-column: span 3;
+}
+
+.two-third-width {
+    grid-column: span 2;
+}
+
+.two-column-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem 1.5rem;
+}
+
+/* Custom Table replacements */
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.modern-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Specific Section Adjustments */
+.availability-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.avail-col {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.avail-label {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #475569;
+}
+
+/* Original Modal and Utility styles */
 .custom-modal {
     position: fixed;
     top: 0;

@@ -3,6 +3,7 @@ import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import getApplicationKanbanData from '@salesforce/apex/NhsApplicationKanbanController.getApplicationKanbanData';
 import getAssigneeList          from '@salesforce/apex/NhsApplicationKanbanController.getAssigneeList';
+import getHouseBuilderOptions   from '@salesforce/apex/NhsApplicationKanbanController.getHouseBuilderOptions';
 import updateOpportunityStage   from '@salesforce/apex/NhsApplicationKanbanController.updateOpportunityStage';
 import archiveOpportunity       from '@salesforce/apex/NhsApplicationKanbanController.archiveOpportunity';
 import togglePin from '@salesforce/apex/NhsApplicationKanbanController.togglePin';
@@ -103,6 +104,17 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     @track draggedId      = null;
     @track dragOverStage  = null;
 
+    /* ── View Mode ── */
+    @track viewMode          = 'kanban'; // 'kanban' or 'list'
+    @track selectedListStage = 'To be contacted';
+
+    /* ── Advanced Filters ── */
+    @track hbOptions      = [];
+    @track hbFilter       = null;
+    @track appDateFilter  = null;
+    @track startDateFilter= null;
+    @track endDateFilter  = null;
+
     /* ── Vendor Availability state ── */
     @track vaSearch         = '';
     @track vaFilter         = 'all';
@@ -121,8 +133,17 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
 
     /* ══ Wires ══════════════════════════════════════════════════════════ */
     @wire(getAssigneeList) wiredAssignees({ data }) { if (data) this.assigneeList = data; }
+    @wire(getHouseBuilderOptions) wiredHbs({ data }) { if (data) this.hbOptions = data; }
 
-    @wire(getApplicationKanbanData, { searchTerm:'$searchTerm', assigneeFilter:'$assigneeFilter', showArchived:'$showArchived' })
+    @wire(getApplicationKanbanData, { 
+        searchTerm: '$searchTerm', 
+        assigneeFilter: '$assigneeFilter', 
+        showArchived: '$effectiveShowArchived',
+        housebuilderId: '$hbFilter',
+        applicationDateStr: '$appDateFilter',
+        startDateStr: '$startDateFilter',
+        endDateStr: '$endDateFilter'
+    })
     wiredKanbanData(result) {
         this._wiredKanbanResult = result;
         this.isLoading = false;
@@ -155,9 +176,62 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     }
     get isApplication()       { return this.activeNav === 'application'; }
     get isVendorAvailability() { return this.activeNav === 'vendor_availability'; }
-    get showComingSoon()       { return !this.isApplication && !this.isVendorAvailability; }
+    get isArchived()           { return this.activeNav === 'archived'; }
+    get showComingSoon()       { return !this.isApplication && !this.isVendorAvailability && !this.isArchived; }
     get activeStageLabel()     { return TOP_STAGES.find(x=>x.key===this.activeNav)?.label || ''; }
     handleNavClick(e)          { this.activeNav = e.currentTarget.dataset.key; }
+
+    /* ── Show Archived logic ── */
+    get effectiveShowArchived() { return this.showArchived || this.isArchived; }
+
+    /* ── View Mode Switcher ── */
+    get isKanbanView() { return this.viewMode === 'kanban'; }
+    get isListView()   { return this.viewMode === 'list'; }
+    toggleViewMode(e)  { this.viewMode = e.currentTarget.dataset.mode; }
+    get kanbanBtnClass()    { return 'vt-btn' + (this.isKanbanView ? ' on' : ''); }
+    get listBtnClass()      { return 'vt-btn' + (this.isListView ? ' on' : ''); }
+    get kanbanIconVariant() { return this.isKanbanView ? 'inverse' : ''; }
+    get listIconVariant()   { return this.isListView ? 'inverse' : ''; }
+
+    /* ── List View getters ── */
+    get listStages() {
+        const stages = ['To be contacted', '1st Contact', '2nd Contact', '3rd Contact', 'Sale Cancelled'];
+        return stages.map(s => ({
+            label: s === 'Sale Cancelled' ? 'Application Cancelled' : s,
+            value: s,
+            cls: 'lv-tab' + (this.selectedListStage === s ? ' on' : '')
+        }));
+    }
+    get listCards() {
+        const col = (this.rawColumns || []).find(c => c.stageName === this.selectedListStage);
+        if (!col || !col.cards) return [];
+        return col.cards.map(c => ({
+            ...c,
+            closeDateFormatted: fmtD(c.closeDate),
+            avInitials: ini(c.ownerName),
+            avStyle: avSt(c.ownerName)
+        }));
+    }
+    handleListStageClick(e) { this.selectedListStage = e.currentTarget.dataset.stage; }
+
+    /* ── Archived View getters ── */
+    get archivedCards() {
+        const all = [];
+        (this.rawColumns || []).forEach(col => {
+            (col.cards || []).forEach(c => {
+                if (c.archived) {
+                    all.push({
+                        ...c,
+                        stageName: col.stageName, // Where it was archived
+                        closeDateFormatted: fmtD(c.closeDate),
+                        avInitials: ini(c.ownerName),
+                        avStyle: avSt(c.ownerName)
+                    });
+                }
+            });
+        });
+        return all;
+    }
 
     /* ══ Kanban getters ══════════════════════════════════════════════════ */
     get flowPills() {
@@ -215,6 +289,31 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     clearSearch()     { this.searchTerm     = ''; }
     handleAssignee(e) { this.assigneeFilter = e.target.value; }
     handleArchived(e) { this.showArchived   = e.target.checked; }
+    
+    handleHbChange(e)  { this.hbFilter = e.target.value; }
+    handleAppDate(e)   { 
+        this.appDateFilter = e.target.value || null; 
+        if(this.appDateFilter) { this.startDateFilter = null; this.endDateFilter = null; }
+    }
+    handleStartDate(e) { 
+        this.startDateFilter = e.target.value || null; 
+        if(this.startDateFilter) this.appDateFilter = null; 
+    }
+    handleEndDate(e)   { 
+        this.endDateFilter = e.target.value || null; 
+        if(this.endDateFilter) this.appDateFilter = null; 
+    }
+
+    clearFilters() {
+        this.searchTerm = '';
+        this.assigneeFilter = '';
+        this.hbFilter = null;
+        this.appDateFilter = null;
+        this.startDateFilter = null;
+        this.endDateFilter = null;
+        this.showArchived = false;
+    }
+
     handleRefresh()   { this.doRefresh(); }
     handleCardClick(e) { const id=e.currentTarget.dataset.id; if(id) this[NavigationMixin.Navigate]({type:'standard__recordPage',attributes:{recordId:id,actionName:'view'}}); }
     handleArchiveClick(e) { e.stopPropagation(); const id=e.currentTarget.dataset.id; const arc=e.currentTarget.dataset.archived==='true'; archiveOpportunity({opportunityId:id,archived:!arc}).then(()=>{this.showToast(arc?'Unarchived':'Archived');this.doRefresh();}).catch(err=>this.showToast(err.body?.message||'Error','error')); }

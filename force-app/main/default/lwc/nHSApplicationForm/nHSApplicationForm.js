@@ -51,6 +51,40 @@ export default class NHSApplicationForm extends LightningElement {
     @track email = '';
     @track phone = '';
     @track region = '';
+    @track activeSection = 'housebuilder';
+    _observerInitialized = false;
+    sectionObserver;
+
+    get sections() {
+        return [
+            { id: 'housebuilder', label: 'House Builder', icon: 'utility:company' },
+            { id: 'property-details', label: 'Property Details', icon: 'utility:retail_execution' },
+            { id: 'property-eta', label: 'ALCD', icon: 'utility:date_input' },
+            { id: 'vendor-details', label: 'Vendor Details', icon: 'utility:groups' },
+            { id: 'property-description', label: 'Property Description', icon: 'utility:description' },
+            { id: 'additional-details', label: 'Additional Details', icon: 'utility:add' }
+        ].map(section => ({
+            ...section,
+            itemClass: this.activeSection === section.id ? 'nav-item active' : 'nav-item'
+        }));
+    }
+
+    handleNavClick(event) {
+        this.activeSection = event.currentTarget.dataset.id;
+        const targetElement = this.template.querySelector(`[data-id="${this.activeSection}"]`);
+        if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    get sideNavClass() {
+        return 'side-nav-container slds-p-right_medium';
+    }
+
+    getSectionClass(sectionId) {
+        return this.activeSection === sectionId ? 'nav-item active' : 'nav-item';
+    }
+
     @track currentDateTime = new Date().toISOString();
     marketStatusOptions = [
         { label: 'Yes', value: 'Yes' },
@@ -90,7 +124,7 @@ export default class NHSApplicationForm extends LightningElement {
             "marketstatus_Val": false,
             "Has_your_house_been_valued_by_an_agent": '',
             "has_your_house_been_valued_by_an_agents": false,
-            "terms": false,
+            "terms": true,
             "monAM": false,
             "monPM": false,
             "tueAM": false,
@@ -134,6 +168,40 @@ export default class NHSApplicationForm extends LightningElement {
         this.formData.Application['housebuilderId'] = this.housebuilderId;
         console.log('OUTPUT : Form', JSON.stringify(this.formData.Application));
         //  this.handleAgentSelection('001KG0000086ecbYAA');
+    }
+
+    renderedCallback() {
+        if (!this._observerInitialized) {
+            this.initObserver();
+            this._observerInitialized = true;
+        }
+    }
+
+    disconnectedCallback() {
+        if (this.sectionObserver) {
+            this.sectionObserver.disconnect();
+        }
+    }
+
+    initObserver() {
+        const options = {
+            root: null,
+            rootMargin: '-20% 0px -70% 0px', // When the section is roughly at the top-middle of viewport
+            threshold: 0
+        };
+
+        this.sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.activeSection = entry.target.dataset.id;
+                }
+            });
+        }, options);
+
+        const sections = this.template.querySelectorAll('.section-card');
+        sections.forEach(section => {
+            this.sectionObserver.observe(section);
+        });
     }
 
     @wire(getAccountFileUrl, { accountId: '$housebuilderId' })
@@ -506,9 +574,9 @@ export default class NHSApplicationForm extends LightningElement {
         }
 
         // Check Terms and Conditions
-        if (!this.formData.Application.terms) {
+        /* if (!this.formData.Application.terms) {
             missingFields.push('Terms and Conditions');
-        }
+        } */
 
         // Show error messages sequentially if there are missing fields
         missingFields.forEach((field, index) => {
