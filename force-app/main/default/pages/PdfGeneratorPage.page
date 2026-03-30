@@ -1,0 +1,162 @@
+<apex:page controller="PdfGeneratorPageController" renderAs="pdf" applyBodyTag="false" applyHtmlTag="false" showHeader="false" sidebar="false" standardStylesheets="false">
+<html>
+<head>
+<style>
+@page { size: A4 landscape; margin: 10mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #1C2B24; line-height: 1.4; }
+h2 { font-size: 12px; font-weight: 700; color: #fff; background: #4A6B5E; padding: 8px 14px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 14px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 2px; table-layout: fixed; }
+td, th { border: 1px solid #C5DCCC; padding: 6px 10px; vertical-align: middle; font-size: 11px; word-wrap: break-word; overflow: hidden; }
+.lbl { background: #C9DDD4; color: #2D5248; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; }
+.hdr { background: #B7D0C4; color: #2D5248; font-weight: 800; font-size: 11px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; }
+.val { background: #fff; }
+.name { font-size: 13px; font-weight: 700; color: #0D1E4A; }
+.money { font-family: Courier, monospace; font-size: 12px; font-weight: 700; color: #2D5248; }
+.center { text-align: center; }
+.sub-hdr { background: #A4C3B2; color: #2D5248; font-weight: 700; font-size: 10px; text-align: center; text-transform: uppercase; }
+.title-bar { display: block; margin-bottom: 12px; }
+.title-bar h1 { font-size: 16px; color: #0D1E4A; display: inline; }
+.title-bar span { font-size: 10px; color: #4A6B5E; float: right; }
+/* Agent table — force equal columns */
+.agent-table col.agent-lbl { width: 14%; }
+.agent-table col.agent-col { width: 28.66%; }
+.agent-table .av { text-align: center; background: #fff; }
+</style>
+</head>
+<body>
+
+<div class="title-bar">
+    <h1>Application: {!opp.Vendor_1__r.Name}</h1>
+    <span>Generated {!generatedDate} &bull; {!opp.Id}</span>
+</div>
+
+<h2>Property Details</h2>
+<table>
+    <tr>
+        <td class="hdr" colspan="2">House Builder</td>
+        <td class="hdr" colspan="2">Property Address</td>
+        <td class="lbl">Vendor 1</td>
+        <td class="val name">{!opp.Vendor_1__r.Name}</td>
+        <td class="lbl">Received</td>
+        <td class="val"><apex:outputText value="{0,date,dd/MM/yyyy}"><apex:param value="{!opp.Date_of_Application_Received__c}"/></apex:outputText></td>
+        <td class="lbl" rowspan="4" style="vertical-align:top;">Notes</td>
+        <td class="val" rowspan="4" style="vertical-align:top;">{!opp.Notes__c}</td>
+    </tr>
+    <tr>
+        <td class="val name center" colspan="2">{!opp.House_Builder__r.Name}</td>
+        <td class="val center" colspan="2" rowspan="2">{!opp.Property_Address__c}</td>
+        <td class="lbl">Mobile</td>
+        <td class="val">{!opp.Vendor_1_Mobile__c}</td>
+        <td class="lbl">Expectations</td>
+        <td class="val money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Client_Expectations__c))}"><apex:param value="{!opp.Client_Expectations__c}"/></apex:outputText></td>
+    </tr>
+    <tr>
+        <td class="lbl">Development</td>
+        <td class="val center">{!opp.Development__c}</td>
+        <td class="lbl">Phone</td>
+        <td class="val">{!opp.Vendor_1_Phone__c}</td>
+        <td class="lbl">ALCD</td>
+        <td class="val">{!alcdDisplay}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Plot</td>
+        <td class="val center">{!opp.Plot__c}</td>
+        <td class="val center" colspan="2">-</td>
+        <td class="lbl">Email</td>
+        <td class="val">{!opp.Vendor_1_Email__c}</td>
+        <td class="lbl">Scheme</td>
+        <td class="val">{!opp.Scheme__c}</td>
+    </tr>
+</table>
+
+<h2>Agent Details / Valuation Figures / Recommendations</h2>
+<table class="agent-table">
+    <colgroup>
+        <col class="agent-lbl"/>
+        <col class="agent-col"/>
+        <col class="agent-col"/>
+        <col class="agent-col"/>
+    </colgroup>
+    <tr>
+        <td class="lbl"></td>
+        <td class="hdr">Agent 1</td>
+        <td class="hdr">Agent 2</td>
+        <td class="hdr">Agent 3</td>
+    </tr>
+    <tr>
+        <td class="lbl">Company Name</td>
+        <td class="av name">{!opp.Agent_1__r.Name}</td>
+        <td class="av name">{!opp.Agent_2__r.Name}</td>
+        <td class="av name">{!opp.Agent_3__r.Name}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Telephone</td>
+        <td class="av">{!opp.Agent_1_Phone__c}</td>
+        <td class="av">{!opp.Agent_2_Phone__c}</td>
+        <td class="av">{!opp.Agent_3_Phone__c}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Email</td>
+        <td class="av">{!opp.Agent_1_Email__c}</td>
+        <td class="av">{!opp.Agent_2_Email__c}</td>
+        <td class="av">{!opp.Agent_3_Email__c}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Appointment</td>
+        <td class="av"><apex:outputText value="{0,date,dd/MM/yyyy HH:mm}" rendered="{!NOT(ISNULL(opp.Agent_1_Appointment__c))}"><apex:param value="{!opp.Agent_1_Appointment__c}"/></apex:outputText></td>
+        <td class="av"><apex:outputText value="{0,date,dd/MM/yyyy HH:mm}" rendered="{!NOT(ISNULL(opp.Agent_2_Appointment__c))}"><apex:param value="{!opp.Agent_2_Appointment__c}"/></apex:outputText></td>
+        <td class="av"><apex:outputText value="{0,date,dd/MM/yyyy HH:mm}" rendered="{!NOT(ISNULL(opp.Agent_3_Appointment__c))}"><apex:param value="{!opp.Agent_3_Appointment__c}"/></apex:outputText></td>
+    </tr>
+    <tr>
+        <td class="lbl">Agent Emailed</td>
+        <td class="av">{!Agent1Emailed}</td>
+        <td class="av">{!Agent2Emailed}</td>
+        <td class="av">{!Agent3Emailed}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Verbally Confirmed</td>
+        <td class="av">{!Agent1Confirmed}</td>
+        <td class="av">{!Agent2Confirmed}</td>
+        <td class="av">{!Agent3Confirmed}</td>
+    </tr>
+    <tr>
+        <td class="lbl">Valuation Figures</td>
+        <td class="sub-hdr">Agent 1</td>
+        <td class="sub-hdr">Agent 2</td>
+        <td class="sub-hdr">Agent 3</td>
+    </tr>
+    <tr>
+        <td class="lbl">Initial Asking Price</td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_1_Initial_Asking_Price__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_2_Initial_Asking_Price__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_3_Initial_Asking_Price__c}"/></apex:outputText></td>
+    </tr>
+    <tr>
+        <td class="lbl">Target Sale</td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Target_Sale__c))}"><apex:param value="{!opp.Agent_1_Target_Sale__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Target_Sale__c))}"><apex:param value="{!opp.Agent_2_Target_Sale__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Target_Sale__c))}"><apex:param value="{!opp.Agent_3_Target_Sale__c}"/></apex:outputText></td>
+    </tr>
+    <tr>
+        <td class="lbl">Bottom Line</td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Bottom_Line__c))}"><apex:param value="{!opp.Agent_1_Bottom_Line__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Bottom_Line__c))}"><apex:param value="{!opp.Agent_2_Bottom_Line__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Bottom_Line__c))}"><apex:param value="{!opp.Agent_3_Bottom_Line__c}"/></apex:outputText></td>
+    </tr>
+    <tr>
+        <td class="lbl" rowspan="2">NHS Recommended</td>
+        <td class="sub-hdr">Market</td>
+        <td class="sub-hdr">Target</td>
+        <td class="sub-hdr">Forced</td>
+    </tr>
+    <tr>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Current_Asking_Price__c))}"><apex:param value="{!opp.Current_Asking_Price__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Target_Sale__c))}"><apex:param value="{!opp.Target_Sale__c}"/></apex:outputText></td>
+        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Forced_Sale__c))}"><apex:param value="{!opp.Forced_Sale__c}"/></apex:outputText></td>
+    </tr>
+</table>
+
+</body>
+</html>
+</apex:page>

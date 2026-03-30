@@ -39,6 +39,19 @@ public class customLookupController {
          }
      }
  
+     @AuraEnabled
+     public static Map<String, String> getAccountDetails(String accountId) {
+         Map<String, String> result = new Map<String, String>();
+         if (String.isNotBlank(accountId)) {
+             List<Account> accounts = [SELECT Phone, Email__c FROM Account WHERE Id = :accountId LIMIT 1];
+             if (!accounts.isEmpty()) {
+                 result.put('phone', accounts[0].Phone);
+                 result.put('email', accounts[0].Email__c);
+             }
+         }
+         return result;
+     }
+
      public class ResultWrapper{
          @AuraEnabled public String mainField{get;set;}
          @AuraEnabled public String subField{get;set;}

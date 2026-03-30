@@ -10,14 +10,35 @@ export default class CustomLookupLwc extends LightningElement {
     @api required;
     @api selectedIconName = "standard:account";
     @api objectLabel = "";
+    @api hideEntityIcon = false;
+    @api actionIconName = "utility:close";
+
+    get showEntityIcon() {
+        return !this.hideEntityIcon;
+    }
+
+    get actionIconTitle() {
+        return this.actionIconName === 'utility:edit' ? 'Change selection' : 'Remove selected option';
+    }
     recordsList = [];
-    selectedRecordName;
+    @api selectedRecordName;
 
     @api objectApiName = "Account";
     @api fieldApiName = "Name";
     @api otherFieldApiName = "Industry";
     @api searchString = "";
-    @api selectedRecordId = "";
+    _selectedRecordId = "";
+    @api 
+    get selectedRecordId() {
+        return this._selectedRecordId;
+    }
+    set selectedRecordId(value) {
+        this._selectedRecordId = value;
+        if (value) {
+            this.fetchSobjectRecords(true);
+        }
+    }
+
     @api parentRecordId;
     @api parentFieldApiName;
 
@@ -29,7 +50,7 @@ export default class CustomLookupLwc extends LightningElement {
             fieldApiName: this.fieldApiName,
             otherFieldApiName: this.otherFieldApiName,
             searchString: this.searchString,
-            selectedRecordId: this.selectedRecordId,
+            selectedRecordId: this._selectedRecordId,
             parentRecordId: this.parentRecordId,
             parentFieldApiName: this.parentFieldApiName
         };
@@ -44,9 +65,7 @@ export default class CustomLookupLwc extends LightningElement {
 
     //getting the default selected record
     connectedCallback() {
-        if (this.selectedRecordId) {
-            this.fetchSobjectRecords(true);
-        }
+        // No longer needed here as the setter handles initial load and value changes
     }
 
     //call the apex method

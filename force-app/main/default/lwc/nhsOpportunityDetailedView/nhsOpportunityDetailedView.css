@@ -1,0 +1,729 @@
+
+:host {
+    /* NHS Sage Palette */
+    --nhs-sage:        #6B9080;
+    --nhs-sage-dark:   #4A6B5E;
+    --nhs-sage-mid:    #A4C3B2;
+    --nhs-sage-light:  #CCE3D8;
+    --nhs-sage-tint:   #EAF4EF;
+    --nhs-sage-header: #B7D0C4;
+    --navy:            #0D1E4A;
+    --navy-light:      #1A4FCC;
+    --label-bg:        #C9DDD4;
+    --label-bg-alt:    #D8E9E2;
+    --border:          #9BBFB0;
+    --border-light:    #C5DCCC;
+    --white:           #FFFFFF;
+    --input-focus:     #1A4FCC;
+    --text-dark:       #1C2B24;
+    --text-mid:        #374151;
+    --text-muted:      #6B7280;
+    --section-title:   #2D5248;
+    --agent-header:    #3D7A67;
+    --valuation-bg:    #4A6B5E;
+    --currency:        #2D5248;
+    --radius:          2px;
+    --shadow:          0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(45,82,72,0.07);
+
+    /* Consistent font stack */
+    --font-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:  'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    display: block;
+    background: #F2F7F5;
+    color: var(--text-dark);
+    padding: 16px;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Page Header ─── */
+.page-header {
+    margin-bottom: 24px;
+}
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.header-subtitle {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-mid);
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.stage-dropdown {
+    --slds-c-input-color-border: var(--border-light);
+    --slds-c-input-radius-border: 6px;
+    --slds-c-input-shadow: none;
+    --slds-c-input-text-color: var(--nhs-sage-dark);
+    --slds-c-input-font-size: 12px;
+    --slds-c-input-spacing-padding-top: 4px;
+    --slds-c-input-spacing-padding-bottom: 4px;
+    width: 180px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+}
+.page-header .record-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--nhs-sage-dark);
+    background: var(--nhs-sage-tint);
+    border: 1px solid var(--nhs-sage-light);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+}
+
+/* ─── Stage Header Row ─── */
+.stage-header-row {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+}
+
+/* ─── Stage Tracker ─── */
+.stage-tracker {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    padding: 8px 4px;
+    box-shadow: var(--shadow);
+    gap: 0;
+}
+.stage-step {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    padding: 6px 4px;
+}
+
+/* Connector line between steps */
+.stage-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 19px;
+    right: -1px;
+    width: calc(100% - 32px);
+    height: 2px;
+    background: var(--border-light);
+    transform: translateX(50%);
+    z-index: 0;
+}
+.stage-step.completed:not(:last-child)::after {
+    background: var(--nhs-sage-dark);
+}
+.stage-step.active:not(:last-child)::after {
+    background: var(--border-light);
+}
+
+/* Dot — default (upcoming) */
+.stage-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    transition: all 0.2s ease;
+    border: 2px solid var(--border-light);
+    background: var(--nhs-sage-tint);
+}
+
+/* Completed — NHS sage circle with white tick */
+.stage-step.completed .stage-dot {
+    background: var(--nhs-sage-dark);
+    border-color: var(--nhs-sage-dark);
+    box-shadow: 0 1px 4px rgba(74,107,94,0.35);
+}
+
+/* Upcoming — muted empty circle */
+.stage-step.upcoming .stage-dot {
+    background: var(--nhs-sage-tint);
+    border-color: var(--border-light);
+}
+
+/* Active — animated glowing bulb (NHS green) */
+.stage-step.active .stage-dot {
+    background: var(--white);
+    border: 2.5px solid var(--nhs-sage);
+    position: relative;
+    overflow: visible;
+}
+.pulse-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid var(--nhs-sage);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+.glow-core {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--nhs-sage);
+    animation: bulb-breathe 2s ease-in-out infinite;
+    box-shadow: 0 0 6px 2px rgba(107,144,128,0.5);
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes bulb-breathe {
+    0%, 100% { opacity: 0.7; box-shadow: 0 0 4px 1px rgba(107,144,128,0.3); }
+    50% { opacity: 1; box-shadow: 0 0 10px 4px rgba(107,144,128,0.6); }
+}
+
+/* Label */
+.stage-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+.stage-step.completed .stage-label {
+    color: var(--nhs-sage-dark);
+}
+.stage-step.active .stage-label {
+    color: var(--nhs-sage-dark);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+/* ─── Archived Badge (disconnected) ─── */
+.archived-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 2px dashed var(--border-light);
+    border-radius: 10px;
+    padding: 8px 20px;
+    min-width: 90px;
+}
+.archived-badge .archived-label {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+.archived-badge.active {
+    background: #FEF2F2;
+    border: 2px solid #DC2626;
+}
+.archived-badge.active .archived-label {
+    color: #DC2626;
+}
+
+/* ─── Form Card ─── */
+.form-card {
+    background: var(--white);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* ─── Section Banner ─── */
+.section-banner {
+    background: linear-gradient(135deg, var(--nhs-sage-dark) 0%, var(--nhs-sage) 100%);
+    padding: 11px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-banner h2 {
+    font-family: var(--font-heading);
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+}
+.section-banner .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.45);
+}
+
+/* ─── Grid Table ─── */
+.form-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.form-table td,
+.form-table th {
+    border: 1px solid var(--border-light);
+    vertical-align: middle;
+    font-size: 13px;
+    font-family: var(--font-sans);
+}
+
+/* Label cells */
+.cell-label {
+    background: var(--label-bg);
+    color: var(--section-title);
+    font-weight: 700;
+    font-size: 11px;
+    padding: 10px 14px;
+    white-space: normal;
+    width: 1%;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Sub-header label (darker) */
+.cell-label-dark {
+    background: var(--nhs-sage-dark);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 9px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Agent column header */
+.cell-agent-header {
+    background: var(--nhs-sage-header);
+    color: var(--section-title);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    text-align: center;
+    padding: 10px 16px;
+}
+
+/* Valuation sub-header */
+.cell-valuation-header {
+    background: var(--nhs-sage-mid);
+    color: var(--section-title);
+    font-weight: 700;
+    font-size: 11px;
+    text-align: center;
+    padding: 9px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Input cells */
+.cell-input {
+    background: var(--white);
+    padding: 0;
+}
+
+/* Empty/Spacing cells */
+.cell-empty {
+    background: var(--nhs-sage-tint);
+    border: 1px solid var(--border-light);
+}
+
+.cell-no-border {
+    border: none !important;
+    background: transparent !important;
+}
+
+/* Currency display cells */
+.cell-currency {
+    background: var(--nhs-sage-tint);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--currency);
+    font-weight: 600;
+    padding: 9px 12px;
+}
+
+/* ─── Input Styles ─── */
+.field-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 10px 14px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-dark);
+    background: transparent;
+    min-height: 40px;
+    transition: all 0.2s ease;
+}
+.field-input:focus {
+    background: #EBF5FF;
+    outline: 2px solid var(--input-focus);
+    outline-offset: -2px;
+}
+.field-input::placeholder {
+    color: #B0BAC7;
+    font-family: var(--font-sans);
+}
+
+/* Override for lookup/picker components to match table style */
+c-custom-lookup-lwc,
+lightning-record-picker {
+    --slds-c-input-spacing-padding-left: 12px;
+    --slds-c-input-spacing-padding-right: 12px;
+    --slds-c-input-radius-border: 0;
+    --sds-c-input-shadow: none;
+    --slds-c-input-color-border: transparent;
+    width: 100%;
+    font-family: var(--font-sans);
+}
+
+.key-value-lookup {
+    --slds-c-input-font-size: 15px;
+    --slds-c-input-text-color: var(--navy);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Name value cells — prominent display for key names */
+.name-value-cell {
+    vertical-align: middle !important;
+}
+.name-value-lookup {
+    --slds-c-input-font-size: 15px;
+    --slds-c-input-text-color: var(--navy);
+    --slds-c-input-color-background: transparent;
+    --slds-c-input-color-border: transparent;
+    --sds-c-input-shadow: none;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Agent name cells */
+.agent-name-cell c-custom-lookup-lwc {
+    --slds-c-input-font-size: 15px;
+    --slds-c-input-text-color: var(--navy);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* Agent value cells — center all content */
+.agent-val {
+    text-align: center;
+}
+.agent-val .field-input {
+    text-align: center;
+}
+.agent-val .appt-row {
+    justify-content: center;
+}
+
+/* ─── Currency fields ─── */
+/* (currency-wrapper removed — all currency fields now use currency-wrapper-centered) */
+
+.currency-wrapper-centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+.currency-prefix {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--currency);
+    pointer-events: none;
+}
+
+.field-input-currency {
+    width: 100px;
+    border: none;
+    outline: none;
+    padding: 8px 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--currency);
+    background: transparent;
+    min-height: 36px;
+    text-align: left;
+    font-weight: 700;
+}
+.field-input-currency:focus {
+    background: #EBF5FF;
+    outline: 2px solid var(--input-focus);
+    outline-offset: -2px;
+}
+
+select.field-input {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B9080' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.cell-clickable:hover {
+    background: var(--nhs-sage-mid) !important;
+    color: var(--white) !important;
+}
+
+/* ─── Appointment row — date + time side by side ─── */
+.appt-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.appt-row .appt-date {
+    flex: 1;
+    min-width: 0;
+}
+.appt-divider-label {
+    font-size: 11px;
+    color: var(--section-title);
+    font-weight: 600;
+    background: var(--label-bg);
+    padding: 0 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    border-left: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.appt-row .appt-time-input {
+    width: 110px;
+    min-width: 110px;
+    text-align: center;
+}
+
+/* ─── Yes/No combobox — centered ─── */
+.yn-select {
+    text-align: center;
+    padding: 0 8px;
+}
+.yn-select lightning-combobox {
+    --slds-c-input-spacing-padding-left: 0;
+    --slds-c-input-spacing-padding-right: 24px;
+    max-width: 120px;
+    margin: 0 auto;
+}
+
+/* ─── Notes / Textarea ─── */
+.cell-notes {
+    background: var(--white);
+    vertical-align: top;
+}
+.field-textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-dark);
+    background: transparent;
+    resize: vertical;
+    min-height: 80px;
+}
+.field-textarea:focus {
+    background: #EBF5FF;
+    outline: 2px solid var(--input-focus);
+    outline-offset: -2px;
+}
+
+.field-label-mini {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--nhs-sage-dark);
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+}
+
+.cell-label-header {
+    background: var(--nhs-sage-header);
+    color: var(--nhs-sage-dark);
+    font-weight: 800;
+    font-size: 12px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid var(--border-light);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cell-border-right {
+    border-right: 1px solid var(--border-light) !important;
+}
+
+.cell-label-vertical {
+    vertical-align: top;
+    padding-top: 12px;
+}
+
+.notes-wrapper {
+    padding: 10px;
+    height: 100%;
+}
+.notes-wrapper .field-textarea {
+    height: 150px;
+    line-height: 1.6;
+    background: #fff;
+}
+
+/* ─── Action Bar (NHS sticky footer) ─── */
+.action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    background: var(--white);
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 -1px 4px rgba(0,0,0,0.05);
+    margin-top: 1.5rem;
+    border-radius: 0 0 8px 8px;
+}
+.btn {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 28px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.btn-primary {
+    background: var(--nhs-sage-dark);
+    color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(74,107,94,0.3);
+}
+.btn-primary:hover {
+    background: var(--nhs-sage);
+    box-shadow: 0 2px 6px rgba(74,107,94,0.4);
+}
+.btn-secondary {
+    background: var(--white);
+    color: var(--nhs-sage-dark);
+    border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--nhs-sage-tint); }
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+}
+.btn-icon {
+    vertical-align: -2px;
+    margin-right: 6px;
+}
+.action-bar-spacer {
+    flex: 1;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+    :host { padding: 16px 12px; }
+    .page-header .record-id { display: none; }
+}
+
+/* ─── Custom Combobox Overrides ─── */
+.custom-combobox {
+    --slds-c-input-color-border: transparent;
+    --slds-c-input-radius-border: 0;
+    --slds-c-input-spacing-padding-left: 14px;
+    --slds-c-input-spacing-padding-right: 32px;
+    --slds-c-input-shadow: none;
+    --slds-c-input-text-color: var(--text-dark);
+    --slds-c-input-placeholder-color-text: #B0BAC7;
+    --slds-c-input-color-background: transparent;
+    --slds-c-input-spacing-padding-top: 8px;
+    --slds-c-input-spacing-padding-bottom: 8px;
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 13px;
+}
+.custom-combobox:focus-within {
+    background: #EBF5FF;
+    outline: 2px solid var(--input-focus);
+    outline-offset: -2px;
+}
+
+.cell-select-container {
+    padding: 0;
+    position: relative;
+}
+
+/* ─── PDF Lightbox ─── */
+.pdf-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.pdf-modal {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 40px 50px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    min-width: 260px;
+}
+.pdf-spinner {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+.spinner-ring {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--nhs-sage-light);
+    border-top-color: var(--nhs-sage-dark);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.pdf-status {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}

@@ -1,35 +1,28 @@
 public with sharing class PdfGeneratorController {
-    
+
     @AuraEnabled
-    public static String generatePDF(String htmlContent) {
+    public static String generatePDF(String recordId) {
         try {
-            // Encode HTML content to pass safely as a parameter
-            String encodedHtml = EncodingUtil.base64Encode(Blob.valueOf(htmlContent));
-
-            // Construct the Visualforce page URL with encoded content
-            String vfPageUrl = '/apex/PdfGeneratorPage?content=' + encodedHtml;
-
-            // Convert the Visualforce page to a PDF
-            PageReference pdfPage = new PageReference(vfPageUrl);
+            PageReference pdfPage = new PageReference('/apex/PdfGeneratorPage?id=' + recordId);
             Blob pdfBlob = pdfPage.getContentAsPDF();
 
-            // Store PDF as a File record in Salesforce
-            ContentVersion file = new ContentVersion();
-            file.Title = 'GeneratedPDF';
-            file.PathOnClient = 'GeneratedPDF.pdf';
-            file.VersionData = pdfBlob;
-            insert file;
+            Opportunity opp = [SELECT Vendor_1__r.Name FROM Opportunity WHERE Id = :recordId LIMIT 1];
+            String vendorName = opp.Vendor_1__r?.Name != null ? opp.Vendor_1__r.Name.replaceAll('[^a-zA-Z0-9]', '_') : 'Application';
 
-            // Retrieve the file ID for download
-            Id fileId = [SELECT Id FROM ContentDocument WHERE Id IN 
-                         (SELECT ContentDocumentId FROM ContentVersion WHERE Id = :file.Id) 
+            ContentVersion pdfFile = new ContentVersion();
+            pdfFile.Title = vendorName + '_Application_' + DateTime.now().format('yyyy-MM-dd');
+            pdfFile.PathOnClient = vendorName + '_Application.pdf';
+            pdfFile.VersionData = pdfBlob;
+            insert pdfFile;
+
+            Id fileId = [SELECT Id FROM ContentDocument WHERE Id IN
+                         (SELECT ContentDocumentId FROM ContentVersion WHERE Id = :pdfFile.Id)
                          LIMIT 1].Id;
 
             return '/sfc/servlet.shepherd/document/download/' + fileId;
-            
+
         } catch (Exception e) {
-            System.debug('Error generating PDF: ' + e.getMessage());
-            return null;
+            throw new AuraHandledException('PDF generation failed: ' + e.getMessage());
         }
     }
 }

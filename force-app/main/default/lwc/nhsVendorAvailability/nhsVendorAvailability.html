@@ -1,0 +1,60 @@
+<template>
+    <div class="form-card">
+        <div class="section-banner">
+            <div class="dot"></div>
+            <h2>Vendor Availability</h2>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="calendar-body">
+                <template for:each={weeks} for:item="week">
+                    <div key={week.key} class="week-row">
+                        <div class="week-label">{week.label}</div>
+                        <div class="week-grid">
+                            <template for:each={week.days} for:item="day">
+                                <div key={day.dateStr} class={day.colClass}>
+                                    <div class="day-header">
+                                        <span class="day-name">{day.dayName}</span>
+                                        <span class="day-number">{day.dayNumber}</span>
+                                    </div>
+                                    <template if:true={day.isWeekday}>
+                                        <template if:false={day.isPast}>
+                                            <button class={day.allClass} data-date={day.dateStr} data-slot="all" onclick={handleSlotToggle}>All</button>
+                                            <button class={day.amClass} data-date={day.dateStr} data-slot="am" onclick={handleSlotToggle}>AM</button>
+                                            <button class={day.pmClass} data-date={day.dateStr} data-slot="pm" onclick={handleSlotToggle}>PM</button>
+                                        </template>
+                                        <template if:true={day.isPast}>
+                                            <template if:true={day.hasAvailability}>
+                                                <span class="past-badge past-set">{day.pastLabel}</span>
+                                            </template>
+                                            <template if:false={day.hasAvailability}>
+                                                <span class="past-badge">—</span>
+                                            </template>
+                                        </template>
+                                    </template>
+                                    <template if:false={day.isWeekday}>
+                                        <span class="weekend-label">Weekend</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="calendar-actions">
+                    <template if:true={canAddWeek}>
+                        <button class="btn btn-secondary" onclick={handleAddWeek}>+ Add Week</button>
+                    </template>
+                    <div class="action-bar-spacer"></div>
+                    <button class="btn btn-primary" onclick={handleSave}>Save Availability</button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

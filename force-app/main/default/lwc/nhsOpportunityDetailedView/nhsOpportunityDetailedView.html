@@ -1,0 +1,505 @@
+<template>
+    <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+
+    <template if:false={isLoading}>
+        <!-- PAGE HEADER WITH STAGE TRACKER -->
+        <header class="page-header">
+            <div class="header-top">
+                <p class="header-subtitle">Application: {formData.vendor1Name}</p>
+                <div class="header-right-group">
+                    <lightning-combobox
+                        name="nhsProcess"
+                        label="Stage"
+                        variant="label-hidden"
+                        value={formData.nhsProcess}
+                        options={nhsProcessOptions}
+                        onchange={handleStageChange}
+                        class="stage-dropdown">
+                    </lightning-combobox>
+                    <span class="record-id">{recordId}</span>
+                </div>
+            </div>
+            <div class="stage-header-row">
+                <div class="stage-tracker">
+                    <template for:each={stages} for:item="stage">
+                        <div key={stage.label} class={stage.cssClass}>
+                            <div class="stage-dot">
+                                <template if:true={stage.isCompleted}>
+                                    <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2.5 7l3 3 6-6" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </template>
+                                <template if:true={stage.isActive}>
+                                    <div class="pulse-ring"></div>
+                                    <div class="glow-core"></div>
+                                </template>
+                            </div>
+                            <span class="stage-label">{stage.label}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class={archivedClass}>
+                    <span class="archived-label">Archived</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECTION 1: PROPERTY DETAILS -->
+        <div class="form-card">
+            <div class="section-banner">
+                <div class="dot"></div>
+                <h2>Property Details</h2>
+            </div>
+
+            <table class="form-table">
+                <!-- Column widths: label(8%) value(12%) | label(8%) value(12%) | label(8%) value(14%) | label(8%) value(12%) | label(6%) notes(12%) -->
+                <colgroup>
+                    <col style="width:8%">
+                    <col style="width:12%">
+                    <col style="width:8%">
+                    <col style="width:12%">
+                    <col style="width:8%">
+                    <col style="width:14%">
+                    <col style="width:8%">
+                    <col style="width:12%">
+                    <col style="width:6%">
+                    <col style="width:12%">
+                </colgroup>
+
+                <!-- TABLE HEADER -->
+                <tr>
+                    <td colspan="10" class="cell-label-dark" style="text-align:center; font-size:13px; letter-spacing:0.1em;">PROPERTY DETAILS</td>
+                </tr>
+
+                <!-- Row 1: Sub-headers -->
+                <tr>
+                    <td colspan="2" class="cell-label-header">House Builder</td>
+                    <td colspan="2" class="cell-label-header">Property Address</td>
+                    <td class="cell-label">Vendor 1</td>
+                    <td class="cell-input name-value-cell">
+                        <c-custom-lookup-lwc
+                            class="name-value-lookup"
+                            hide-entity-icon
+                            action-icon-name="utility:edit"
+                            selected-icon-name="standard:contact"
+                            object-label="Contact"
+                            object-api-name="Contact"
+                            field-api-name="Name"
+                            selected-record-id={formData.vendor1}
+                            selected-record-name={formData.vendor1Name}
+                            data-field="vendor1"
+                            onvalueselected={handleLookupChange}>
+                        </c-custom-lookup-lwc>
+                    </td>
+                    <td class="cell-label">Received</td>
+                    <td class="cell-input">
+                        <input type="date" class="field-input" value={formData.dateReceived} data-field="dateReceived" onchange={handleInputChange}>
+                    </td>
+                    <td class="cell-label cell-label-vertical" rowspan="4">Notes</td>
+                    <td class="cell-input" rowspan="4" style="vertical-align:top;">
+                        <div class="notes-wrapper">
+                            <textarea class="field-textarea" placeholder="Application notes…" data-field="notes" onchange={handleInputChange}>{formData.notes}</textarea>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 2: House Builder value + Address + Mobile + Expectations -->
+                <tr>
+                    <td colspan="2" class="cell-input cell-border-right name-value-cell" style="text-align:center;">
+                        <c-custom-lookup-lwc
+                            class="name-value-lookup"
+                            hide-entity-icon
+                            action-icon-name="utility:edit"
+                            selected-icon-name="standard:account"
+                            object-label="Account"
+                            object-api-name="Account"
+                            field-api-name="Name"
+                            selected-record-id={formData.houseBuilder}
+                            selected-record-name={formData.houseBuilderName}
+                            data-field="houseBuilder"
+                            onvalueselected={handleLookupChange}>
+                        </c-custom-lookup-lwc>
+                    </td>
+                    <td colspan="2" class="cell-input cell-border-right" rowspan="2" style="text-align:center; vertical-align:top;">
+                        <div class="notes-wrapper">
+                            <textarea class="field-textarea text-center" rows="4" placeholder="Enter full address…" data-field="propertyAddress" onchange={handleInputChange} style="height:80px;">{formData.propertyAddress}</textarea>
+                        </div>
+                    </td>
+                    <td class="cell-label">Mobile</td>
+                    <td class="cell-input">
+                        <input type="tel" class="field-input" placeholder="+44…" value={formData.mobile} data-field="mobile" onchange={handleInputChange}>
+                    </td>
+                    <td class="cell-label">Expectations</td>
+                    <td class="cell-input">
+                        <div class="currency-wrapper-centered">
+                            <span class="currency-prefix">£</span>
+                            <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.expectations} data-field="expectations" onchange={handleInputChange}>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Row 3: Development + Phone + ALCD -->
+                <tr>
+                    <td class="cell-label">Development</td>
+                    <td class="cell-input cell-border-right" style="text-align:center;">
+                        <input type="text" class="field-input text-center" placeholder="Development name" value={formData.development} data-field="development" onchange={handleInputChange}>
+                    </td>
+                    <td class="cell-label">Phone</td>
+                    <td class="cell-input">
+                        <input type="tel" class="field-input" placeholder="+44…" value={formData.landline} data-field="landline" onchange={handleInputChange}>
+                    </td>
+                    <td class="cell-label">ALCD</td>
+                    <td class="cell-input">
+                        <input type="month" class="field-input" value={formData.alcd} data-field="alcd" onchange={handleInputChange}>
+                    </td>
+                </tr>
+
+                <!-- Row 4: Plot + Get Direction + Email + Scheme -->
+                <tr>
+                    <td class="cell-label">Plot</td>
+                    <td class="cell-input cell-border-right" style="text-align:center;">
+                        <input type="text" class="field-input text-center" placeholder="Plot #" value={formData.plot} data-field="plot" onchange={handleInputChange}>
+                    </td>
+                    <td colspan="2" class="cell-label cell-clickable" style="text-align:center; cursor:pointer;" onclick={handleGetDirection}>
+                        Get Direction
+                    </td>
+                    <td class="cell-label">Email</td>
+                    <td class="cell-input">
+                        <input type="email" class="field-input" placeholder="vendor@email.com" value={formData.email} data-field="email" onchange={handleInputChange}>
+                    </td>
+                    <td class="cell-label">Scheme</td>
+                    <td class="cell-input cell-select-container">
+                        <lightning-combobox
+                            name="scheme"
+                            label="Scheme"
+                            variant="label-hidden"
+                            value={formData.scheme}
+                            placeholder="Select scheme…"
+                            options={schemeOptions}
+                            onchange={handleInputChange}
+                            data-field="scheme"
+                            class="custom-combobox">
+                        </lightning-combobox>
+                        <!-- Debugging: <span style="font-size:8px; display:block; padding: 2px;">Value: {formData.scheme}</span> -->
+                    </td>
+                    <!-- Block 5 (Spanned) -->
+                </tr>
+            </table>
+        </div>
+
+
+    <!-- SECTION 2: AGENT DETAILS -->
+    <div class="form-card">
+        <div class="section-banner">
+            <div class="dot"></div>
+            <h2>Agent Details / Valuation Figures / Recommendations</h2>
+        </div>
+
+        <table class="form-table">
+            <tr>
+                <td class="cell-empty" style="width:150px;"></td>
+                <td class="cell-agent-header" colspan="2">Agent 1</td>
+                <td class="cell-agent-header" colspan="2">Agent 2</td>
+                <td class="cell-agent-header" colspan="2">Agent 3</td>
+            </tr>
+            <tr>
+                <td class="cell-label">Company Name</td>
+                <td class="cell-input agent-name-cell name-value-cell" colspan="2">
+                    <c-custom-lookup-lwc
+                        class="name-value-lookup"
+                        hide-entity-icon
+                        action-icon-name="utility:edit"
+                        selected-icon-name="standard:account"
+                        object-label="Account"
+                        object-api-name="Account"
+                        field-api-name="Name"
+                        selected-record-id={formData.agent1}
+                        selected-record-name={formData.agent1Name}
+                        data-field="agent1"
+                        onvalueselected={handleLookupChange}>
+                    </c-custom-lookup-lwc>
+                </td>
+                <td class="cell-input agent-name-cell name-value-cell" colspan="2">
+                    <c-custom-lookup-lwc
+                        class="name-value-lookup"
+                        hide-entity-icon
+                        action-icon-name="utility:edit"
+                        selected-icon-name="standard:account"
+                        object-label="Account"
+                        object-api-name="Account"
+                        field-api-name="Name"
+                        selected-record-id={formData.agent2}
+                        selected-record-name={formData.agent2Name}
+                        data-field="agent2"
+                        onvalueselected={handleLookupChange}>
+                    </c-custom-lookup-lwc>
+                </td>
+                <td class="cell-input agent-name-cell name-value-cell" colspan="2">
+                    <c-custom-lookup-lwc
+                        class="name-value-lookup"
+                        hide-entity-icon
+                        action-icon-name="utility:edit"
+                        selected-icon-name="standard:account"
+                        object-label="Account"
+                        object-api-name="Account"
+                        field-api-name="Name"
+                        selected-record-id={formData.agent3}
+                        selected-record-name={formData.agent3Name}
+                        data-field="agent3"
+                        onvalueselected={handleLookupChange}>
+                    </c-custom-lookup-lwc>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Telephone</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="tel" class="field-input" value={formData.agent1Phone} data-field="agent1Phone" onchange={handleInputChange} placeholder="Telephone…">
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="tel" class="field-input" value={formData.agent2Phone} data-field="agent2Phone" onchange={handleInputChange} placeholder="Telephone…">
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="tel" class="field-input" value={formData.agent3Phone} data-field="agent3Phone" onchange={handleInputChange} placeholder="Telephone…">
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Email</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="email" class="field-input" value={formData.agent1Email} data-field="agent1Email" onchange={handleInputChange} placeholder="Email address…">
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="email" class="field-input" value={formData.agent2Email} data-field="agent2Email" onchange={handleInputChange} placeholder="Email address…">
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <input type="email" class="field-input" value={formData.agent3Email} data-field="agent3Email" onchange={handleInputChange} placeholder="Email address…">
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Appointment</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="appt-row">
+                        <input type="date" class="field-input appt-date" value={agentAppts.agent1.date} data-agent="agent1" data-type="date" onchange={handleApptChange}>
+                        <span class="appt-divider-label">Time</span>
+                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent1.time} data-agent="agent1" data-type="time" onchange={handleApptChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="appt-row">
+                        <input type="date" class="field-input appt-date" value={agentAppts.agent2.date} data-agent="agent2" data-type="date" onchange={handleApptChange}>
+                        <span class="appt-divider-label">Time</span>
+                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent2.time} data-agent="agent2" data-type="time" onchange={handleApptChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="appt-row">
+                        <input type="date" class="field-input appt-date" value={agentAppts.agent3.date} data-agent="agent3" data-type="date" onchange={handleApptChange}>
+                        <span class="appt-divider-label">Time</span>
+                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent3.time} data-agent="agent3" data-type="time" onchange={handleApptChange}>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Agent Emailed</td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent1Emailed"
+                        label="Agent 1 Emailed"
+                        variant="label-hidden"
+                        value={formData.agent1Emailed}
+                        options={yesNoOptions}
+                        data-field="agent1Emailed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent2Emailed"
+                        label="Agent 2 Emailed"
+                        variant="label-hidden"
+                        value={formData.agent2Emailed}
+                        options={yesNoOptions}
+                        data-field="agent2Emailed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent3Emailed"
+                        label="Agent 3 Emailed"
+                        variant="label-hidden"
+                        value={formData.agent3Emailed}
+                        options={yesNoOptions}
+                        data-field="agent3Emailed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Verbally Confirmed</td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent1Confirmed"
+                        label="Agent 1 Confirmed"
+                        variant="label-hidden"
+                        value={formData.agent1Confirmed}
+                        options={yesNoOptions}
+                        data-field="agent1Confirmed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent2Confirmed"
+                        label="Agent 2 Confirmed"
+                        variant="label-hidden"
+                        value={formData.agent2Confirmed}
+                        options={yesNoOptions}
+                        data-field="agent2Confirmed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+                <td class="cell-input yn-select" colspan="2">
+                    <lightning-combobox
+                        name="agent3Confirmed"
+                        label="Agent 3 Confirmed"
+                        variant="label-hidden"
+                        value={formData.agent3Confirmed}
+                        options={yesNoOptions}
+                        data-field="agent3Confirmed"
+                        onchange={handleInputChange}
+                        class="custom-combobox">
+                    </lightning-combobox>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Valuation Figures</td>
+                <td class="cell-valuation-header" colspan="2">Agent 1 Valuation Figures</td>
+                <td class="cell-valuation-header" colspan="2">Agent 2 Valuation Figures</td>
+                <td class="cell-valuation-header" colspan="2">Agent 3 Valuation Figures</td>
+            </tr>
+            <tr>
+                <td class="cell-label">Initial Asking Price</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Initial} data-field="agent1Initial" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Initial} data-field="agent2Initial" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Initial} data-field="agent3Initial" onchange={handleInputChange}>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Target Sale</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Target} data-field="agent1Target" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Target} data-field="agent2Target" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Target} data-field="agent3Target" onchange={handleInputChange}>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label">Bottom Line</td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Bottom} data-field="agent1Bottom" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Bottom} data-field="agent2Bottom" onchange={handleInputChange}>
+                    </div>
+                </td>
+                <td class="cell-input agent-val" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Bottom} data-field="agent3Bottom" onchange={handleInputChange}>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="cell-label" rowspan="2" style="line-height:1.3;">New Home Solutions<br>Recommended:</td>
+                <td class="cell-valuation-header" colspan="2" style="background:var(--nhs-sage-header);color:var(--section-title);">Market</td>
+                <td class="cell-valuation-header" colspan="2" style="background:var(--nhs-sage-header);color:var(--section-title);">Target</td>
+                <td class="cell-valuation-header" colspan="2" style="background:var(--nhs-sage-header);color:var(--section-title);">Forced</td>
+            </tr>
+            <tr>
+                <td class="cell-currency" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" value={formData.market} data-field="market" onchange={handleInputChange} placeholder="0.00">
+                    </div>
+                </td>
+                <td class="cell-currency" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" value={formData.target} data-field="target" onchange={handleInputChange} placeholder="0.00">
+                    </div>
+                </td>
+                <td class="cell-currency" colspan="2">
+                    <div class="currency-wrapper-centered">
+                        <span class="currency-prefix">£</span>
+                        <input type="number" step="0.01" class="field-input-currency" value={formData.forced} data-field="forced" onchange={handleInputChange} placeholder="0.00">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- SECTION 3: VENDOR AVAILABILITY (conditional) -->
+    <template if:true={showVendorAvailability}>
+        <c-nhs-vendor-availability record-id={recordId}></c-nhs-vendor-availability>
+    </template>
+
+    <!-- PDF LIGHTBOX -->
+    <template if:true={showPdfModal}>
+        <div class="pdf-overlay">
+            <div class="pdf-modal">
+                <div class="pdf-spinner">
+                    <div class="spinner-ring"></div>
+                </div>
+                <p class="pdf-status">{pdfStatus}</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+        <button class="btn btn-secondary" onclick={handleGeneratePdf}>
+            <svg class="btn-icon" width="14" height="14" viewBox="0 0 14 14"><path d="M3.5 1v3H1v8.5h12V4h-2.5V1h-7zm1 1h5v2h-5V2zM2 5h10v6.5H2V5zm2 1.5v1h6v-1H4zm0 2v1h4v-1H4z" fill="currentColor"/></svg>
+            Generate PDF
+        </button>
+        <div class="action-bar-spacer"></div>
+        <button class="btn btn-primary" onclick={handleSave}>Save Application</button>
+        <button class="btn btn-ghost" onclick={handleCancel}>Cancel</button>
+    </div>
+</template>
+</template>
