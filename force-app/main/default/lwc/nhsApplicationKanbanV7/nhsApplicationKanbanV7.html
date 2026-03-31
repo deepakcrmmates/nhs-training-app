@@ -1,7 +1,8 @@
 <template>
     <div class="nhs-board">
+        <!-- Sticky Header Removed -->
 
-        <!-- ── Stage nav bar ── -->
+        <!-- Stage nav bar ── -->
         <div class="stage-nav">
             <template for:each={stageNav} for:item="s">
                 <button key={s.key} class={s.cls} data-key={s.key} onclick={handleNavClick}>
@@ -17,93 +18,68 @@
         ══════════════════════════════════════════ -->
         <template if:true={isApplication}>
             <div class="page-hdr">
-                <div class="hdr-top">
-                    <div class="hdr-ctx">
-                        <div class="org-pill">
-                            <div class="org-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 3.5V6.5L5 9L1 6.5V3.5L5 1Z" stroke="white" stroke-width="1" fill="none"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg></div>
-                            New Home Solutions - Training
-                        </div>
-                        <div class="bc">
-                            <span class="bc-link">New Applications</span>
-                            <span style="color:#cbd5e1;margin:0 2px">›</span>
-                            <span class="bc-cur">Application</span>
-                            <span style="color:#cbd5e1;margin:0 2px">›</span>
-                            <span style="color:#94a3b8">Kanban View</span>
-                        </div>
-                    </div>
-                    <div class="hdr-acts">
-                        <button class="hdr-btn" onclick={handleRefresh}><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon> Refresh</button>
-                        <button class="hdr-btn"><lightning-icon icon-name="utility:download" size="xx-small"></lightning-icon> Export</button>
-                    </div>
-                </div>
                 <div class="hdr-body">
-                    <div class="hdr-title-block">
-                        <div class="hdr-icon">
-                            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="4" height="14" rx="2" fill="white" opacity="0.9"/><rect x="8" y="2" width="4" height="18" rx="2" fill="white"/><rect x="14" y="6" width="4" height="10" rx="2" fill="white" opacity="0.7"/><rect x="20" y="8" width="2" height="6" rx="1" fill="white" opacity="0.4"/></svg>
+                    <div class="hdr-main">
+                        <div class="hdr-title-block">
+                            <div class="hdr-icon">
+                                <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="2" y="4" width="4" height="14" rx="2" fill="white" opacity="0.9"/><rect x="8" y="2" width="4" height="18" rx="2" fill="white"/><rect x="14" y="6" width="4" height="10" rx="2" fill="white" opacity="0.7"/><rect x="20" y="8" width="2" height="6" rx="1" fill="white" opacity="0.4"/></svg>
+                            </div>
+                            <h1 class="hdr-title">{activeStageLabel}</h1>
                         </div>
-                        <div>
-                            <h1 class="hdr-title">Application Pipeline</h1>
-                            <p class="hdr-sub">Contact tracking for all active applications &nbsp;&#183;&nbsp; <code>NHS_Process__c = Application</code></p>
-                            <div class="flow-pills">
-                                <template for:each={flowPills} for:item="p">
-                                    <template if:true={p.isArrow}><span key={p.key} class="flow-arrow">&#8594;</span></template>
-                                    <template if:false={p.isArrow}><span key={p.key} class="flow-pill" style={p.style}>{p.label}</span></template>
+                        <div class="hdr-filters">
+                            <div class="sw">
+                                <lightning-icon icon-name="utility:search" size="xx-small" class="si"></lightning-icon>
+                                <input class="s-inp" type="text" placeholder="Search.." value={searchTerm} oninput={handleSearch} />
+                                <template if:true={searchTerm}><button class="clr" onclick={clearSearch}><lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon></button></template>
+                            </div>
+
+                            <div class="hb-lookup {hbLookupClass}">
+                                <div class="sw">
+                                    <lightning-icon icon-name="utility:company" size="xx-small" class="si"></lightning-icon>
+                                    <input class="s-inp hb-inp" type="text" placeholder="Housebuilder.." value={hbSearchTerm} oninput={handleHbSearch} onfocus={handleHbFocus} onblur={handleHbBlur} />
+                                    <template if:true={hbFilter}>
+                                        <button class="clr" onclick={clearHbFilter}><lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon></button>
+                                    </template>
+                                </div>
+                                <template if:true={showHbDropdown}>
+                                    <div class="hb-results">
+                                        <template for:each={filteredHbOptions} for:item="h">
+                                            <div key={h.value} class="hb-item" onmousedown={handleHbSelect} data-id={h.value} data-label={h.label}>
+                                                {h.label}
+                                            </div>
+                                        </template>
+                                        <template if:false={hasHbResults}>
+                                            <div class="hb-empty">No housebuilders found</div>
+                                        </template>
+                                    </div>
                                 </template>
                             </div>
+
+                            <div class="dt-f">
+                                <label class="dt-lbl">Housebuilder Date</label>
+                                <input type="date" class="d-inp" value={appDateFilter} onchange={handleAppDate} />
+                            </div>
+
+                            <button class="clr-f-btn" onclick={clearFilters}>Clear Filters</button>
                         </div>
-                    </div>
-                    <div class="hdr-stats">
-                        <div class="stat-card"><span class="stat-val">{totalCards}</span><span class="stat-lbl">Total</span></div>
-                        <div class="stat-card"><span class="stat-val green">{activeCards}</span><span class="stat-lbl">Active</span></div>
-                        <div class="stat-card"><span class="stat-val amber">{contactedCards}</span><span class="stat-lbl">Contacted</span></div>
-                        <div class="stat-card"><span class="stat-val red">{cancelledCards}</span><span class="stat-lbl">Cancelled</span></div>
+
+                        <div class="hdr-acts-wrap">
+                            <div class="hdr-stats">
+                                <div class="stat-card"><strong>{totalContacts}</strong> <span>Total Contacts</span></div>
+                                <div class="stat-sep">/</div>
+                                <div class="stat-card"><strong class="red">{cancelledCards}</strong> <span>Cancelled</span></div>
+                            </div>
+                            <div class="v-sep"></div>
+                            <div class="v-toggle">
+                                <button class={kanbanBtnClass} data-mode="kanban" onclick={toggleViewMode} title="Kanban Board"><lightning-icon icon-name="utility:kanban" size="xx-small" variant={kanbanIconVariant}></lightning-icon></button>
+                                <button class={listBtnClass} data-mode="list" onclick={toggleViewMode} title="List View"><lightning-icon icon-name="utility:list" size="xx-small" variant={listIconVariant}></lightning-icon></button>
+                            </div>
+                            <div class="v-sep"></div>
+                            <button class="header-icon-btn" onclick={handleRefresh} title="Refresh"><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon></button>
+                            <button class="header-icon-btn" title="Export"><lightning-icon icon-name="utility:download" size="xx-small"></lightning-icon></button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="toolbar">
-                <div class="tl">
-                    <div class="sw">
-                        <lightning-icon icon-name="utility:search" size="xx-small" class="si"></lightning-icon>
-                        <input class="s-inp" type="text" placeholder="Search by name or ref..." value={searchTerm} oninput={handleSearch} />
-                        <template if:true={searchTerm}><button class="clr" onclick={clearSearch}><lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon></button></template>
-                    </div>
-                    
-                    <select class="f-sel" onchange={handleAssignee}>
-                        <option value="">All assignees</option>
-                        <template for:each={assigneeList} for:item="a"><option key={a} value={a}>{a}</option></template>
-                    </select>
-
-                    <select class="f-sel hb-sel" onchange={handleHbChange}>
-                        <option value="">All Housebuilders</option>
-                        <template for:each={hbOptions} for:item="h">
-                            <option key={h.value} value={h.value}>{h.label}</option>
-                        </template>
-                    </select>
-
-                    <div class="dt-filters">
-                        <div class="dt-f">
-                            <span class="dt-lbl">Date</span>
-                            <input type="date" class="d-inp" value={appDateFilter} onchange={handleAppDate} />
-                        </div>
-                        <div class="dt-f">
-                            <span class="dt-lbl">From</span>
-                            <input type="date" class="d-inp" value={startDateFilter} onchange={handleStartDate} />
-                        </div>
-                        <div class="dt-f">
-                            <span class="dt-lbl">To</span>
-                            <input type="date" class="d-inp" value={endDateFilter} onchange={handleEndDate} />
-                        </div>
-                    </div>
-
-                    <label class="arc-lbl"><input type="checkbox" checked={showArchived} onchange={handleArchived} /> Show archived</label>
-                    <button class="clr-f-btn" onclick={clearFilters}>Clear Filters</button>
-                    
-                    <div class="v-toggle">
-                        <button class="{kanbanBtnClass}" data-mode="kanban" onclick={toggleViewMode} title="Kanban Board"><lightning-icon icon-name="utility:kanban" size="xx-small" variant="{kanbanIconVariant}"></lightning-icon></button>
-                        <button class="{listBtnClass}" data-mode="list" onclick={toggleViewMode} title="List View"><lightning-icon icon-name="utility:list" size="xx-small" variant="{listIconVariant}"></lightning-icon></button>
-                    </div>
-                </div>
-                <div class="tr"><button class="icon-btn" onclick={handleRefresh} title="Refresh"><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon></button></div>
             </div>
 
             <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner><p>Loading applications...</p></div></template>
@@ -132,7 +108,7 @@
                                             <div class="c-bar" style={col.accentBarStyle}></div>
                                             <div class="c-in">
                                                 <div class="c-top-row">
-                                                    <span class="c-ref">{card.appRefNumber}</span>
+                                                    <span class="c-ref">{card.houseBuilder}</span>
                                                     <div class="c-pin-box">
                                                         <button class={card.pinBtnClass} data-id={card.id} onclick={handlePinClick} title={card.pinTitle}>
                                                             <lightning-icon icon-name={card.pinIcon} size="xx-small"></lightning-icon>
@@ -143,20 +119,28 @@
                                                 <div class="c-name" data-id={card.id} onclick={handleCardClick}>{card.name}</div>
                                                 <div class="c-chips">
                                                     <template if:true={card.plot}><span class="chip cp">Plot {card.plot}</span></template>
-                                                    <template if:true={card.houseBuilder}><span class="chip cb">{card.houseBuilder}</span></template>
+                                                    <template if:true={card.development}><span class="chip cb">{card.development}</span></template>
                                                 </div>
                                                 <div class="c-dets">
                                                     <template if:true={card.city}><div class="c-det"><lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon><span>{card.city}</span></div></template>
                                                     <template if:true={card.closeDateFormatted}><div class="c-det"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon><span>{card.closeDateFormatted}</span></div></template>
                                                 </div>
                                                 <div class="c-foot">
-                                                    <div class="c-own"><div class="ava" style={card.avStyle}>{card.avInitials}</div><span class="ow-n">{card.ownerName}</span></div>
                                                     <div class="c-acts">
                                                         <button class="act-btn" data-id={card.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
-                                                        <button class="act-btn" data-id={card.id} data-archived={card.archived} onclick={handleArchiveClick} title={card.arcLabel}><lightning-icon icon-name={card.arcIcon} size="xx-small"></lightning-icon></button>
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </template>
+                                    <template if:true={col.hasMore}>
+                                        <div class="load-more-row">
+                                            <template if:false={col.isLoadingMore}>
+                                                <button class="load-more-btn" data-stage={col.internalStageName} onclick={handleLoadMore}>Load More ({col.moreCount})</button>
+                                            </template>
+                                            <template if:true={col.isLoadingMore}>
+                                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                            </template>
                                         </div>
                                     </template>
                                     <template if:true={col.isEmpty}><div class="col-empty"><lightning-icon icon-name="utility:inbox" size="small"></lightning-icon><p>No applications</p></div></template>
@@ -168,51 +152,68 @@
 
                 <!-- LIST VIEW -->
                 <template if:true={isListView}>
-                    <div class="list-view-wrap">
+                    <div class="lv-wrap">
+                        <!-- Stage tabs -->
                         <div class="lv-tabs">
                             <template for:each={listStages} for:item="tab">
-                                <button key={tab.value} class={tab.cls} data-stage={tab.value} onclick={handleListStageClick}>{tab.label}</button>
+                                <button key={tab.value} class={tab.cls} data-stage={tab.value} onclick={handleListStageClick}>
+                                    <span class="lvt-label">{tab.label}</span>
+                                    <span class="lvt-count">{tab.count}</span>
+                                </button>
                             </template>
                         </div>
-                        <div class="lv-content">
-                            <table class="sf-dt">
+                        <!-- Table -->
+                        <div class="lv-table-wrap">
+                            <table class="va-table">
                                 <thead>
                                     <tr>
-                                        <th>Ref</th>
-                                        <th>Application Name</th>
-                                        <th>Plot</th>
-                                        <th>Housebuilder</th>
-                                        <th>Date</th>
-                                        <th>Owner</th>
-                                        <th style="width:80px">Acts</th>
+                                        <th class="va-th va-th-app">Application</th>
+                                        <th class="va-th">Vendor</th>
+                                        <th class="va-th">Development</th>
+                                        <th class="va-th">Plot</th>
+                                        <th class="va-th">Housebuilder</th>
+                                        <th class="va-th">Received</th>
+                                        <th class="va-th">Owner</th>
+                                        <th class="va-th va-th-act">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <template for:each={listCards} for:item="c">
-                                        <tr key={c.id}>
-                                            <td class="c-ref">{c.appRefNumber}</td>
-                                            <td class="lnk" data-id={c.id} onclick={handleCardClick}>
-                                                <div style="display:flex;align-items:center;gap:8px">
-                                                    <template if:true={c.pinned}><lightning-icon icon-name="utility:pinned" size="xx-small" variant="info"></lightning-icon></template>
+                                        <template if:true={c.isNewStage}>
+                                            <tr key={c.stageLabel} class="stage-divider-row">
+                                                <td colspan="8" class="stage-divider-cell">{c.stageLabel}</td>
+                                            </tr>
+                                        </template>
+                                        <tr key={c.id} class="va-row">
+                                            <td class="va-td" data-id={c.id} onclick={handleCardClick}>
+                                                <div class="app-addr">
+                                                    <template if:true={c.pinned}><span class="lv-pin-icon">&#128204;</span></template>
                                                     {c.name}
                                                 </div>
                                             </td>
-                                            <td>{c.plot}</td>
-                                            <td>{c.houseBuilder}</td>
-                                            <td>{c.closeDateFormatted}</td>
-                                            <td>
-                                                <div class="c-own"><div class="ava" style={c.avStyle}>{c.avInitials}</div><span class="ow-n">{c.ownerName}</span></div>
-                                            </td>
-                                            <td>
-                                                <div class="c-acts">
-                                                    <button class="act-btn" data-id={c.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
-                                                    <button class="act-btn" data-id={c.id} data-archived={c.archived} onclick={handleArchiveClick} title={c.arcLabel}><lightning-icon icon-name={c.arcIcon} size="xx-small"></lightning-icon></button>
+                                            <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
+                                            <td class="va-td">{c.development}</td>
+                                            <td class="va-td">{c.plot}</td>
+                                            <td class="va-td"><span class="hb-name">{c.houseBuilder}</span></td>
+                                            <td class="va-td"><span class="lv-date">{c.closeDateFormatted}</span></td>
+                                            <td class="va-td">
+                                                <div class="lv-owner">
+                                                    <div class="ava" style={c.avStyle}>{c.avInitials}</div>
+                                                    <span class="ow-n">{c.ownerName}</span>
                                                 </div>
+                                            </td>
+                                            <td class="va-td va-td-act">
+                                                <template if:false={c.isCancelled}>
+                                                    <button class="btn-move-next" data-id={c.id} onclick={handleMoveToVendorAvail}>Move Next</button>
+                                                </template>
+                                                <template if:true={c.isCancelled}>
+                                                    <button class="btn-move-next disabled" disabled>Cancelled</button>
+                                                </template>
                                             </td>
                                         </tr>
                                     </template>
                                     <template if:false={listCards.length}>
-                                        <tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8">No applications in this stage</td></tr>
+                                        <tr><td colspan="8" class="va-empty">No applications in this stage</td></tr>
                                     </template>
                                 </tbody>
                             </table>
@@ -226,84 +227,56 @@
              ARCHIVED VIEW
         ══════════════════════════════════════════ -->
         <template if:true={isArchived}>
-            <div class="page-hdr">
-                <div class="hdr-top">
-                    <div class="hdr-ctx">
-                        <div class="org-pill"><div class="org-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 3.5V6.5L5 9L1 6.5V3.5L5 1Z" stroke="white" stroke-width="1" fill="none"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg></div>New Home Solutions - Training</div>
-                        <div class="bc"><span class="bc-link">New Applications</span><span style="color:#cbd5e1;margin:0 2px">›</span><span class="bc-cur">Archived</span></div>
-                    </div>
-                    <div class="hdr-acts"><button class="hdr-btn" onclick={handleRefresh}><lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon> Refresh</button></div>
+            <div class="arc-toolbar">
+                <div class="arc-search">
+                    <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <input type="text" placeholder="Search archived…" value={searchTerm} oninput={handleSearch}>
                 </div>
-                <div class="va-hdr-body">
-                    <div class="va-title-wrap">
-                        <div class="va-obj-icon">📁</div>
-                        <div>
-                            <div class="va-title">Archived Applications</div>
-                            <div class="va-subtitle">View and manage all records that have been marked as archived</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="toolbar">
-                <div class="tl">
-                    <div class="sw">
-                        <lightning-icon icon-name="utility:search" size="xx-small" class="si"></lightning-icon>
-                        <input class="s-inp" type="text" placeholder="Search archived..." value={searchTerm} oninput={handleSearch} />
-                    </div>
-                    <select class="f-sel hb-sel" onchange={handleHbChange}>
-                        <option value="">All Housebuilders</option>
-                        <template for:each={hbOptions} for:item="h">
-                            <option key={h.value} value={h.value}>{h.label}</option>
-                        </template>
-                    </select>
-                </div>
-                <div class="tr"><button class="clr-f-btn" onclick={clearFilters}>Clear Search</button></div>
+                <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+                <div class="arc-info">{archivedCards.length} archived applications</div>
             </div>
 
-            <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner><p>Loading archived...</p></div></template>
+            <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div></template>
             <template if:true={showBoard}>
-                <div class="list-view-wrap">
-                    <div class="lv-content">
-                        <table class="sf-dt">
-                            <thead>
-                                <tr>
-                                    <th>Ref</th>
-                                    <th>Application Name</th>
-                                    <th>Original Stage</th>
-                                    <th>Plot</th>
-                                    <th>Housebuilder</th>
-                                    <th>Date</th>
-                                    <th>Owner</th>
-                                    <th style="width:100px">Acts</th>
+                <div class="lv-table-wrap" style="padding:12px 16px 0">
+                    <table class="va-table">
+                        <thead>
+                            <tr>
+                                <th class="va-th va-th-app">Application</th>
+                                <th class="va-th">Vendor</th>
+                                <th class="va-th">Original Stage</th>
+                                <th class="va-th">Development</th>
+                                <th class="va-th">Housebuilder</th>
+                                <th class="va-th">Owner</th>
+                                <th class="va-th" style="width:10%;text-align:center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={archivedCards} for:item="c">
+                                <tr key={c.id} class="va-row">
+                                    <td class="va-td" data-id={c.id} onclick={handleCardClick}>
+                                        <div class="app-addr">{c.name}</div>
+                                    </td>
+                                    <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
+                                    <td class="va-td"><span class="arc-stage-badge">{c.stageName}</span></td>
+                                    <td class="va-td">{c.development}</td>
+                                    <td class="va-td"><span class="hb-name">{c.houseBuilder}</span></td>
+                                    <td class="va-td">
+                                        <div class="lv-owner">
+                                            <div class="ava" style={c.avStyle}>{c.avInitials}</div>
+                                            <span class="ow-n">{c.ownerName}</span>
+                                        </div>
+                                    </td>
+                                    <td class="va-td" style="text-align:center">
+                                        <button class="btn-unarchive" data-id={c.id} data-archived="true" onclick={handleArchiveClick}>Unarchive</button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <template for:each={archivedCards} for:item="c">
-                                    <tr key={c.id}>
-                                        <td class="c-ref">{c.appRefNumber}</td>
-                                        <td class="lnk" data-id={c.id} onclick={handleCardClick}>{c.name}</td>
-                                        <td><span class="chip cb">{c.stageName}</span></td>
-                                        <td>{c.plot}</td>
-                                        <td>{c.houseBuilder}</td>
-                                        <td>{c.closeDateFormatted}</td>
-                                        <td>
-                                            <div class="c-own"><div class="ava" style={c.avStyle}>{c.avInitials}</div><span class="ow-n">{c.ownerName}</span></div>
-                                        </td>
-                                        <td>
-                                            <div class="c-acts">
-                                                <button class="act-btn" data-id={c.id} onclick={handleCardClick} title="Open record"><lightning-icon icon-name="utility:new_window" size="xx-small"></lightning-icon></button>
-                                                <button class="act-btn" data-id={c.id} data-archived="true" onclick={handleArchiveClick} title="Unarchive"><lightning-icon icon-name="utility:undelete" size="xx-small"></lightning-icon> Unarchive</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <template if:false={archivedCards.length}>
-                                    <tr><td colspan="8" style="text-align:center;padding:40px;color:#94a3b8">No archived applications found</td></tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
+                            </template>
+                            <template if:false={archivedCards.length}>
+                                <tr><td colspan="7" class="va-empty">No archived applications found</td></tr>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
             </template>
         </template>
@@ -311,221 +284,39 @@
         <!-- ══════════════════════════════════════════
              VENDOR AVAILABILITY VIEW
         ══════════════════════════════════════════ -->
+        <!-- ══════════════════════════════════════════
+             VENDOR AVAILABILITY VIEW (SPLIT-VIEW)
+        ══════════════════════════════════════════ -->
         <template if:true={isVendorAvailability}>
-            <div class="page-hdr">
-                <div class="hdr-top">
-                    <div class="hdr-ctx">
-                        <div class="org-pill">
-                            <div class="org-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 3.5V6.5L5 9L1 6.5V3.5L5 1Z" stroke="white" stroke-width="1" fill="none"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg></div>
-                            New Home Solutions - Training
-                        </div>
-                        <div class="bc">
-                            <span class="bc-link">New Applications</span>
-                            <span style="color:#cbd5e1;margin:0 2px">›</span>
-                            <span class="bc-cur">Vendor Availability</span>
-                        </div>
-                    </div>
-                    <div class="hdr-acts">
-                        <button class="hdr-btn" onclick={handleVaSchedule}><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon> Schedule Call</button>
-                        <button class="hdr-btn hdr-btn-brand" onclick={handleVaNew}><lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon> New Availability</button>
-                    </div>
-                </div>
-                <div class="va-hdr-body">
-                    <div class="va-title-wrap">
-                        <div class="va-obj-icon">🏡</div>
-                        <div>
-                            <div class="va-title">Vendor Availability</div>
-                            <div class="va-subtitle">Track and manage call availability for property vendors</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <c-nhs-vendor-availability-list></c-nhs-vendor-availability-list>
+        </template>
 
-            <!-- Split view -->
-            <div class="va-split">
-                <!-- List panel -->
-                <aside class="va-list-panel">
-                    <div class="va-list-hdr">
-                        <div class="va-list-hdr-row">
-                            <span class="va-list-title">Vendors</span>
-                            <span class="va-list-count">{vaFilteredCount} items</span>
-                        </div>
-                        <div class="va-search">
-                            <lightning-icon icon-name="utility:search" size="xx-small" style="color:#94a3b8"></lightning-icon>
-                            <input type="text" placeholder="Search vendors…" value={vaSearch} oninput={handleVaSearch} />
-                        </div>
-                    </div>
-                    <div class="va-filter-bar">
-                        <div class={vaFilterAll} data-filter="all" onclick={setVaFilter}>All</div>
-                        <div class={vaFilterAvail} data-filter="available" onclick={setVaFilter}>Available</div>
-                        <div class={vaFilterPend} data-filter="pending" onclick={setVaFilter}>Pending</div>
-                        <div class={vaFilterUnavail} data-filter="unavailable" onclick={setVaFilter}>Unavail.</div>
-                    </div>
-                    <div class="va-vendor-list">
-                        <template for:each={vaFilteredVendors} for:item="v">
-                            <div key={v.id} class={v.itemCls} data-id={v.id} onclick={selectVendor}>
-                                <div class="vi-av" style={v.avStyle}>{v.initials}</div>
-                                <div class="vi-body">
-                                    <div class="vi-nm">{v.name}</div>
-                                    <div class="vi-sub">📍 {v.address}</div>
-                                    <div class="vi-sub">{v.property} · {v.price}</div>
-                                </div>
-                                <span class="sf-badge" style={v.badgeStyle}><span class="bdot"></span>{v.statusLabel}</span>
-                            </div>
-                        </template>
-                    </div>
-                </aside>
 
-                <!-- Detail panel -->
-                <div class="va-detail-panel">
-                    <template if:false={activeVendor}>
-                        <div class="va-empty">
-                            <div class="va-empty-illus">🏡</div>
-                            <h3>Select a Vendor</h3>
-                            <p>Choose a vendor from the list to view their call availability, scheduled slots and contact details.</p>
-                        </div>
-                    </template>
-                    <template if:true={activeVendor}>
-                        <!-- Record header -->
-                        <div class="va-rec-hdr">
-                            <div class="va-rh-top">
-                                <div class="va-rh-icon" style={activeVendor.iconStyle}>{activeVendor.initials}</div>
-                                <div class="va-rh-info">
-                                    <div class="va-rh-type">Vendor / Opportunity</div>
-                                    <div class="va-rh-name">{activeVendor.name}</div>
-                                </div>
-                                <div class="va-rh-acts">
-                                    <button class="hdr-btn" onclick={handleVaSchedule}><lightning-icon icon-name="utility:phone_portrait" size="xx-small"></lightning-icon> Call</button>
-                                    <button class="hdr-btn" onclick={handleVaSchedule}><lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon> Email</button>
-                                    <button class="hdr-btn hdr-btn-brand" onclick={handleVaNew}><lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon> Edit</button>
-                                </div>
-                            </div>
-                            <div class="va-rh-fields">
-                                <div class="va-rh-field"><div class="va-rh-label">Status</div><div class="va-rh-value"><span class="sf-badge" style={activeVendor.badgeStyle}><span class="bdot"></span>{activeVendor.statusLabel}</span></div></div>
-                                <div class="va-rh-field"><div class="va-rh-label">Phone</div><div class="va-rh-value lnk">{activeVendor.phone}</div></div>
-                                <div class="va-rh-field"><div class="va-rh-label">Asking Price</div><div class="va-rh-value">{activeVendor.price}</div></div>
-                                <div class="va-rh-field"><div class="va-rh-label">Agent</div><div class="va-rh-value lnk">{activeVendor.agent}</div></div>
-                                <div class="va-rh-field"><div class="va-rh-label">Calls Made</div><div class="va-rh-value">{activeVendor.calls}</div></div>
-                            </div>
-                        </div>
-                        <div class="va-rec-tabs">
-                            <div class="va-rec-tab on">Availability</div>
-                            <div class="va-rec-tab">Activity</div>
-                            <div class="va-rec-tab">Details</div>
-                        </div>
-                        <div class="va-detail-body">
-                            <!-- LEFT col -->
-                            <div>
-                                <!-- Calendar -->
-                                <div class="va-card" style="margin-bottom:14px">
-                                    <div class="va-card-hdr">
-                                        <div class="va-card-title">📅 Availability Calendar</div>
-                                        <div class="va-card-acts">
-                                            <button class="va-cal-btn" onclick={calPrev}>&#8249;</button>
-                                            <span class="va-cal-month" id="calMonthLabel">{calMonthLabel}</span>
-                                            <button class="va-cal-btn" onclick={calNext}>&#8250;</button>
-                                        </div>
-                                    </div>
-                                    <div class="va-cal-wrap">
-                                        <div class="va-cal-dow"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
-                                        <div class="va-cal-cells">
-                                            <template for:each={calCells} for:item="c">
-                                                <div key={c.key} class={c.cls} data-day={c.day} onclick={handleCalClick}><span class="d-num">{c.label}</span></div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                    <div class="va-cal-legend">
-                                        <div class="va-leg"><div class="va-leg-sw av"></div>Available</div>
-                                        <div class="va-leg"><div class="va-leg-sw bk"></div>Booked / Called</div>
-                                        <div class="va-leg"><div class="va-leg-sw tn"></div>Tentative</div>
-                                    </div>
-                                </div>
-                                <!-- Slots datatable -->
-                                <div class="va-card">
-                                    <div class="va-card-hdr">
-                                        <div class="va-card-title">📋 Availability Slots</div>
-                                        <div class="va-card-acts"><button class="hdr-btn" onclick={handleVaNew}>+ Add Slot</button></div>
-                                    </div>
-                                    <div style="overflow:hidden;max-height:220px;overflow-y:auto">
-                                        <table class="sf-dt">
-                                            <thead><tr><th>Date</th><th>Time</th><th>Status</th><th>Notes</th></tr></thead>
-                                            <tbody>
-                                                <template for:each={activeVendorSlots} for:item="s">
-                                                    <tr key={s.key}>
-                                                        <td class="lnk">{s.dateStr}</td>
-                                                        <td>{s.time}</td>
-                                                        <td><span class="sf-badge" style={s.badgeStyle}><span class="bdot"></span>{s.label}</span></td>
-                                                        <td style="color:#94a3b8">—</td>
-                                                    </tr>
-                                                </template>
-                                                <template if:true={noSlots}><tr><td colspan="4" style="color:#94a3b8;text-align:center;padding:20px">No slots recorded yet</td></tr></template>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- RIGHT col -->
-                            <div class="va-right-col">
-                                <!-- Next Call -->
-                                <div class="va-card">
-                                    <div class="va-card-hdr"><div class="va-card-title">📞 Next Call</div></div>
-                                    <template if:true={activeVendor.nextCall}>
-                                        <div class="va-next-call">
-                                            <div class="vnc-label">Scheduled</div>
-                                            <div class="vnc-date">{activeVendor.nextCallDate}</div>
-                                            <div class="vnc-time">{activeVendor.nextCallTime}</div>
-                                            <div class="vnc-acts">
-                                                <button class="hdr-btn hdr-btn-brand" onclick={handleVaSchedule}>📞 Start Call</button>
-                                                <button class="hdr-btn" onclick={handleVaSchedule}>Reschedule</button>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <template if:false={activeVendor.nextCall}>
-                                        <div style="padding:16px;color:#94a3b8;font-size:13px">No upcoming call scheduled.</div>
-                                    </template>
-                                </div>
-                                <!-- Activity -->
-                                <div class="va-card" style="flex:1">
-                                    <div class="va-card-hdr"><div class="va-card-title">⚡ Recent Activity</div><button class="hdr-btn" onclick={handleVaNew}>+ Log</button></div>
-                                    <div class="va-timeline">
-                                        <template if:true={activeVendor.hasCalls}>
-                                            <div class="va-tl-item">
-                                                <div class="va-tl-icon" style="background:#d1fae5">📞</div>
-                                                <div style="flex:1"><div class="va-tl-title">Call — {activeVendor.name}</div><div class="va-tl-sub">Duration 12 min · Confirmed availability</div></div>
-                                                <div class="va-tl-time">3 days ago</div>
-                                            </div>
-                                        </template>
-                                        <div class="va-tl-item"><div class="va-tl-icon" style="background:#dbeafe">📧</div><div style="flex:1"><div class="va-tl-title">Email Sent</div><div class="va-tl-sub">Availability request sent to vendor</div></div><div class="va-tl-time">1 week ago</div></div>
-                                        <div class="va-tl-item"><div class="va-tl-icon" style="background:#f3e8ff">✏️</div><div style="flex:1"><div class="va-tl-title">Record Created</div><div class="va-tl-sub">Added by {activeVendor.agent}</div></div><div class="va-tl-time">2 weeks ago</div></div>
-                                    </div>
-                                </div>
-                                <!-- Vendor Details -->
-                                <div class="va-card">
-                                    <div class="va-card-hdr"><div class="va-card-title">ℹ️ Vendor Details</div><button class="hdr-btn" onclick={handleVaNew}>Edit</button></div>
-                                    <div class="va-fields">
-                                        <div class="va-fi"><div class="va-fi-label">Full Name</div><div class="va-fi-value">{activeVendor.name}</div></div>
-                                        <div class="va-fi"><div class="va-fi-label">Status</div><div class="va-fi-value"><span class="sf-badge" style={activeVendor.badgeStyle}><span class="bdot"></span>{activeVendor.statusLabel}</span></div></div>
-                                        <div class="va-fi"><div class="va-fi-label">Property Address</div><div class="va-fi-value">{activeVendor.address}</div></div>
-                                        <div class="va-fi"><div class="va-fi-label">Asking Price</div><div class="va-fi-value">{activeVendor.price}</div></div>
-                                        <div class="va-fi"><div class="va-fi-label">Property Type</div><div class="va-fi-value">{activeVendor.property}</div></div>
-                                        <div class="va-fi"><div class="va-fi-label">Assigned Agent</div><div class="va-fi-value lnk">{activeVendor.agent}</div></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
+        <!-- ══ Agents Booked View ══ -->
+        <template if:true={isAgentsBooked}>
+            <c-nhs-agent-booked-list></c-nhs-agent-booked-list>
+        </template>
+
+        <!-- ══ Figures to Chase View ══ -->
+        <template if:true={isFiguresToChase}>
+            <c-nhs-figures-to-chase-list></c-nhs-figures-to-chase-list>
+        </template>
+
+        <!-- ══ Figures Returned View ══ -->
+        <template if:true={isFiguresReturned}>
+            <c-nhs-figures-returned-list></c-nhs-figures-returned-list>
+        </template>
+
+        <!-- ══ Valuations Ready View ══ -->
+        <template if:true={isValuationsReady}>
+            <c-nhs-valuations-ready-list></c-nhs-valuations-ready-list>
         </template>
 
         <!-- ══ Other stage coming-soon views ══ -->
         <template if:true={showComingSoon}>
             <div class="page-hdr">
                 <div class="hdr-top">
-                    <div class="hdr-ctx">
-                        <div class="org-pill"><div class="org-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1L9 3.5V6.5L5 9L1 6.5V3.5L5 1Z" stroke="white" stroke-width="1" fill="none"/><circle cx="5" cy="5" r="1.5" fill="white"/></svg></div>New Home Solutions - Training</div>
-                        <div class="bc"><span class="bc-link">New Applications</span><span style="color:#cbd5e1;margin:0 2px">›</span><span class="bc-cur">{activeStageLabel}</span></div>
-                    </div>
+                    <div><!-- Left spacer --></div>
                 </div>
             </div>
             <div class="coming-soon">

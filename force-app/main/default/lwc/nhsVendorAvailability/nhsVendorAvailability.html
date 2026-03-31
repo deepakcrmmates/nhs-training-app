@@ -13,45 +13,62 @@
 
         <template if:false={isLoading}>
             <div class="calendar-body">
-                <template for:each={weeks} for:item="week">
-                    <div key={week.key} class="week-row">
-                        <div class="week-label">{week.label}</div>
-                        <div class="week-grid">
-                            <template for:each={week.days} for:item="day">
-                                <div key={day.dateStr} class={day.colClass}>
-                                    <div class="day-header">
-                                        <span class="day-name">{day.dayName}</span>
-                                        <span class="day-number">{day.dayNumber}</span>
-                                    </div>
-                                    <template if:true={day.isWeekday}>
-                                        <template if:false={day.isPast}>
-                                            <button class={day.allClass} data-date={day.dateStr} data-slot="all" onclick={handleSlotToggle}>All</button>
-                                            <button class={day.amClass} data-date={day.dateStr} data-slot="am" onclick={handleSlotToggle}>AM</button>
-                                            <button class={day.pmClass} data-date={day.dateStr} data-slot="pm" onclick={handleSlotToggle}>PM</button>
-                                        </template>
-                                        <template if:true={day.isPast}>
-                                            <template if:true={day.hasAvailability}>
-                                                <span class="past-badge past-set">{day.pastLabel}</span>
-                                            </template>
-                                            <template if:false={day.hasAvailability}>
-                                                <span class="past-badge">—</span>
-                                            </template>
-                                        </template>
-                                    </template>
-                                    <template if:false={day.isWeekday}>
-                                        <span class="weekend-label">Weekend</span>
-                                    </template>
-                                </div>
+                <!-- Week navigation with vendor info -->
+                <div class="week-nav">
+                    <div class="vendor-info">
+                        <div class="vendor-name">{vendorName}</div>
+                        <div class="vendor-detail">{vendorPhone}</div>
+                        <div class="vendor-detail">{vendorEmail}</div>
+                    </div>
+                    <div class="nav-center">
+                        <button class="nav-btn" onclick={handlePrevWeek}>&#8249; Prev</button>
+                        <span class="week-label">{currentWeekLabel}</span>
+                        <button class="nav-btn" onclick={handleNextWeek}>Next &#8250;</button>
+                    </div>
+                    <button class="nav-btn today-btn" onclick={handleGoToday}>Today</button>
+                </div>
+
+                <!-- Single week grid -->
+                <div class="cal-grid">
+                    <!-- Corner -->
+                    <div class="cal-corner">TIME</div>
+                    <!-- Day headers -->
+                    <template for:each={currentWeek.days} for:item="day">
+                        <div key={day.dateStr} class={day.headerClass}>
+                            <span class="dname">{day.dayName}</span>
+                            <span class="dnum">{day.dayNumber}</span>
+                        </div>
+                    </template>
+
+                    <!-- Quick row -->
+                    <div class="cal-qlabel">QUICK</div>
+                    <template for:each={currentWeek.days} for:item="day">
+                        <div key={day.dateStr} class={day.quickCellClass}>
+                            <template if:true={day.showQuick}>
+                                <button class={day.allBtnClass} data-date={day.dateStr} data-action="all" onclick={handleQuickToggle}>All</button>
+                                <button class={day.amBtnClass} data-date={day.dateStr} data-action="am" onclick={handleQuickToggle}>AM</button>
+                                <button class={day.pmBtnClass} data-date={day.dateStr} data-action="pm" onclick={handleQuickToggle}>PM</button>
                             </template>
                         </div>
-                    </div>
-                </template>
+                    </template>
+
+                    <!-- Hour rows -->
+                    <template for:each={currentWeek.hourRows} for:item="row">
+                        <div key={row.key} class="cal-timelabel">{row.label}</div>
+                        <template for:each={row.cells} for:item="cell">
+                            <div key={cell.key} class={cell.slotClass}
+                                 data-date={cell.dateStr} data-hour={cell.hour}
+                                 onclick={handleSlotClick}>
+                                <template if:true={cell.isOn}>
+                                    <span class={cell.tickClass}>&#10003;</span>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </div>
 
                 <div class="calendar-actions">
-                    <template if:true={canAddWeek}>
-                        <button class="btn btn-secondary" onclick={handleAddWeek}>+ Add Week</button>
-                    </template>
-                    <div class="action-bar-spacer"></div>
+                    <div class="action-spacer"></div>
                     <button class="btn btn-primary" onclick={handleSave}>Save Availability</button>
                 </div>
             </div>

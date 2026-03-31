@@ -1,0 +1,148 @@
+<template>
+    <div class="fc-toolbar">
+        <div class="fc-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor…" onchange={handleSearch}>
+        </div>
+        <div class="fc-filters">
+            <button class={filterAllClass} data-filter="all" onclick={handleFilter}>All <span class="ftag-count">{totalCount}</span></button>
+            <button class={filterUrgentClass} data-filter="urgent" onclick={handleFilter}>Chase <span class="ftag-count ftag-urgent">{urgentCount}</span></button>
+            <button class={filterDueSoonClass} data-filter="duesoon" onclick={handleFilter}>Due in 48h <span class="ftag-count ftag-yellow">{dueSoonCount}</span></button>
+            <button class={filterDesktopClass} data-filter="desktop" onclick={handleFilter}>Desktop Val <span class="ftag-count ftag-desktop">{desktopCount}</span></button>
+            <button class={filterReceivedClass} data-filter="received" onclick={handleFilter}>Received <span class="ftag-count ftag-received">{receivedCount}</span></button>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="fc-info">{filteredCount} applications</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="fc-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="fc-table-wrap">
+            <table class="fc-table">
+                <thead>
+                    <tr>
+                        <th class="fc-th fc-th-app">Application</th>
+                        <th class="fc-th">Vendor</th>
+                        <th class="fc-th">Pending</th>
+                        <th class="fc-th fc-th-agent">
+                            <div class="th-slot">Agent 1 (NHS)</div>Valuation
+                        </th>
+                        <th class="fc-th fc-th-agent">
+                            <div class="th-slot">Agent 2</div>Valuation
+                        </th>
+                        <th class="fc-th fc-th-agent">
+                            <div class="th-slot">Agent 3</div>Valuation
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={displayedApps} for:item="app">
+                        <tr key={app.id} class="fc-row" data-id={app.id} onclick={handleRowClick}>
+                            <td class="fc-td">
+                                <div class="app-addr">{app.name}</div>
+                                <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
+                            </td>
+                            <td class="fc-td">
+                                <span class="vendor-name">{app.vendorName}</span>
+                            </td>
+                            <td class="fc-td">
+                                <span class={app.pendingClass}>{app.pendingLabel}</span>
+                            </td>
+                            <!-- Agent 1 -->
+                            <td class="fc-td fc-td-agent">
+                                <template if:true={app.agent1FigMissing}>
+                                    <div class={app.agent1MissingClass}>
+                                        <div class="fig-agent">{app.agent1Name}</div>
+                                        <div class="fig-visited">{app.agent1DateFmt}</div>
+                                        <span class="fig-chase-badge">Chase</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent1FigMissing}>
+                                    <template if:true={app.agent1HasFigure}>
+                                        <div class="fig-received">
+                                            <div class="fig-agent">{app.agent1Name}</div>
+                                            <div class="fig-amount">{app.agent1FigureFmt}</div>
+                                            <span class="fig-done-badge">&#10003;</span>
+                                        </div>
+                                    </template>
+                                    <template if:false={app.agent1HasFigure}>
+                                        <div class={app.agent1PendingClass}>
+                                            <div class="fig-agent">{app.agent1Name}</div>
+                                            <div class="fig-wait">{app.agent1DateFmt}</div>
+                                        </div>
+                                    </template>
+                                </template>
+                            </td>
+                            <!-- Agent 2 -->
+                            <td class="fc-td fc-td-agent">
+                                <template if:true={app.agent2FigMissing}>
+                                    <div class={app.agent2MissingClass}>
+                                        <div class="fig-agent">{app.agent2Name}</div>
+                                        <div class="fig-visited">{app.agent2DateFmt}</div>
+                                        <span class="fig-chase-badge">Chase</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent2FigMissing}>
+                                    <template if:true={app.agent2HasFigure}>
+                                        <div class="fig-received">
+                                            <div class="fig-agent">{app.agent2Name}</div>
+                                            <div class="fig-amount">{app.agent2FigureFmt}</div>
+                                            <span class="fig-done-badge">&#10003;</span>
+                                        </div>
+                                    </template>
+                                    <template if:false={app.agent2HasFigure}>
+                                        <div class={app.agent2PendingClass}>
+                                            <div class="fig-agent">{app.agent2Name}</div>
+                                            <div class="fig-wait">{app.agent2DateFmt}</div>
+                                        </div>
+                                    </template>
+                                </template>
+                            </td>
+                            <!-- Agent 3 -->
+                            <td class="fc-td fc-td-agent">
+                                <template if:true={app.agent3FigMissing}>
+                                    <div class={app.agent3MissingClass}>
+                                        <div class="fig-agent">{app.agent3Name}</div>
+                                        <div class="fig-visited">{app.agent3DateFmt}</div>
+                                        <span class="fig-chase-badge">Chase</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent3FigMissing}>
+                                    <template if:true={app.agent3HasFigure}>
+                                        <div class="fig-received">
+                                            <div class="fig-agent">{app.agent3Name}</div>
+                                            <div class="fig-amount">{app.agent3FigureFmt}</div>
+                                            <span class="fig-done-badge">&#10003;</span>
+                                        </div>
+                                    </template>
+                                    <template if:false={app.agent3HasFigure}>
+                                        <div class={app.agent3PendingClass}>
+                                            <div class="fig-agent">{app.agent3Name}</div>
+                                            <div class="fig-wait">{app.agent3DateFmt}</div>
+                                        </div>
+                                    </template>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                    <template if:false={hasApps}>
+                        <tr><td colspan="6" class="fc-empty">No figures to chase</td></tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <template if:true={showPaging}>
+            <div class="fc-paging">
+                <span class="pg-info">Showing {pageStart}–{pageEnd} of {filteredCount}</span>
+                <div class="pg-btns">
+                    <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
+                    <span class="pg-current">{currentPage}</span>
+                    <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

@@ -3,14 +3,12 @@
         <!-- Sticky Header -->
         <header class="form-sticky-header">
             <div class="header-left">
-                <template if:true={logoUrl}>
-                    <img src={logoUrl} alt="House Builder Logo" class="header-logo" />
-                </template>
                 <h2>Application Form</h2>
             </div>
-            <div class="header-actions">
-                <lightning-button variant="neutral" label="Cancel" onclick={handleClickCancel} class="slds-m-right_small"></lightning-button>
-                <lightning-button variant="brand" label="Save & Submit" onclick={handleSaveAndSubmit} disabled={disable}></lightning-button>
+            <div class="header-right">
+                <template if:true={logoUrl}>
+                    <img src={logoUrl} alt="Housebuilder Logo" class="header-logo" />
+                </template>
             </div>
         </header>
 
@@ -35,13 +33,28 @@
 
                 <!-- SECTION 1: House Builder Details -->
                 <section class="section-card" data-id="housebuilder">
-                    <div class="section-header-modern">
-                        <lightning-icon icon-name="utility:company" size="small"></lightning-icon>
-                        <h2>House Builder Details</h2>
+                    <div class="section-header-modern header-with-date">
+                        <div class="header-title-group">
+                            <lightning-icon icon-name="utility:company" size="small"></lightning-icon>
+                            <h2>Housebuilder Details</h2>
+                        </div>
+                        <div class="header-date-group">
+                            <label class="modern-label">Date of Enquiry</label>
+                            <lightning-input 
+                                disabled={isReadOnly} 
+                                type="date" 
+                                variant="label-hidden" 
+                                name="dateOfApplicationReceived" 
+                                value={formData.Application.dateOfApplicationReceived} 
+                                onchange={handleApplicationChange}
+                                max={todayDate}
+                                message-when-range-overflow="Date of Enquiry cannot be in the future.">
+                            </lightning-input>
+                        </div>
                     </div>
                     <div class="modern-grid">
                         <div class="field-group">
-                            <label class="modern-label">House Builder</label>
+                            <label class="modern-label">Housebuilder</label>
                             <c-custom-lookup-lwc 
                                 label=""
                                 selected-icon-name="standard:account" 
@@ -60,15 +73,38 @@
                         </div>
                         <div class="field-group">
                             <label class="modern-label">Plot Number</label>
-                            <lightning-input disabled={isReadOnly} type="text" variant="label-hidden" name="plot" value={formData.Application.plot} onchange={handleApplicationChange}></lightning-input>
+                            <lightning-input 
+                                disabled={isReadOnly} 
+                                type="number" 
+                                variant="label-hidden" 
+                                name="plot" 
+                                value={formData.Application.plot} 
+                                onchange={handleApplicationChange}
+                                max="999"
+                                message-when-range-overflow="Plot number can be a maximum of 3 digits only.">
+                            </lightning-input>
                         </div>
                         <div class="field-group">
                             <label class="modern-label">Scheme</label>
                             <lightning-combobox variant="label-hidden" name="scheme" value={formData.Application.scheme} options={options} disabled={isReadOnly} onchange={handleApplicationChange}></lightning-combobox>
                         </div>
                         <div class="field-group">
-                            <label class="modern-label">Date of Enquiry</label>
-                            <lightning-input disabled={isReadOnly} type="date" variant="label-hidden" name="dateOfApplicationReceived" value={formData.Application.dateOfApplicationReceived} onchange={handleApplicationChange}></lightning-input>
+                            <label class="modern-label">ALCD Start Date</label>
+                            <template if:false={isReadOnly}>
+                                <input name="startDate" class="startDateInput" type="month" id="startDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
+                            </template>
+                            <template if:true={isReadOnly}>
+                                <lightning-input type="text" variant="label-hidden" value={startDateInputs} disabled></lightning-input>
+                            </template>
+                        </div>
+                        <div class="field-group">
+                            <label class="modern-label">ALCD End Date</label>
+                            <template if:false={isReadOnly}>
+                                <input name="endDate" class="endDateInput" type="month" id="endDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
+                            </template>
+                            <template if:true={isReadOnly}>
+                                <lightning-input type="text" variant="label-hidden" value={endDateInputs} disabled></lightning-input>
+                            </template>
                         </div>
                     </div>
                 </section>
@@ -113,33 +149,6 @@
                     </template>
                 </section>
 
-                <!-- SECTION 2: ALCD (Moved) -->
-                <section class="section-card" data-id="property-eta">
-                    <div class="section-header-modern">
-                        <lightning-icon icon-name="utility:date_input" size="small"></lightning-icon>
-                        <h2>ALCD</h2>
-                    </div>
-                    <div class="modern-grid">
-                        <div class="field-group">
-                            <label class="modern-label">ALCD Start Date</label>
-                            <template if:false={isReadOnly}>
-                                <input class="startDateInput" type="month" id="startDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
-                            </template>
-                            <template if:true={isReadOnly}>
-                                <lightning-input type="text" variant="label-hidden" value={startDateInputs} disabled></lightning-input>
-                            </template>
-                        </div>
-                        <div class="field-group">
-                            <label class="modern-label">ALCD End Date</label>
-                            <template if:false={isReadOnly}>
-                                <input class="endDateInput" type="month" id="endDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
-                            </template>
-                            <template if:true={isReadOnly}>
-                                <lightning-input type="text" variant="label-hidden" value={endDateInputs} disabled></lightning-input>
-                            </template>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- SECTION 5: Vendor Details -->
                 <section class="section-card" data-id="vendor-details">
@@ -175,15 +184,49 @@
                         <div class="field-group two-third-width">
                             <h3 class="slds-text-title_bold slds-m-bottom_small">Type</h3>
                             <div class="slds-grid slds-wrap">
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Detached" name="Detached" checked={formData.Property.Detached} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Semi Detached" name="SemiDetached" checked={formData.Property.SemiDetached} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="End Terrace" name="EndTerrace" checked={formData.Property.EndTerrace} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Mid Terrace" name="MidTerrace" checked={formData.Property.MidTerrace} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Apartment" name="Apartment" checked={formData.Property.Apartment} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Maisonette" name="Maisonette" checked={formData.Property.Maisonette} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Studio" name="Studio" checked={formData.Property.Studio} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
-                                <lightning-input disabled={isReadOnly} type="checkbox" label="Bungalow" name="Bungalow" checked={formData.Property.Bungalow} onchange={handlePropertChange} class="slds-size_1-of-4"></lightning-input>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Detached" name="Detached" checked={formData.Property.Detached} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Semi Detached" name="SemiDetached" checked={formData.Property.SemiDetached} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="End Terrace" name="EndTerrace" checked={formData.Property.EndTerrace} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Mid Terrace" name="MidTerrace" checked={formData.Property.MidTerrace} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Apartment" name="Apartment" checked={formData.Property.Apartment} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Maisonette" name="Maisonette" checked={formData.Property.Maisonette} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Studio" name="Studio" checked={formData.Property.Studio} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Bungalow" name="Bungalow" checked={formData.Property.Bungalow} onchange={handlePropertChange}></lightning-input>
+                                </div>
+                                <div class="slds-col slds-size_1-of-4 slds-m-bottom_x-small">
+                                    <lightning-input disabled={isReadOnly} type="checkbox" label="Other" name="Other" checked={formData.Property.Other} onchange={handlePropertChange}></lightning-input>
+                                </div>
                             </div>
+                            <!-- Conditional Other Note -->
+                            <template if:true={formData.Property.Other}>
+                                <div class="slds-m-top_medium">
+                                    <label class="modern-label">Other Notes</label>
+                                    <lightning-textarea 
+                                        disabled={isReadOnly}
+                                        label=""
+                                        name="Other_Note"
+                                        value={formData.Property.Other_Note}
+                                        onchange={handlePropertChange}
+                                        placeholder="Please specify other property details..."
+                                        class="modern-textarea">
+                                    </lightning-textarea>
+                                </div>
+                            </template>
                         </div>
                         <div class="field-group">
                             <lightning-combobox label="Number of Bedrooms" name="NumberofBedrooms" value={formData.Property.NumberofBedrooms} options={numberOfBedrooms} disabled={isReadOnly} onchange={handlePropertChange}></lightning-combobox>
@@ -198,8 +241,14 @@
                         <h2>Additional Details</h2>
                     </div>
                     <div class="modern-grid">
-                        <lightning-input disabled={isReadOnly} type="number" label="Vendor's Expectations" name="ClientsEstimatedValuation" formatter="currency" step=".01" value={formData.Application.ClientsEstimatedValuation} onchange={handleApplicationChange} class="vendor-expectation-input"></lightning-input>
-                        <lightning-textarea disabled={isReadOnly} label="Notes" name="notes" placeholder="Any additional notes..." value={formData.Application.notes} onchange={handleApplicationChange} class="two-third-width"></lightning-textarea>
+                        <div class="field-group">
+                            <label class="modern-label">Vendor's Expectations</label>
+                            <lightning-input disabled={isReadOnly} type="number" variant="label-hidden" name="expectation" formatter="currency" step=".01" value={formData.Application.expectation} onchange={handleApplicationChange}></lightning-input>
+                        </div>
+                        <div class="field-group full-width slds-m-top_small">
+                            <label class="modern-label">Notes</label>
+                            <lightning-textarea disabled={isReadOnly} label="" variant="label-hidden" name="notes" placeholder="Any additional notes..." value={formData.Application.notes} onchange={handleApplicationChange} class="modern-textarea"></lightning-textarea>
+                        </div>
                     </div>
                 </section>
 

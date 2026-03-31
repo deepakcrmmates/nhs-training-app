@@ -7,8 +7,12 @@
         <!-- PAGE HEADER WITH STAGE TRACKER -->
         <header class="page-header">
             <div class="header-top">
-                <p class="header-subtitle">Application: {formData.vendor1Name}</p>
+                <div class="header-left">
+                    <h1 class="header-address">{formData.propertyAddress}</h1>
+                    <p class="header-subtitle">Application: {formData.vendor1Name}</p>
+                </div>
                 <div class="header-right-group">
+                    <span class={statusTagClass}>{statusTagLabel}</span>
                     <lightning-combobox
                         name="nhsProcess"
                         label="Stage"
@@ -277,24 +281,57 @@
             <tr>
                 <td class="cell-label">Appointment</td>
                 <td class="cell-input agent-val" colspan="2">
-                    <div class="appt-row">
-                        <input type="date" class="field-input appt-date" value={agentAppts.agent1.date} data-agent="agent1" data-type="date" onchange={handleApptChange}>
-                        <span class="appt-divider-label">Time</span>
-                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent1.time} data-agent="agent1" data-type="time" onchange={handleApptChange}>
+                    <div class="appt-container">
+                        <label class="desktop-val-toggle">
+                            <input type="checkbox" checked={formData.agent1DesktopVal} data-agent="agent1" onchange={handleDesktopValToggle}>
+                            <span class="dv-label">Desktop Valuation</span>
+                        </label>
+                        <template if:false={formData.agent1DesktopVal}>
+                            <div class="appt-row">
+                                <input type="date" class="field-input appt-date" value={agentAppts.agent1.date} data-agent="agent1" data-type="date" onchange={handleApptChange}>
+                                <span class="appt-divider-label">Time</span>
+                                <input type="time" class="field-input appt-time-input" value={agentAppts.agent1.time} data-agent="agent1" data-type="time" onchange={handleApptChange}>
+                            </div>
+                        </template>
+                        <template if:true={formData.agent1DesktopVal}>
+                            <div class="desktop-val-badge">Desktop Valuation — No visit required</div>
+                        </template>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
-                    <div class="appt-row">
-                        <input type="date" class="field-input appt-date" value={agentAppts.agent2.date} data-agent="agent2" data-type="date" onchange={handleApptChange}>
-                        <span class="appt-divider-label">Time</span>
-                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent2.time} data-agent="agent2" data-type="time" onchange={handleApptChange}>
+                    <div class="appt-container">
+                        <label class="desktop-val-toggle">
+                            <input type="checkbox" checked={formData.agent2DesktopVal} data-agent="agent2" onchange={handleDesktopValToggle}>
+                            <span class="dv-label">Desktop Valuation</span>
+                        </label>
+                        <template if:false={formData.agent2DesktopVal}>
+                            <div class="appt-row">
+                                <input type="date" class="field-input appt-date" value={agentAppts.agent2.date} data-agent="agent2" data-type="date" onchange={handleApptChange}>
+                                <span class="appt-divider-label">Time</span>
+                                <input type="time" class="field-input appt-time-input" value={agentAppts.agent2.time} data-agent="agent2" data-type="time" onchange={handleApptChange}>
+                            </div>
+                        </template>
+                        <template if:true={formData.agent2DesktopVal}>
+                            <div class="desktop-val-badge">Desktop Valuation — No visit required</div>
+                        </template>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
-                    <div class="appt-row">
-                        <input type="date" class="field-input appt-date" value={agentAppts.agent3.date} data-agent="agent3" data-type="date" onchange={handleApptChange}>
-                        <span class="appt-divider-label">Time</span>
-                        <input type="time" class="field-input appt-time-input" value={agentAppts.agent3.time} data-agent="agent3" data-type="time" onchange={handleApptChange}>
+                    <div class="appt-container">
+                        <label class="desktop-val-toggle">
+                            <input type="checkbox" checked={formData.agent3DesktopVal} data-agent="agent3" onchange={handleDesktopValToggle}>
+                            <span class="dv-label">Desktop Valuation</span>
+                        </label>
+                        <template if:false={formData.agent3DesktopVal}>
+                            <div class="appt-row">
+                                <input type="date" class="field-input appt-date" value={agentAppts.agent3.date} data-agent="agent3" data-type="date" onchange={handleApptChange}>
+                                <span class="appt-divider-label">Time</span>
+                                <input type="time" class="field-input appt-time-input" value={agentAppts.agent3.time} data-agent="agent3" data-type="time" onchange={handleApptChange}>
+                            </div>
+                        </template>
+                        <template if:true={formData.agent3DesktopVal}>
+                            <div class="desktop-val-badge">Desktop Valuation — No visit required</div>
+                        </template>
                     </div>
                 </td>
             </tr>
@@ -474,10 +511,35 @@
         </table>
     </div>
 
-    <!-- SECTION 3: VENDOR AVAILABILITY (conditional) -->
+    <!-- DROPBOX FILES -->
+    <c-nhs-dropbox-browser property-address={formData.propertyAddress}></c-nhs-dropbox-browser>
+
+    <!-- SECTION 3: VENDOR AVAILABILITY (shown at Vendor Availability stage) -->
     <template if:true={showVendorAvailability}>
-        <c-nhs-vendor-availability record-id={recordId}></c-nhs-vendor-availability>
+        <c-nhs-vendor-availability
+            record-id={recordId}
+            vendor-name={formData.vendor1Name}
+            vendor-phone={formData.mobile}
+            vendor-email={formData.email}>
+        </c-nhs-vendor-availability>
     </template>
+
+    <!-- SECTION 4: AGENT BOOKING (shown at Agents Booked stage and beyond) -->
+    <template if:true={showAgentBooking}>
+        <c-nhs-agent-booking
+            record-id={recordId}
+            agent1-id={formData.agent1}
+            agent1-name={formData.agent1Name}
+            agent2-id={formData.agent2}
+            agent2-name={formData.agent2Name}
+            agent3-id={formData.agent3}
+            agent3-name={formData.agent3Name}
+            vendor-id={formData.vendor1}>
+        </c-nhs-agent-booking>
+    </template>
+
+    <!-- SECTION: VENDOR NOTES (always visible) -->
+    <c-nhs-vendor-notes record-id={recordId}></c-nhs-vendor-notes>
 
     <!-- PDF LIGHTBOX -->
     <template if:true={showPdfModal}>

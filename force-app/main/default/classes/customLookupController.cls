@@ -52,6 +52,15 @@ public class customLookupController {
          return result;
      }
 
+     @AuraEnabled
+     public static void saveDesktopValuation(Id oppId, Boolean agent1DV, Boolean agent2DV, Boolean agent3DV) {
+         Opportunity opp = new Opportunity(Id = oppId);
+         opp.Agent_1_Desktop_Valuation__c = agent1DV;
+         opp.Agent_2_Desktop_Valuation__c = agent2DV;
+         opp.Agent_3_Desktop_Valuation__c = agent3DV;
+         update opp;
+     }
+
      public class ResultWrapper{
          @AuraEnabled public String mainField{get;set;}
          @AuraEnabled public String subField{get;set;}

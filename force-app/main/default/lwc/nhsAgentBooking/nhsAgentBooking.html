@@ -1,0 +1,116 @@
+<template>
+    <div class="form-card">
+        <div class="section-banner">
+            <div class="dot"></div>
+            <h2>Agent Booking</h2>
+            <span class="booked-count">{bookedCount} / 3</span>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="booking-body">
+                <div class="agents-row">
+                    <template for:each={agentColumns} for:item="col">
+                        <div key={col.key} class="agent-col">
+                            <div class={col.headerClass}>
+                                <span class="ac-label">{col.label}</span>
+                                <span class="ac-name">{col.name}</span>
+                            </div>
+
+                            <!-- BOOKED STATE -->
+                            <template if:true={col.isBooked}>
+                                <div class="col-booked-body">
+                                    <div class="bk-detail">
+                                        <div class="bk-datetime">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                            {col.bookedDate}
+                                        </div>
+                                        <div class="bk-datetime">
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            {col.bookedTime}
+                                        </div>
+                                    </div>
+                                    <div class="bk-actions">
+                                        <span class="bk-status booked">Booked</span>
+                                        <button class="amend-btn" data-agent={col.num} onclick={handleAmend}>Amend</button>
+                                    </div>
+                                </div>
+                                <!-- Amend mode: show slots -->
+                                <template if:true={col.isAmending}>
+                                    <div class="amend-divider">Select new slot:</div>
+                                    <div class="col-nav">
+                                        <button class="col-nav-btn" data-agent={col.num} data-dir="-1" onclick={handleWeekNav}>&#8249;</button>
+                                        <span class="col-nav-label">{col.weekLabel}</span>
+                                        <button class="col-nav-btn" data-agent={col.num} data-dir="1" onclick={handleWeekNav}>&#8250;</button>
+                                    </div>
+                                    <div class="col-slots">
+                                        <template for:each={col.pagedSlots} for:item="slot">
+                                            <button key={slot.key} class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
+                                                <span class="sb-day">{slot.dayName}</span>
+                                                <span class="sb-date">{slot.shortDate}</span>
+                                                <span class="sb-time">{slot.timeLabel}</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <template if:false={col.hasPagedSlots}>
+                                        <div class="col-empty">No slots this week</div>
+                                    </template>
+                                    <div class="amend-cancel-row">
+                                        <button class="cancel-amend-btn" data-agent={col.num} onclick={handleCancelAmend}>Cancel</button>
+                                        <template if:false={col.isConfirmingCancel}>
+                                            <button class="cancel-booking-btn" data-agent={col.num} onclick={handleConfirmCancel}>Cancel Booking</button>
+                                        </template>
+                                        <template if:true={col.isConfirmingCancel}>
+                                            <div class="confirm-cancel">
+                                                <span class="confirm-text">Reason for cancellation:</span>
+                                                <textarea class="cancel-notes" data-agent={col.num} placeholder="Enter reason for cancelling this booking…" onchange={handleCancelNoteInput}></textarea>
+                                                <div class="confirm-btns">
+                                                    <button class="confirm-yes-btn" data-agent={col.num} onclick={handleCancelBooking}>Confirm Cancel</button>
+                                                    <button class="confirm-no-btn" data-agent={col.num} onclick={handleDenyCancel}>Go Back</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <!-- NOT BOOKED STATE -->
+                            <template if:false={col.isBooked}>
+                                <template if:true={col.hasSlots}>
+                                    <div class="col-nav">
+                                        <button class="col-nav-btn" data-agent={col.num} data-dir="-1" onclick={handleWeekNav}>&#8249;</button>
+                                        <span class="col-nav-label">{col.weekLabel}</span>
+                                        <button class="col-nav-btn" data-agent={col.num} data-dir="1" onclick={handleWeekNav}>&#8250;</button>
+                                    </div>
+                                    <div class="col-slots">
+                                        <template for:each={col.pagedSlots} for:item="slot">
+                                            <button key={slot.key} class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
+                                                <span class="sb-day">{slot.dayName}</span>
+                                                <span class="sb-date">{slot.shortDate}</span>
+                                                <span class="sb-time">{slot.timeLabel}</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <template if:false={col.hasPagedSlots}>
+                                        <div class="col-empty">No slots this week</div>
+                                    </template>
+                                </template>
+                                <template if:false={col.hasSlots}>
+                                    <div class="col-empty">
+                                        <template if:true={col.hasAgent}>No available slots</template>
+                                        <template if:false={col.hasAgent}>Agent not assigned</template>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

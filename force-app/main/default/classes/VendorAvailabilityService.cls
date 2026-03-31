@@ -74,19 +74,23 @@ return resultMap;
         return org.TimeZoneSidKey;
     }
     
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static Map<String, Object> getVendorAvailability(Id currentId) {
         // Map to hold the results
         Map<String, Object> resultMap = new Map<String, Object>();
         
         // Query to get the available Vendor_Availability__c records
         List<Vendor_Availability__c> availabilityRecords = [
-            SELECT Id, Date__c, Vendor__c, Vendor__r.LastName, Vendor__r.FirstName, Availability__c, AM__c, PM__c, Notes__c, 
-            Agent__c, Agent__r.Name, Slots__c, Booked__c, Application__c
-            FROM Vendor_Availability__c 
-            WHERE Application__c = :currentId 
+            SELECT Id, Date__c, Vendor__c, Vendor__r.LastName, Vendor__r.FirstName, Availability__c, AM__c, PM__c, Notes__c,
+            Agent__c, Agent__r.Name, Slots__c, Booked__c, Application__c,
+            Hour_00__c, Hour_01__c, Hour_02__c, Hour_03__c, Hour_04__c, Hour_05__c,
+            Hour_06__c, Hour_07__c, Hour_08__c, Hour_09__c, Hour_10__c, Hour_11__c,
+            Hour_12__c, Hour_13__c, Hour_14__c, Hour_15__c, Hour_16__c, Hour_17__c,
+            Hour_18__c, Hour_19__c, Hour_20__c, Hour_21__c, Hour_22__c, Hour_23__c
+            FROM Vendor_Availability__c
+            WHERE Application__c = :currentId
             AND Availability__c = 'Available'
-            AND Date__c >= TODAY 
+            AND Date__c >= TODAY
         ];
         
         resultMap.put('availabilityRecords', availabilityRecords);
@@ -259,6 +263,115 @@ return resultMap;
     }
     
     
+    @AuraEnabled
+    public static List<Vendor_Availability__c> getHourlyAvailability(Id opportunityId) {
+        return [
+            SELECT Id, Date__c, Availability__c, AM__c, PM__c, Notes__c,
+                Hour_00__c, Hour_01__c, Hour_02__c, Hour_03__c, Hour_04__c, Hour_05__c,
+                Hour_06__c, Hour_07__c, Hour_08__c, Hour_09__c, Hour_10__c, Hour_11__c,
+                Hour_12__c, Hour_13__c, Hour_14__c, Hour_15__c, Hour_16__c, Hour_17__c,
+                Hour_18__c, Hour_19__c, Hour_20__c, Hour_21__c, Hour_22__c, Hour_23__c
+            FROM Vendor_Availability__c
+            WHERE Application__c = :opportunityId
+            AND Availability__c = 'Available'
+            AND Date__c >= TODAY
+            ORDER BY Date__c ASC
+        ];
+    }
+
+    @AuraEnabled
+    public static String saveHourlyAvailability(List<Map<String, Object>> dataList, String opportunityId) {
+        try {
+            Opportunity opp = [SELECT Id, Name, Applicant__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+
+            // Get existing records keyed by date
+            Map<String, Vendor_Availability__c> existingMap = new Map<String, Vendor_Availability__c>();
+            for (Vendor_Availability__c rec : [
+                SELECT Id, Date__c, Availability__c, AM__c, PM__c,
+                    Hour_00__c, Hour_01__c, Hour_02__c, Hour_03__c, Hour_04__c, Hour_05__c,
+                    Hour_06__c, Hour_07__c, Hour_08__c, Hour_09__c, Hour_10__c, Hour_11__c,
+                    Hour_12__c, Hour_13__c, Hour_14__c, Hour_15__c, Hour_16__c, Hour_17__c,
+                    Hour_18__c, Hour_19__c, Hour_20__c, Hour_21__c, Hour_22__c, Hour_23__c
+                FROM Vendor_Availability__c
+                WHERE Application__c = :opp.Id AND Vendor__c = :opp.Applicant__c
+            ]) {
+                existingMap.put(rec.Date__c.format(), rec);
+            }
+
+            List<Vendor_Availability__c> toInsert = new List<Vendor_Availability__c>();
+            List<Vendor_Availability__c> toUpdate = new List<Vendor_Availability__c>();
+
+            for (Map<String, Object> data : dataList) {
+                Date availDate = Date.valueOf((String) data.get('Date__c'));
+                Boolean hasAnyHour = false;
+
+                // Check if any hour is selected
+                for (Integer h = 0; h < 24; h++) {
+                    String hField = 'Hour_' + String.valueOf(h).leftPad(2, '0') + '__c';
+                    if (data.containsKey(hField) && (Boolean) data.get(hField) == true) {
+                        hasAnyHour = true;
+                        break;
+                    }
+                }
+
+                // Derive AM/PM from hours
+                Boolean hasAm = false;
+                Boolean hasPm = false;
+                for (Integer h = 0; h < 24; h++) {
+                    String hField = 'Hour_' + String.valueOf(h).leftPad(2, '0') + '__c';
+                    if (data.containsKey(hField) && (Boolean) data.get(hField) == true) {
+                        if (h < 12) hasAm = true;
+                        else hasPm = true;
+                    }
+                }
+
+                Vendor_Availability__c rec;
+                if (existingMap.containsKey(availDate.format())) {
+                    rec = existingMap.get(availDate.format());
+                    rec.Availability__c = hasAnyHour ? 'Available' : 'Unavailable';
+                    rec.AM__c = hasAm;
+                    rec.PM__c = hasPm;
+                    for (Integer h = 0; h < 24; h++) {
+                        String hField = 'Hour_' + String.valueOf(h).leftPad(2, '0') + '__c';
+                        rec.put(hField, data.containsKey(hField) ? (Boolean) data.get(hField) : false);
+                    }
+                    toUpdate.add(rec);
+                } else if (hasAnyHour) {
+                    rec = new Vendor_Availability__c();
+                    rec.Application__c = opp.Id;
+                    rec.Vendor__c = opp.Applicant__c;
+                    rec.Date__c = availDate;
+                    rec.Name = opp.Name + ' - ' + (String) data.get('Date__c');
+                    rec.Availability__c = 'Available';
+                    rec.AM__c = hasAm;
+                    rec.PM__c = hasPm;
+                    for (Integer h = 0; h < 24; h++) {
+                        String hField = 'Hour_' + String.valueOf(h).leftPad(2, '0') + '__c';
+                        rec.put(hField, data.containsKey(hField) ? (Boolean) data.get(hField) : false);
+                    }
+                    toInsert.add(rec);
+                }
+            }
+
+            if (!toInsert.isEmpty()) insert toInsert;
+            if (!toUpdate.isEmpty()) update toUpdate;
+            return 'Success';
+        } catch (Exception e) {
+            throw new AuraHandledException('Save failed: ' + e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    public static String cancelAgentBooking(Id eventId) {
+        try {
+            Event evt = [SELECT Id FROM Event WHERE Id = :eventId LIMIT 1];
+            delete evt;
+            return 'Success';
+        } catch (Exception e) {
+            throw new AuraHandledException('Cancel failed: ' + e.getMessage());
+        }
+    }
+
     private static String checkObject(String recordId) {
         if (recordId.startsWith('006')) {
             return 'Opportunity';

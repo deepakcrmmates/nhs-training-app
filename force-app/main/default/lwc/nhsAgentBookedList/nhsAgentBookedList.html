@@ -1,0 +1,130 @@
+<template>
+    <!-- TOOLBAR -->
+    <div class="ab-toolbar">
+        <div class="ab-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor, development…" onchange={handleSearch}>
+        </div>
+        <div class="ab-filters">
+            <button class={filterAllClass} data-filter="all" onclick={handleFilter}>All <span class="ftag-count">{totalCount}</span></button>
+            <button class={filterBookedClass} data-filter="booked" onclick={handleFilter}>All Booked <span class="ftag-count">{allBookedCount}</span></button>
+            <button class={filterPendingClass} data-filter="pending" onclick={handleFilter}>Pending <span class="ftag-count">{pendingCount}</span></button>
+        </div>
+        <div class="ab-time-filters">
+            <button class={filter24hClass} data-filter="24h" onclick={handleTimeFilter}>Next 24 hrs <span class="ftag-count">{count24h}</span></button>
+            <button class={filter48hClass} data-filter="48h" onclick={handleTimeFilter}>Next 48 hrs <span class="ftag-count">{count48h}</span></button>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="ab-info">{filteredCount} applications</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="ab-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="ab-table-wrap">
+            <table class="ab-table">
+                <thead>
+                    <tr>
+                        <th class="ab-th ab-th-app">Application</th>
+                        <th class="ab-th">Vendor</th>
+                        <th class="ab-th">Status</th>
+                        <th class="ab-th ab-th-agent">
+                            <div class="th-slot">Slot 1</div>Agent 1 (NHS)
+                        </th>
+                        <th class="ab-th ab-th-agent">
+                            <div class="th-slot">Slot 2</div>Agent 2
+                        </th>
+                        <th class="ab-th ab-th-agent">
+                            <div class="th-slot">Slot 3</div>Agent 3
+                        </th>
+                        <th class="ab-th ab-th-avail">Next Availability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={displayedApps} for:item="app">
+                        <tr key={app.id} class="ab-row" data-id={app.id} onclick={handleRowClick}>
+                            <td class="ab-td">
+                                <div class="app-addr" title={app.name}>{app.name}</div>
+                                <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
+                            </td>
+                            <td class="ab-td">
+                                <span class="vendor-name">{app.vendorName}</span>
+                            </td>
+                            <td class="ab-td">
+                                <span class={app.statusClass}>{app.bookingStatus}</span>
+                            </td>
+                            <td class="ab-td ab-td-agent">
+                                <template if:true={app.agent1Booked}>
+                                    <div class="agent-booked">
+                                        <div class="agent-av">{app.agent1Init}</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">{app.agent1Name}</div>
+                                            <div class="agent-appt">{app.agent1DateFmt}</div>
+                                        </div>
+                                        <span class="tick">&#10003;</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent1Booked}>
+                                    <div class="agent-empty"><span class="unassigned-lbl">Unassigned</span></div>
+                                </template>
+                            </td>
+                            <td class="ab-td ab-td-agent">
+                                <template if:true={app.agent2Booked}>
+                                    <div class="agent-booked">
+                                        <div class="agent-av">{app.agent2Init}</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">{app.agent2Name}</div>
+                                            <div class="agent-appt">{app.agent2DateFmt}</div>
+                                        </div>
+                                        <span class="tick">&#10003;</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent2Booked}>
+                                    <div class="agent-empty"><span class="unassigned-lbl">Unassigned</span></div>
+                                </template>
+                            </td>
+                            <td class="ab-td ab-td-agent">
+                                <template if:true={app.agent3Booked}>
+                                    <div class="agent-booked">
+                                        <div class="agent-av">{app.agent3Init}</div>
+                                        <div class="agent-info">
+                                            <div class="agent-name">{app.agent3Name}</div>
+                                            <div class="agent-appt">{app.agent3DateFmt}</div>
+                                        </div>
+                                        <span class="tick">&#10003;</span>
+                                    </div>
+                                </template>
+                                <template if:false={app.agent3Booked}>
+                                    <div class="agent-empty"><span class="unassigned-lbl">Unassigned</span></div>
+                                </template>
+                            </td>
+                            <td class="ab-td">
+                                <div class={app.availBadgeClass}>
+                                    <span class="avail-date">{app.nextAvailDisplay}</span>
+                                    <template if:true={app.availUrgency}>
+                                        <span class="avail-urgency">{app.availUrgency}</span>
+                                    </template>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <template if:false={hasApps}>
+                        <tr><td colspan="7" class="ab-empty">No applications found at this stage</td></tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <template if:true={showPaging}>
+            <div class="ab-paging">
+                <span class="pg-info">Showing {pageStart}–{pageEnd} of {filteredCount}</span>
+                <div class="pg-btns">
+                    <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
+                    <span class="pg-current">{currentPage}</span>
+                    <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

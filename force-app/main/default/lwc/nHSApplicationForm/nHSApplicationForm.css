@@ -46,7 +46,6 @@
 .header-left {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
 }
 
 .header-left h2 {
@@ -57,8 +56,13 @@
 }
 
 .header-logo {
-    height: 40px;
+    height: 48px; /* Slightly larger logo */
     object-fit: contain;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
 }
 
 /* Layout Container */
@@ -139,6 +143,31 @@
     border-bottom: 1px solid #f1f5f9;
 }
 
+.header-with-date {
+    justify-content: space-between;
+}
+
+.header-title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-date-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-date-group .modern-label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.header-date-group lightning-input {
+    width: 155px;
+}
+
 .section-header-modern h2 {
     font-size: 0.9rem;
     font-weight: 700;
@@ -165,9 +194,9 @@
 }
 
 .vendor-expectation-input {
-    --sds-c-input-font-size: 1.15rem;
+    --sds-c-input-font-size: 1.5rem;
     --sds-c-input-text-color: var(--brand-primary);
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .modern-label {
@@ -396,6 +425,18 @@ lightning-input-field {
 .animated-checkbox.error {
     background-color: red; /* Red circle */
     animation: error-circle-animation 0.6s ease-out forwards;
+}
+
+/* Progress animation */
+.animated-checkbox.progress {
+    background-color: #3498db; /* Blue for progress */
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.7; }
 }
 
 .animated-checkbox.error::before,

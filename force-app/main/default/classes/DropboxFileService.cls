@@ -316,7 +316,7 @@ public without sharing class DropboxFileService {
     }
     
     //  public static String getAccountDropboxFolderPath(String accountName, String accountId, String accessToken) {
-    //     String parentFolderPath = '/Private Salesforce Document/Accounts';
+    //     String parentFolderPath = '/Private Salesforce Documents/Accounts';
     //     String folderName = accountName;
 
     //     HttpRequest req = new HttpRequest();
@@ -389,7 +389,7 @@ public without sharing class DropboxFileService {
 
     @AuraEnabled
    public static String createAccountDropboxFolder(String accountName, String accountId, String accessToken) {
-    String parentFolderPath = '/Private Salesforce Document/Accounts';
+    String parentFolderPath = '/Private Salesforce Documents/Accounts';
     
     // ✅ Ensure spaces are preserved by trimming only, NO replacements!
     String trimmedAccountName = accountName.trim();

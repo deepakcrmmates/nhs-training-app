@@ -1,0 +1,86 @@
+<template>
+    <div class="va-toolbar">
+        <div class="va-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor…" onchange={handleSearch}>
+        </div>
+        <div class="va-filters">
+            <button class={filterAllClass} data-filter="all" onclick={handleFilter}>All <span class="ftag-count">{totalCount}</span></button>
+            <button class={filterHasClass} data-filter="has" onclick={handleFilter}>Has Availability <span class="ftag-count">{hasAvailCount}</span></button>
+            <button class={filterNoneClass} data-filter="none" onclick={handleFilter}>No Availability <span class="ftag-count">{noAvailCount}</span></button>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="va-info">{filteredCount} applications</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="va-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="va-table-wrap">
+            <table class="va-table">
+                <thead>
+                    <tr>
+                        <th class="va-th va-th-app">Application</th>
+                        <th class="va-th">Vendor</th>
+                        <th class="va-th">Contact</th>
+                        <th class="va-th">House Builder</th>
+                        <th class="va-th">Slots</th>
+                        <th class="va-th va-th-avail">Next Availability</th>
+                        <th class="va-th va-th-act">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={displayedApps} for:item="app">
+                        <tr key={app.id} class="va-row">
+                            <td class="va-td" data-id={app.id} onclick={handleRowClick}>
+                                <div class="app-addr">{app.name}</div>
+                                <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
+                            </td>
+                            <td class="va-td">
+                                <span class="vendor-name">{app.vendorName}</span>
+                            </td>
+                            <td class="va-td">
+                                <div class="contact-info">
+                                    <template if:true={app.vendorPhone}><div class="contact-row">{app.vendorPhone}</div></template>
+                                    <template if:true={app.vendorEmail}><div class="contact-row email">{app.vendorEmail}</div></template>
+                                </div>
+                            </td>
+                            <td class="va-td"><span class="hb-name">{app.houseBuilder}</span></td>
+                            <td class="va-td">
+                                <span class={app.slotBadgeClass}>{app.slotLabel}</span>
+                            </td>
+                            <td class="va-td">
+                                <div class={app.availBadgeClass}>
+                                    <span class="avail-date">{app.nextAvailDisplay}</span>
+                                    <template if:true={app.availUrgency}>
+                                        <span class="avail-urgency">{app.availUrgency}</span>
+                                    </template>
+                                </div>
+                            </td>
+                            <td class="va-td va-td-act">
+                                <button class="btn-move-next" data-id={app.id} onclick={handleMoveNext}>
+                                    Move Next
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                    <template if:false={hasApps}>
+                        <tr><td colspan="7" class="va-empty">No applications at Vendor Availability stage</td></tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <template if:true={showPaging}>
+            <div class="va-paging">
+                <span class="pg-info">Showing {pageStart}–{pageEnd} of {filteredCount}</span>
+                <div class="pg-btns">
+                    <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
+                    <span class="pg-current">{currentPage}</span>
+                    <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

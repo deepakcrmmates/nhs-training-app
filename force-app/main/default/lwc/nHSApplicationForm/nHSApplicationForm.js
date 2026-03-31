@@ -13,6 +13,10 @@ import ACCOUNT_Region from '@salesforce/schema/Account.Region__c';
 import ACCOUNT_LOGO from '@salesforce/schema/Account.Logo_URL__c';
 import getAccountFileUrl from '@salesforce/apex/houseBuilderApplication.getAccountFileUrl';
 import saveData from '@salesforce/apex/houseBuilderApplication.saveData';
+import createVendors from '@salesforce/apex/houseBuilderApplication.createVendors';
+import createProperty from '@salesforce/apex/houseBuilderApplication.createProperty';
+import createAgents from '@salesforce/apex/houseBuilderApplication.createAgents';
+import createApplication from '@salesforce/apex/houseBuilderApplication.createApplication';
 import getfs from '@salesforce/apex/AddressFinderController.getFieldSet';
 import getPdfUrl from '@salesforce/apex/HouseBuilderPdfController.getPdfUrl';
 import generatePdfBlob from '@salesforce/apex/HouseBuilderPdfController.generatePdfBlob';
@@ -36,7 +40,8 @@ export default class NHSApplicationForm extends LightningElement {
     salesAdv = '';
     finalCheck = false;
     finalMessage = '';
-    reordType = '';
+    reordType = ''; // Keeping this as a placeholder if needed elsewhere
+    recordType = '';
     accountRecordTypeId = '';
     logoUrl = '';
     applicationPdfUrl = '';
@@ -59,7 +64,6 @@ export default class NHSApplicationForm extends LightningElement {
         return [
             { id: 'housebuilder', label: 'House Builder', icon: 'utility:company' },
             { id: 'property-details', label: 'Property Details', icon: 'utility:retail_execution' },
-            { id: 'property-eta', label: 'ALCD', icon: 'utility:date_input' },
             { id: 'vendor-details', label: 'Vendor Details', icon: 'utility:groups' },
             { id: 'property-description', label: 'Property Description', icon: 'utility:description' },
             { id: 'additional-details', label: 'Additional Details', icon: 'utility:add' }
@@ -85,7 +89,7 @@ export default class NHSApplicationForm extends LightningElement {
         return this.activeSection === sectionId ? 'nav-item active' : 'nav-item';
     }
 
-    @track currentDateTime = new Date().toISOString();
+    @track currentDateTime = new Date().toISOString().split('T')[0];
     marketStatusOptions = [
         { label: 'Yes', value: 'Yes' },
         { label: 'No', value: 'No' }
@@ -120,9 +124,9 @@ export default class NHSApplicationForm extends LightningElement {
             "startDate": "",
             "endDate": "",
             "notes": "",
-            "marketstatusYes": '',
+            "marketstatusYes": 'No',
             "marketstatus_Val": false,
-            "Has_your_house_been_valued_by_an_agent": '',
+            "Has_your_house_been_valued_by_an_agent": 'No',
             "has_your_house_been_valued_by_an_agents": false,
             "terms": true,
             "monAM": false,
@@ -138,7 +142,8 @@ export default class NHSApplicationForm extends LightningElement {
             "satAM": false,
             "satPM": false,
             "sunAM": false,
-            "sunPM": false
+            "sunPM": false,
+            "PurchasePrice": 0
         },
         Vendor: {
             "firstname": "",
@@ -152,7 +157,7 @@ export default class NHSApplicationForm extends LightningElement {
         },
         Property: {
             "Detached": false, "SemiDetached": false, "EndTerrace": false, "MidTerrace": false, "Apartment": false, "Maisonette": false, "Studio": false,
-            "Bungalow": false, "NumberofBedrooms": "", "FrontGarden": false, "BackGarden": false, "NoGarden": false, "Parking": false, "Garage": false, "Extension": false,
+            "Bungalow": false, "Other": false, "Other_Note": "", "NumberofBedrooms": "", "FrontGarden": false, "BackGarden": false, "NoGarden": false, "Parking": false, "Garage": false, "Extension": false,
             "Conservatory": false, "AgeofProperty": "", "Freehold": false, "LeaseHold": false, "YearsleftofLease": "", "ServiceChargePCM": "", "GroundRentPA": "",
             "PrincipleResidence": false, "SecondHomeHolidayLet": false, "AnyExtensionssolarpanels": false, "BuildingRegsPlanningPermission": false, "TypeofHeating": ""
         },
@@ -243,6 +248,10 @@ export default class NHSApplicationForm extends LightningElement {
 
     get email() {
         return getFieldValue(this.account.data, ACCOUNT_EMAIL);
+    }
+
+    get todayDate() {
+        return new Date().toISOString().split('T')[0];
     }
 
     @wire(getfs, {
@@ -434,13 +443,32 @@ export default class NHSApplicationForm extends LightningElement {
     }
 
     handlePropertChange(event) {
-        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        console.log('OUTPUT :val  ', value);
         const field = event.target.name;
-        this.formData.Property[field] = value;
-        console.log('OUTPUT : handlePropertChange', JSON.stringify(this.formData));
+        const isCheckbox = event.target.type === 'checkbox';
+        const value = isCheckbox ? event.target.checked : event.target.value;
 
+        // List of property type fields that should behave like radio buttons
+        const propertyTypes = [
+            'Detached', 'SemiDetached', 'EndTerrace', 'MidTerrace',
+            'Apartment', 'Maisonette', 'Studio', 'Bungalow', 'Other'
+        ];
 
+        if (isCheckbox && propertyTypes.includes(field)) {
+            if (value) {
+                // If checking one, uncheck all others in the group
+                propertyTypes.forEach(type => {
+                    this.formData.Property[type] = (type === field);
+                });
+            } else {
+                // If unchecking, just update this one
+                this.formData.Property[field] = false;
+            }
+        } else {
+            // Standard update for other fields
+            this.formData.Property[field] = value;
+        }
+
+        console.log('OUTPUT : handlePropertChange', JSON.stringify(this.formData.Property));
     }
 
     handleValueSelectedOnAccount(event) {
@@ -458,12 +486,12 @@ export default class NHSApplicationForm extends LightningElement {
                     this.formData.Application['housebuilderId'] = accountId;
                 } else {
                     this.isSelectedHousebuilder = true;
-                    console.warn('Selected account is not a House Builder');
+                    console.warn('Selected account is not a Housebuilder');
                     // Optional: display a message to the user
 
                     const evt = new ShowToastEvent({
                         title: 'Warning..!',
-                        message: 'Selected account is not a House Builder.',
+                        message: 'Selected account is not a Housebuilder.',
                         variant: 'warning',
                         mode: 'Pester '
                     });
@@ -475,21 +503,20 @@ export default class NHSApplicationForm extends LightningElement {
             });
     }
 
-    handleSaveAndSubmit() {
+    async handleSaveAndSubmit() {
         this.processResults = [];
         let missingFields = [];
         let formDataToSend = { ...this.formData };
 
-        
-        if(this.isSelectedHousebuilder == true){
-                  const evt = new ShowToastEvent({
-                            title: 'Warning..!',
-                            message: 'Please select correct Housebuilder.',
-                            variant: 'warning',
-                            mode: 'Pester '
-                        });
-                        this.dispatchEvent(evt);
-                        return;
+        if (this.isSelectedHousebuilder == true) {
+            const evt = new ShowToastEvent({
+                title: 'Warning..!',
+                message: 'Please select correct Housebuilder.',
+                variant: 'warning',
+                mode: 'Pester '
+            });
+            this.dispatchEvent(evt);
+            return;
         }
 
         // Validation for house valuation
@@ -511,7 +538,7 @@ export default class NHSApplicationForm extends LightningElement {
                     agentName: 'Agent Name',
                     agentEmail: 'Agent Email',
                     agentPhone: 'Agent Phone',
-                    agent3Name: 'Valued by Agent Aame',
+                    agent3Name: 'Valued by Agent Name',
                     agent3Email: 'Valued by Agent Email',
                     agent3Phone: 'Valued by Agent Phone',
                     street: 'Street',
@@ -543,7 +570,6 @@ export default class NHSApplicationForm extends LightningElement {
                     agent3Name: 'Valued by Agent Name',
                     agent3Email: 'Valued by Agent Email',
                     agent3Phone: 'Valued by Agent Phone',
-
                 }
             };
 
@@ -555,13 +581,12 @@ export default class NHSApplicationForm extends LightningElement {
                 });
             });
         }
-        // Ensure formData and Vendor object exist
+
         if (!this.formData || !this.formData.Vendor) {
             this.addResultWithDelay('Error', 'formData or Vendor object is undefined.', 0);
             return;
         }
 
-        // Check Vendor last name
         const vendorLastName = this.formData.Vendor.lastname;
         const vendorLastNameInput = this.template.querySelector("lightning-input[data-field-name='lastname']");
 
@@ -573,12 +598,6 @@ export default class NHSApplicationForm extends LightningElement {
             }
         }
 
-        // Check Terms and Conditions
-        /* if (!this.formData.Application.terms) {
-            missingFields.push('Terms and Conditions');
-        } */
-
-        // Show error messages sequentially if there are missing fields
         missingFields.forEach((field, index) => {
             this.addResultWithDelay('Error', `${field} Required`, index);
         });
@@ -586,7 +605,6 @@ export default class NHSApplicationForm extends LightningElement {
         if (missingFields.length > 0) {
             this.customError = true;
             this.animationClass = 'animated-checkbox error';
-
             setTimeout(() => {
                 this.customError = false;
                 if (vendorLastNameInput) {
@@ -597,100 +615,83 @@ export default class NHSApplicationForm extends LightningElement {
             return;
         }
 
-        // Clear previous errors if valid
         if (vendorLastNameInput) {
             vendorLastNameInput.setCustomValidity('');
             vendorLastNameInput.reportValidity();
         }
 
-        console.log('Submitting formData:', JSON.stringify(formDataToSend));
         this.isLoading = true;
-        saveData({ formData: formDataToSend, recordType: this.recordType })
-            .then(result => {
-                this.isModalOpen = true;
-                console.log('Data saved successfully:', result);
-                this.processResults = []; // Clear previous messages
-                let index = 0; // Track message order
+        this.isModalOpen = true;
 
-                // Handle Success Cases
-                let successMessages = [];
+        try {
+            // STEP 1: CREATE VENDORS
+            this.addResultWithDelay('Progress', 'Creating Vendors...', 0);
+            const vendorResult = await createVendors({ vendorData: this.formData.Vendor });
+            if (vendorResult.n) throw new Error(vendorResult.n);
+            
+            this.addResultWithDelay('Success', `Vendor 1 ${vendorResult.vaendor1name} created.`, 1);
+            if (vendorResult.vaendor2name) {
+                this.addResultWithDelay('Success', `Vendor 2 ${vendorResult.vaendor2name} created.`, 2);
+            }
 
-                if (result?.propname) {
-                    successMessages.push('All technical checks done.');
-                    successMessages.push(`Property ${result.propname} has been submitted.`);
-                }
-                if (result?.vaendor1name) {
-                    successMessages.push(`Vendor 1 ${result.vaendor1name} has been submitted.`);
-                }
-                if (result?.vaendor2name) {
-                    successMessages.push(`Vendor 2 ${result.vaendor2name} has been submitted.`);
-                }
-                if (result?.agentname) {
-                    successMessages.push(`Agent ${result.agentname} has been submitted.`);
-                }
-                if (result?.agent3name) {
-                    successMessages.push(`Agent ${result.agent3name} has been submitted.`);
-                }
-                if (result?.y) {
-                    successMessages.push('PDF is ready to download.');
-                    this.finalMessage = (`Thank you ${this.name}, your application has been successfully submitted.`);
-                    this.animationClass = 'animated-checkbox success';
-                    this.disable = true;
-                    this.isReadOnly = true;
-                    this.applicationId = result.y;
-                    setTimeout(() => {
-                        try {
-                            generatePdfBlob({ recordId: this.applicationId })
-                                .then(results1 => {
-                                    console.log('OUTPUT : file uploaded to Dropbox successfully...');
-                                    return refreshApex(this.applicationPdfUrl);
-                                })
-                                .catch(error => {
-                                    console.error('Error uploading file to Dropbox:', error);
-                                });
-                        } catch (error) {
-                            console.error('Unexpected error:', error);
-                        }
-                    }, 6000); // 5000ms = 5 seconds
+            // STEP 2: CREATE PROPERTY
+            this.addResultWithDelay('Progress', 'Creating Property...', 3);
+            const propertyResult = await createProperty({ propertyData: this.formData.Property });
+            if (propertyResult.n) throw new Error(propertyResult.n);
+            this.addResultWithDelay('Success', `Property ${propertyResult.propname} created.`, 4);
 
+            // STEP 3: CREATE AGENTS
+            this.addResultWithDelay('Progress', 'Processing Agents...', 5);
+            const agentResult = await createAgents({ agentData: this.formData.Agent });
+            if (agentResult.n) throw new Error(agentResult.n);
+            if (agentResult.agentname) this.addResultWithDelay('Success', `Agent ${agentResult.agentname} registered.`, 6);
+            if (agentResult.agent3name) this.addResultWithDelay('Success', `Valuation Agent ${agentResult.agent3name} registered.`, 7);
 
-                }
-
-                // Display success messages sequentially
-                successMessages.forEach((message, i) => {
-                    this.addResultWithDelay('Success', message, i);
-                });
-
-                // Handle Error Case
-                if (result?.n) {
-                    console.error('Server Error:', result.n);
-                    this.isModalOpen = false;
-                    this.isLoading = false;
-                    this.customError = true;
-                    this.isReadOnly = false;
-                    this.addResultWithDelay('Error', 'There is a technical issue. Kindly reach out to your system administrator. ' + result.n, index++);
-                    this.animationClass = 'animated-checkbox error';
-                    this.disable = false;
-                    this.finalCheck = false;
-                }
-                if (result?.y) {
-                    this.isLoading = false;
-                    // Close Modal & Stop Loading Indicator
-                    setTimeout(() => { this.isModalOpen = false; this.finalCheck = true; }, 8000);
-                    setTimeout(() => { }, 2000);
-                }
-            })
-            .catch(error => {
-                console.error('Error saving data:', error);
-                this.addResultWithDelay('Error', 'An unexpected error occurred while saving the data.', 0);
-                this.isLoading = false;
-                this.finalCheck = false;
-                this.isModalOpen = false;
-                this.isReadOnly = false;
-                this.customError = true;
-                this.animationClass = 'animated-checkbox error';
-                this.disable = false;
+            // STEP 4: CREATE APPLICATION
+            this.addResultWithDelay('Progress', 'Finalizing Application...', 8);
+            const appResult = await createApplication({ 
+                appData: this.formData.Application,
+                recordType: this.recordType,
+                vendor1Id: vendorResult.vendor1Id,
+                vendor2Id: vendorResult.vendor2Id,
+                propertyId: propertyResult.propertyId,
+                agentId: agentResult.agentId,
+                agent3Id: agentResult.agent3Id
             });
+            if (appResult.n) throw new Error(appResult.n);
+            
+            this.addResultWithDelay('Success', 'Application successfully submitted.', 9);
+            this.addResultWithDelay('Success', 'PDF is being generated...', 10);
+            
+            this.applicationId = appResult.y;
+            this.finalMessage = `Thank you ${this.name}, your application has been successfully submitted.`;
+            this.animationClass = 'animated-checkbox success';
+            this.disable = true;
+            this.isReadOnly = true;
+            this.isLoading = false;
+
+            // Trigger PDF generation in background
+            setTimeout(() => {
+                generatePdfBlob({ recordId: this.applicationId })
+                    .then(() => refreshApex(this.applicationPdfUrl))
+                    .catch(e => console.error('Error generating PDF:', e));
+            }, 5000);
+
+            setTimeout(() => { 
+                this.isModalOpen = false; 
+                this.finalCheck = true; 
+            }, 8000);
+
+        } catch (error) {
+            console.error('Save Error:', error);
+            this.addResultWithDelay('Error', error.message || 'An unexpected error occurred.', 0);
+            this.isLoading = false;
+            this.customError = true;
+            this.animationClass = 'animated-checkbox error';
+            this.finalCheck = false;
+            // Optionally close modal after error
+            // setTimeout(() => { this.isModalOpen = false; }, 5000);
+        }
     }
 
 
@@ -699,7 +700,10 @@ export default class NHSApplicationForm extends LightningElement {
     // Function to show messages one by one with delay
     addResultWithDelay(status, message, index, delay = 500) {
         setTimeout(() => {
-            const animationClass = status === 'Success' ? 'animated-checkbox success' : 'animated-checkbox error';
+            let animationClass = 'animated-checkbox';
+            if (status === 'Success') animationClass += ' success';
+            else if (status === 'Error') animationClass += ' error';
+            else if (status === 'Progress') animationClass += ' progress';
 
             const newResult = {
                 id: this.processResults.length + 1, // Unique ID for each result
@@ -711,7 +715,7 @@ export default class NHSApplicationForm extends LightningElement {
             this.processResults = [...this.processResults, newResult];
 
             // Update success state
-            this.isAllSuccess = this.processResults.every(result => result.status === 'Success');
+            this.isAllSuccess = this.processResults.every(result => result.status === 'Success' || result.status === 'Progress');
         }, index * delay); // Ensures sequential appearance
     }
 

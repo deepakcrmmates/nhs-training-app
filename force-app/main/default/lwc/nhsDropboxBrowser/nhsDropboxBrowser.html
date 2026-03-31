@@ -1,0 +1,73 @@
+<template>
+    <div class="db-card">
+        <div class="db-banner">
+            <div class="db-dot"></div>
+            <h2>Dropbox Files</h2>
+            <button class="db-refresh" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="db-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="db-body">
+                <!-- Folder path -->
+                <div class="db-path">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                    <span>{folderPath}</span>
+                </div>
+
+                <!-- No folder yet -->
+                <template if:false={folderExists}>
+                    <div class="db-empty">
+                        <p>No Dropbox folder found for this property.</p>
+                        <button class="db-btn-create" onclick={handleCreateFolder}>
+                            Create Folder Structure
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Folder exists -->
+                <template if:true={folderExists}>
+                    <!-- Subfolder tabs -->
+                    <div class="db-tabs">
+                        <button class={tabAllClass} data-tab="all" onclick={handleTabClick}>All Files</button>
+                        <button class={tabAppClass} data-tab="Application" onclick={handleTabClick}>
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Application
+                        </button>
+                        <button class={tabValClass} data-tab="Valuation" onclick={handleTabClick}>
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Valuation
+                        </button>
+                    </div>
+
+                    <!-- File list -->
+                    <template if:true={hasFilteredFiles}>
+                        <div class="db-file-list">
+                            <template for:each={filteredFiles} for:item="file">
+                                <div key={file.name} class="db-file-row">
+                                    <div class="db-file-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    </div>
+                                    <div class="db-file-info">
+                                        <div class="db-file-name">{file.name}</div>
+                                        <div class="db-file-meta">
+                                            <span class="db-file-folder">{file.subfolder}</span>
+                                            <span class="db-file-size">{file.sizeDisplay}</span>
+                                            <span class="db-file-date">{file.modifiedDisplay}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasFilteredFiles}>
+                        <div class="db-no-files">No files in this folder</div>
+                    </template>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

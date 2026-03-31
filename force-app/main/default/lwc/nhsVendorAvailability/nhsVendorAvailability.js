@@ -1,45 +1,53 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getExistingVendorAvailability from '@salesforce/apex/VendorAvailabilityService.getExistingVendorAvailability';
-import processVendorAvailability from '@salesforce/apex/VendorAvailabilityService.processVendorAvailability';
+import getHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.getHourlyAvailability';
+import saveHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.saveHourlyAvailability';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MAX_WEEKS = 12;
-const INITIAL_WEEKS = 3;
+
+const DISPLAY_HOURS = [
+    { fieldNum: '09', label: '9 am – 10 am' },
+    { fieldNum: '10', label: '10 am – 11 am' },
+    { fieldNum: '11', label: '11 am – 12 pm' },
+    { fieldNum: '12', label: '12 pm – 1 pm' },
+    { fieldNum: '13', label: '1 pm – 2 pm' },
+    { fieldNum: '14', label: '2 pm – 3 pm' },
+    { fieldNum: '15', label: '3 pm – 4 pm' },
+    { fieldNum: '16', label: '4 pm – 5 pm' }
+];
+
+const AM_HOURS = ['09', '10', '11'];
+const PM_HOURS = ['12', '13', '14', '15', '16'];
+const ALL_HOURS = [...AM_HOURS, ...PM_HOURS];
 
 export default class NhsVendorAvailability extends LightningElement {
     @api recordId;
-    @track slots = {}; // keyed by date string: { am: bool, pm: bool, id: string }
-    @track weekCount = INITIAL_WEEKS;
+    @api vendorName = '';
+    @api vendorPhone = '';
+    @api vendorEmail = '';
+    @track slots = {};
+    @track weekOffset = 0;
     isLoading = true;
-    existingRecords = [];
-
-    get canAddWeek() {
-        return this.weekCount < MAX_WEEKS;
-    }
 
     connectedCallback() {
-        this.loadExistingAvailability();
+        this.loadAvailability();
     }
 
-    loadExistingAvailability() {
+    loadAvailability() {
         this.isLoading = true;
-        getExistingVendorAvailability({ currentId: this.recordId })
-            .then(result => {
-                const records = result.availabilityRecords || [];
-                this.existingRecords = records;
-                const loadedSlots = {};
+        getHourlyAvailability({ opportunityId: this.recordId })
+            .then(records => {
+                const loaded = {};
                 records.forEach(rec => {
-                    if (rec.Date__c) {
-                        loadedSlots[rec.Date__c] = {
-                            am: rec.AM__c || false,
-                            pm: rec.PM__c || false,
-                            id: rec.Id,
-                            availability: rec.Availability__c
-                        };
+                    if (!rec.Date__c) return;
+                    for (let h = 0; h < 24; h++) {
+                        const hh = String(h).padStart(2, '0');
+                        if (rec[`Hour_${hh}__c`]) {
+                            loaded[`${rec.Date__c}_${hh}`] = true;
+                        }
                     }
                 });
-                this.slots = loadedSlots;
+                this.slots = loaded;
                 this.isLoading = false;
             })
             .catch(error => {
@@ -48,166 +56,157 @@ export default class NhsVendorAvailability extends LightningElement {
             });
     }
 
-    getMonday(d) {
+    fmtDate(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    getSunday(d) {
         const date = new Date(d);
-        const day = date.getDay();
-        const diff = day === 0 ? -6 : 1 - day;
-        date.setDate(date.getDate() + diff);
+        date.setDate(date.getDate() - date.getDay());
         return date;
     }
 
-    getSunday(mondayDate) {
-        const sun = new Date(mondayDate);
-        sun.setDate(sun.getDate() - 1);
+    getWeekSunday() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const sun = this.getSunday(today);
+        sun.setDate(sun.getDate() + (this.weekOffset * 7));
         return sun;
     }
 
-    formatDate(d) {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${dd}`;
+    get currentWeekLabel() {
+        const sun = this.getWeekSunday();
+        const sat = new Date(sun);
+        sat.setDate(sat.getDate() + 6);
+        const sunStr = sun.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        const satStr = sat.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return `${sunStr} — ${satStr}`;
     }
 
-    get weeks() {
+    get currentWeek() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayStr = this.formatDate(today);
-        const monday = this.getMonday(today);
-        const result = [];
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = this.fmtDate(tomorrow);
+        const todayStr = this.fmtDate(today);
+        const weekSun = this.getWeekSunday();
 
-        for (let w = 0; w < this.weekCount; w++) {
-            const weekStart = new Date(monday);
-            weekStart.setDate(weekStart.getDate() + (w * 7));
-            const sunday = this.getSunday(weekStart);
-            const satDate = new Date(weekStart);
-            satDate.setDate(satDate.getDate() + 5);
+        const days = [];
+        for (let d = 0; d < 7; d++) {
+            const dayDate = new Date(weekSun);
+            dayDate.setDate(dayDate.getDate() + d);
+            const dateStr = this.fmtDate(dayDate);
+            const dow = dayDate.getDay();
+            const isWeekday = dow >= 1 && dow <= 5;
+            const isPast = dateStr < tomorrowStr;
+            const isToday = dateStr === todayStr;
 
-            const sunStr = sunday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-            const satStr = satDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const amOn = AM_HOURS.every(h => this.slots[`${dateStr}_${h}`]);
+            const pmOn = PM_HOURS.every(h => this.slots[`${dateStr}_${h}`]);
+            const allOn = amOn && pmOn;
+            const amPartial = !amOn && AM_HOURS.some(h => this.slots[`${dateStr}_${h}`]);
+            const pmPartial = !pmOn && PM_HOURS.some(h => this.slots[`${dateStr}_${h}`]);
 
-            const days = [];
-            for (let d = 0; d < 7; d++) {
-                const dayDate = new Date(sunday);
-                dayDate.setDate(dayDate.getDate() + d);
-                const dateStr = this.formatDate(dayDate);
-                const dayOfWeek = dayDate.getDay();
-                const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-                const isPast = dateStr < todayStr;
-                const slot = this.slots[dateStr] || { am: false, pm: false };
-                const hasAm = slot.am;
-                const hasPm = slot.pm;
-                const hasAll = hasAm && hasPm;
-                const hasAvailability = hasAm || hasPm;
-
-                let pastLabel = '';
-                if (isPast && hasAvailability) {
-                    if (hasAll) pastLabel = 'All Day';
-                    else if (hasAm) pastLabel = 'AM';
-                    else pastLabel = 'PM';
-                }
-
-                days.push({
-                    dateStr,
-                    dayName: DAY_NAMES[dayOfWeek],
-                    dayNumber: dayDate.getDate(),
-                    isWeekday,
-                    isPast,
-                    hasAvailability,
-                    pastLabel,
-                    colClass: `day-col ${isWeekday ? '' : 'weekend'} ${isPast && isWeekday ? 'past' : ''}`,
-                    allClass: `slot-btn ${hasAll ? 'active' : ''}`,
-                    amClass: `slot-btn slot-am ${hasAm && !hasAll ? 'active' : ''} ${hasAll ? 'active-via-all' : ''}`,
-                    pmClass: `slot-btn slot-pm ${hasPm && !hasAll ? 'active' : ''} ${hasAll ? 'active-via-all' : ''}`
-                });
-            }
-
-            result.push({
-                key: `week-${w}`,
-                label: `${sunStr} — ${satStr}`,
-                days
+            days.push({
+                dateStr,
+                dayName: DAY_NAMES[dow],
+                dayNumber: dayDate.getDate(),
+                isWeekday,
+                isPast,
+                showQuick: isWeekday && !isPast,
+                headerClass: `cal-header${isWeekday ? '' : ' weekend'}${isToday ? ' today' : ''}`,
+                quickCellClass: `cal-quick${isWeekday ? '' : ' weekend'}${isPast ? ' past' : ''}`,
+                allBtnClass: `qbtn${allOn ? ' on' : ''}`,
+                amBtnClass: `qbtn am${amOn ? ' on' : ''}${amPartial ? ' partial' : ''}`,
+                pmBtnClass: `qbtn pm${pmOn ? ' on' : ''}${pmPartial ? ' partial' : ''}`
             });
         }
-        return result;
+
+        const hourRows = DISPLAY_HOURS.map(hour => {
+            const cells = days.map(day => {
+                const isOn = !!this.slots[`${day.dateStr}_${hour.fieldNum}`];
+                let cls = 'cal-slot';
+                if (!day.isWeekday) cls += ' weekend';
+                else if (day.isPast) cls += ' past';
+                else if (isOn) cls += ' on';
+                return {
+                    key: `${day.dateStr}-${hour.fieldNum}`,
+                    dateStr: day.dateStr,
+                    hour: hour.fieldNum,
+                    isOn,
+                    slotClass: cls,
+                    tickClass: day.isPast ? 'slot-tick past-tick' : 'slot-tick'
+                };
+            });
+            return { key: `row-${hour.fieldNum}`, label: hour.label, cells };
+        });
+
+        return { days, hourRows };
     }
 
-    handleSlotToggle(event) {
+    handleSlotClick(event) {
+        const el = event.currentTarget;
+        const dateStr = el.dataset.date;
+        const hour = el.dataset.hour;
+        if (!dateStr || !hour) return;
+        if (el.classList.contains('weekend') || el.classList.contains('past')) return;
+        const key = `${dateStr}_${hour}`;
+        this.slots = { ...this.slots, [key]: !this.slots[key] };
+    }
+
+    handleQuickToggle(event) {
         const dateStr = event.target.dataset.date;
-        const slotType = event.target.dataset.slot;
-        const current = this.slots[dateStr] || { am: false, pm: false };
+        const action = event.target.dataset.action;
+        let hours;
+        if (action === 'all') hours = ALL_HOURS;
+        else if (action === 'am') hours = AM_HOURS;
+        else hours = PM_HOURS;
 
-        let newSlot;
-        if (slotType === 'all') {
-            const isAllActive = current.am && current.pm;
-            newSlot = { ...current, am: !isAllActive, pm: !isAllActive };
-        } else if (slotType === 'am') {
-            newSlot = { ...current, am: !current.am };
-        } else {
-            newSlot = { ...current, pm: !current.pm };
-        }
-
-        this.slots = { ...this.slots, [dateStr]: newSlot };
+        const allOn = hours.every(h => this.slots[`${dateStr}_${h}`]);
+        const newSlots = { ...this.slots };
+        hours.forEach(h => { newSlots[`${dateStr}_${h}`] = !allOn; });
+        this.slots = newSlots;
     }
 
-    handleAddWeek() {
-        if (this.weekCount < MAX_WEEKS) {
-            this.weekCount++;
-        }
-    }
+    handlePrevWeek() { this.weekOffset--; }
+    handleNextWeek() { this.weekOffset++; }
+    handleGoToday() { this.weekOffset = 0; }
 
     async handleSave() {
         this.isLoading = true;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayStr = this.formatDate(today);
-
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = this.fmtDate(tomorrow);
+        const weekSun = this.getWeekSunday();
         const dataList = [];
 
-        // Build data for all dates in the displayed weeks
-        const monday = this.getMonday(today);
-        for (let w = 0; w < this.weekCount; w++) {
-            const weekStart = new Date(monday);
-            weekStart.setDate(weekStart.getDate() + (w * 7));
-            const sunday = this.getSunday(weekStart);
+        for (let d = 1; d <= 5; d++) {
+            const dayDate = new Date(weekSun);
+            dayDate.setDate(dayDate.getDate() + d);
+            const dateStr = this.fmtDate(dayDate);
+            if (dateStr < tomorrowStr) continue;
 
-            for (let d = 0; d < 7; d++) {
-                const dayDate = new Date(sunday);
-                dayDate.setDate(dayDate.getDate() + d);
-                const dateStr = this.formatDate(dayDate);
-                const dayOfWeek = dayDate.getDay();
-
-                if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
-                if (dateStr < todayStr) continue; // Skip past dates
-
-                const slot = this.slots[dateStr] || { am: false, pm: false };
-                const isAvailable = slot.am || slot.pm;
-
-                dataList.push({
-                    'Date__c': dateStr,
-                    'AM__c': slot.am || false,
-                    'PM__c': slot.pm || false,
-                    'Availability__c': isAvailable ? 'Available' : 'Unavailable',
-                    'Notes__c': '',
-                    'Id': slot.id || ''
-                });
+            const entry = { 'Date__c': dateStr };
+            for (let h = 0; h < 24; h++) {
+                const hh = String(h).padStart(2, '0');
+                entry[`Hour_${hh}__c`] = !!this.slots[`${dateStr}_${hh}`];
             }
+            dataList.push(entry);
         }
 
         try {
-            await processVendorAvailability({
-                dataList: dataList,
-                currentId: this.recordId
-            });
+            await saveHourlyAvailability({ dataList, opportunityId: this.recordId });
             this.dispatchEvent(new ShowToastEvent({
-                title: 'Success',
-                message: 'Vendor availability saved successfully.',
-                variant: 'success'
+                title: 'Success', message: 'Vendor availability saved.', variant: 'success'
             }));
-            this.loadExistingAvailability();
+            this.loadAvailability();
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
-                message: error.body?.message || error.message || 'Failed to save availability.',
+                message: error.body?.message || error.message || 'Failed to save.',
                 variant: 'error'
             }));
             this.isLoading = false;

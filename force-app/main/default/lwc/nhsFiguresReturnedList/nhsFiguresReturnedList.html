@@ -1,0 +1,137 @@
+<template>
+    <div class="fr-toolbar">
+        <div class="fr-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor…" onchange={handleSearch}>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="fr-info">{totalCount} applications with all figures returned</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="fr-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="fr-table-wrap">
+            <table class="fr-table">
+                <thead>
+                    <tr>
+                        <th class="fr-th fr-th-app">Application</th>
+                        <th class="fr-th">Vendor</th>
+                        <th class="fr-th fr-th-agent">
+                            <div class="th-name">Agent 1 (NHS)</div>
+                            <div class="th-sub">Initial / Target / Bottom</div>
+                        </th>
+                        <th class="fr-th fr-th-agent">
+                            <div class="th-name">Agent 2</div>
+                            <div class="th-sub">Initial / Target / Bottom</div>
+                        </th>
+                        <th class="fr-th fr-th-agent">
+                            <div class="th-name">Agent 3</div>
+                            <div class="th-sub">Initial / Target / Bottom</div>
+                        </th>
+                        <th class="fr-th fr-th-nhs">
+                            <div class="th-name">NHS Recommended</div>
+                            <div class="th-sub">Market / Target / Forced</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={displayedApps} for:item="app">
+                        <tr key={app.id} class="fr-row" data-id={app.id} onclick={handleRowClick}>
+                            <td class="fr-td">
+                                <div class="app-addr">{app.name}</div>
+                                <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
+                            </td>
+                            <td class="fr-td">
+                                <span class="vendor-name">{app.vendorName}</span>
+                            </td>
+                            <td class="fr-td fr-td-agent">
+                                <div class="fig-card">
+                                    <div class="fig-agent-name">{app.agent1Name}</div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Initial</span>
+                                        <span class="fig-val">{app.a1InitFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Target</span>
+                                        <span class="fig-val">{app.a1TargetFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Bottom</span>
+                                        <span class="fig-val">{app.a1BottomFmt}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fr-td fr-td-agent">
+                                <div class="fig-card">
+                                    <div class="fig-agent-name">{app.agent2Name}</div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Initial</span>
+                                        <span class="fig-val">{app.a2InitFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Target</span>
+                                        <span class="fig-val">{app.a2TargetFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Bottom</span>
+                                        <span class="fig-val">{app.a2BottomFmt}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fr-td fr-td-agent">
+                                <div class="fig-card">
+                                    <div class="fig-agent-name">{app.agent3Name}</div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Initial</span>
+                                        <span class="fig-val">{app.a3InitFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Target</span>
+                                        <span class="fig-val">{app.a3TargetFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Bottom</span>
+                                        <span class="fig-val">{app.a3BottomFmt}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="fr-td fr-td-nhs">
+                                <div class="nhs-card">
+                                    <div class="nhs-title">NHS Recommended</div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Market</span>
+                                        <span class="nhs-val">{app.nhsMarketFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Target</span>
+                                        <span class="nhs-val">{app.nhsTargetFmt}</span>
+                                    </div>
+                                    <div class="fig-row">
+                                        <span class="fig-label">Forced</span>
+                                        <span class="nhs-val">{app.nhsForcedFmt}</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <template if:false={hasApps}>
+                        <tr><td colspan="6" class="fr-empty">No applications with all figures returned</td></tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <template if:true={showPaging}>
+            <div class="fr-paging">
+                <span class="pg-info">Showing {pageStart}–{pageEnd} of {totalCount}</span>
+                <div class="pg-btns">
+                    <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
+                    <span class="pg-current">{currentPage}</span>
+                    <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

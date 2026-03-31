@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Application__c</fullName>
+    <label>Application</label>
+    <referenceTo>Opportunity</referenceTo>
+    <relationshipLabel>Vendor Notes</relationshipLabel>
+    <relationshipName>Vendor_Notes</relationshipName>
+    <type>Lookup</type>
+    <required>false</required>
+</CustomField>

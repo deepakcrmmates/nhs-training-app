@@ -29,7 +29,8 @@ public with sharing class NhsApplicationKanbanController {
             'House_Builder__c, House_Builder__r.Name, House_Builder__r.BillingCity, ' +
             'Plot__c, Application_Reference_Number__c, CloseDate, CreatedDate, ' +
             'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
-            'Development__c, Date_of_Application_Received__c ' +
+            'Development__c, Date_of_Application_Received__c, ' +
+            'Vendor_1__c, Vendor_1__r.Name ' +
             'FROM Opportunity ' +
             'WHERE NHS_Process__c = \'Application\' ';
 
@@ -40,7 +41,8 @@ public with sharing class NhsApplicationKanbanController {
         if (String.isNotBlank(searchTerm)) {
             String safe = '%' + String.escapeSingleQuotes(searchTerm) + '%';
             query += ' AND (Name LIKE \'' + safe + '\'' +
-                     ' OR Application_Reference_Number__c LIKE \'' + safe + '\') ';
+                     ' OR Application_Reference_Number__c LIKE \'' + safe + '\'' +
+                     ' OR Development__c LIKE \'' + safe + '\') ';
         }
 
         if (String.isNotBlank(assigneeFilter)) {
@@ -62,7 +64,7 @@ public with sharing class NhsApplicationKanbanController {
             }
         }
 
-        query += ' ORDER BY Pinned__c DESC, SortOrder__c ASC NULLS LAST, CreatedDate DESC LIMIT 200';
+        query += ' ORDER BY Pinned__c DESC, SortOrder__c ASC NULLS FIRST, Date_of_Application_Received__c DESC, CreatedDate DESC LIMIT 50';
 
         List<Opportunity> opps = Database.query(query);
 
@@ -92,6 +94,55 @@ public with sharing class NhsApplicationKanbanController {
         }
 
         return columns;
+    }
+
+    @AuraEnabled
+    public static List<CardWrapper> loadMoreCards(
+        String stageName,
+        Integer offsetCount,
+        String searchTerm,
+        String assigneeFilter,
+        Boolean showArchived,
+        String housebuilderId
+    ) {
+        String query =
+            'SELECT Id, Name, StageName, NHS_Process__c, Archived__c, Pinned__c, SortOrder__c, ' +
+            'House_Builder__c, House_Builder__r.Name, House_Builder__r.BillingCity, ' +
+            'Plot__c, Application_Reference_Number__c, CloseDate, CreatedDate, ' +
+            'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
+            'Development__c, Date_of_Application_Received__c, ' +
+            'Vendor_1__c, Vendor_1__r.Name ' +
+            'FROM Opportunity ' +
+            'WHERE NHS_Process__c = \'Application\' ' +
+            'AND StageName = \'' + String.escapeSingleQuotes(stageName) + '\' ';
+
+        if (showArchived == null || !showArchived) {
+            query += ' AND Archived__c = false ';
+        }
+
+        if (String.isNotBlank(searchTerm)) {
+            String safe = '%' + String.escapeSingleQuotes(searchTerm) + '%';
+            query += ' AND (Name LIKE \'' + safe + '\'' +
+                     ' OR Application_Reference_Number__c LIKE \'' + safe + '\'' +
+                     ' OR Development__c LIKE \'' + safe + '\') ';
+        }
+
+        if (String.isNotBlank(assigneeFilter)) {
+            query += ' AND Owner.Name = \'' + String.escapeSingleQuotes(assigneeFilter) + '\' ';
+        }
+
+        if (String.isNotBlank(housebuilderId)) {
+            query += ' AND House_Builder__c = \'' + String.escapeSingleQuotes(housebuilderId) + '\' ';
+        }
+
+        query += ' ORDER BY Pinned__c DESC, SortOrder__c ASC NULLS FIRST, Date_of_Application_Received__c DESC, CreatedDate DESC';
+        query += ' LIMIT 10 OFFSET ' + offsetCount;
+
+        List<CardWrapper> cards = new List<CardWrapper>();
+        for (Opportunity opp : Database.query(query)) {
+            cards.add(new CardWrapper(opp));
+        }
+        return cards;
     }
 
     // DML methods — cacheable=false is correct here (they modify data)
@@ -170,17 +221,16 @@ public with sharing class NhsApplicationKanbanController {
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> getHouseBuilderOptions() {
         List<Map<String, String>> options = new List<Map<String, String>>();
-        for (AggregateResult ar : [
-            SELECT House_Builder__c hbId, House_Builder__r.Name hbName
-            FROM Opportunity
-            WHERE NHS_Process__c = 'Application' 
-              AND House_Builder__c != null
-            GROUP BY House_Builder__c, House_Builder__r.Name
-            ORDER BY House_Builder__r.Name
+        for (Account acc : [
+            SELECT Id, Name
+            FROM Account
+            WHERE RecordType.DeveloperName = 'House_Builder'
+            ORDER BY Name
+            LIMIT 1000
         ]) {
             options.add(new Map<String, String>{
-                'value' => (String) ar.get('hbId'),
-                'label' => (String) ar.get('hbName')
+                'value' => acc.Id,
+                'label' => acc.Name
             });
         }
         return options;
@@ -236,6 +286,7 @@ public with sharing class NhsApplicationKanbanController {
         @AuraEnabled public Boolean  pinned       { get; set; }
         @AuraEnabled public Decimal  sortOrder    { get; set; }
         @AuraEnabled public String   development  { get; set; }
+        @AuraEnabled public String   vendorName   { get; set; }
 
         public CardWrapper(Opportunity opp) {
             this.id           = opp.Id;
@@ -254,6 +305,7 @@ public with sharing class NhsApplicationKanbanController {
             this.pinned       = opp.Pinned__c;
             this.sortOrder    = opp.SortOrder__c;
             this.development  = opp.Development__c;
+            this.vendorName   = opp.Vendor_1__r != null ? opp.Vendor_1__r.Name : null;
         }
     }
 }

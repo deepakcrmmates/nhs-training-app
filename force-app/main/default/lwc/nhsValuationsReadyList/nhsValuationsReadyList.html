@@ -1,0 +1,111 @@
+<template>
+    <div class="vr-toolbar">
+        <div class="vr-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor…" onchange={handleSearch}>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="vr-info">{totalCount} applications awaiting NHS valuation</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="vr-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <div class="vr-table-wrap">
+            <table class="vr-table">
+                <thead>
+                    <tr>
+                        <th class="vr-th vr-th-app">Application</th>
+                        <th class="vr-th">Vendor</th>
+                        <th class="vr-th vr-th-agent">Agent 1 (NHS)</th>
+                        <th class="vr-th vr-th-agent">Agent 2</th>
+                        <th class="vr-th vr-th-agent">Agent 3</th>
+                        <th class="vr-th vr-th-nhs">
+                            <div class="th-nhs-title">NHS Recommended</div>
+                            <div class="th-nhs-sub">Market / Target / Forced</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={displayedApps} for:item="app">
+                        <tr key={app.id} class="vr-row" data-id={app.id} onclick={handleRowClick}>
+                            <td class="vr-td">
+                                <div class="app-addr">{app.name}</div>
+                                <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
+                            </td>
+                            <td class="vr-td">
+                                <span class="vendor-name">{app.vendorName}</span>
+                            </td>
+                            <!-- Agent figures (compact) -->
+                            <td class="vr-td vr-td-fig">
+                                <div class="fig-compact">
+                                    <span class="fig-name">{app.agent1Name}</span>
+                                    <span class="fig-val">{app.a1InitFmt}</span>
+                                </div>
+                            </td>
+                            <td class="vr-td vr-td-fig">
+                                <div class="fig-compact">
+                                    <span class="fig-name">{app.agent2Name}</span>
+                                    <span class="fig-val">{app.a2InitFmt}</span>
+                                </div>
+                            </td>
+                            <td class="vr-td vr-td-fig">
+                                <div class="fig-compact">
+                                    <span class="fig-name">{app.agent3Name}</span>
+                                    <span class="fig-val">{app.a3InitFmt}</span>
+                                </div>
+                            </td>
+                            <!-- NHS Recommended -->
+                            <td class="vr-td vr-td-nhs">
+                                <div class="nhs-card">
+                                    <div class="nhs-row">
+                                        <span class="nhs-label">Market</span>
+                                        <template if:true={app.nhsMarketSet}>
+                                            <span class="nhs-val set">{app.nhsMarketFmt}</span>
+                                        </template>
+                                        <template if:false={app.nhsMarketSet}>
+                                            <span class="nhs-val outstanding">Outstanding</span>
+                                        </template>
+                                    </div>
+                                    <div class="nhs-row">
+                                        <span class="nhs-label">Target</span>
+                                        <template if:true={app.nhsTargetSet}>
+                                            <span class="nhs-val set">{app.nhsTargetFmt}</span>
+                                        </template>
+                                        <template if:false={app.nhsTargetSet}>
+                                            <span class="nhs-val outstanding">Outstanding</span>
+                                        </template>
+                                    </div>
+                                    <div class="nhs-row">
+                                        <span class="nhs-label">Forced</span>
+                                        <template if:true={app.nhsForcedSet}>
+                                            <span class="nhs-val set">{app.nhsForcedFmt}</span>
+                                        </template>
+                                        <template if:false={app.nhsForcedSet}>
+                                            <span class="nhs-val outstanding">Outstanding</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <template if:false={hasApps}>
+                        <tr><td colspan="6" class="vr-empty">No applications awaiting NHS valuation</td></tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <template if:true={showPaging}>
+            <div class="vr-paging">
+                <span class="pg-info">Showing {pageStart}–{pageEnd} of {totalCount}</span>
+                <div class="pg-btns">
+                    <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
+                    <span class="pg-current">{currentPage}</span>
+                    <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
+                </div>
+            </div>
+        </template>
+    </template>
+</template>

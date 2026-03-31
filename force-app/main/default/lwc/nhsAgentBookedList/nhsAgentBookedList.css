@@ -1,0 +1,181 @@
+:host {
+    --nhs-dk: #2C5F2E;
+    --nhs-mid: #3A7D44;
+    --nhs-pale: #E8F5E9;
+    --nhs-gold: #C9A84C;
+    --nhs-gold-lt: #FFF8E7;
+    --nhs-white: #FFFFFF;
+    --nhs-off: #F7F8F6;
+    --nhs-border: #D4DDD4;
+    --nhs-text: #1A2E1A;
+    --nhs-text-mid: #3D5C3D;
+    --nhs-text-muted: #6B8A6B;
+    --nhs-text-lt: #9AB09A;
+    --nhs-hover: #F0F7F0;
+    --font-head: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'SF Mono', SFMono-Regular, Consolas, Menlo, monospace;
+}
+
+/* Toolbar */
+.ab-toolbar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+    background: var(--nhs-white); border-bottom: 1px solid var(--nhs-border); flex-wrap: wrap;
+}
+.ab-search {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--nhs-off); border: 1px solid var(--nhs-border);
+    border-radius: 3px; padding: 7px 11px; width: 260px;
+}
+.ab-search:focus-within { border-color: var(--nhs-mid); }
+.ab-search input {
+    border: none; background: transparent; font-size: 12px; color: var(--nhs-text);
+    outline: none; width: 100%; font-family: var(--font-body);
+}
+.ab-search input::placeholder { color: var(--nhs-text-lt); }
+
+.ab-filters { display: flex; gap: 5px; }
+.ab-time-filters { display: flex; gap: 5px; margin-left: 4px; padding-left: 8px; border-left: 1px solid var(--nhs-border); }
+
+.ftag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 3px; border: 1px solid var(--nhs-border);
+    background: white; font-size: 11px; font-family: var(--font-head);
+    font-weight: 600; color: var(--nhs-text-mid); cursor: pointer;
+    letter-spacing: 0.03em; text-transform: uppercase; transition: all 0.12s;
+}
+.ftag:hover { border-color: var(--nhs-mid); color: var(--nhs-mid); }
+.ftag.active { background: var(--nhs-dk); border-color: var(--nhs-dk); color: white; }
+.ftag-count {
+    font-size: 10px; background: var(--nhs-pale); color: var(--nhs-mid);
+    border-radius: 8px; padding: 1px 6px; font-weight: 700;
+}
+.ftag.active .ftag-count { background: rgba(255,255,255,0.22); color: white; }
+
+.ftag-time { border-color: #F0D080; color: #7A5A00; }
+.ftag-time:hover { border-color: var(--nhs-gold); color: #6B4A00; }
+.ftag-time.active { background: var(--nhs-gold); border-color: var(--nhs-gold); color: white; }
+.ftag-time.active .ftag-count { background: rgba(255,255,255,0.25); color: white; }
+
+.refresh-btn {
+    width: 32px; height: 32px; border: 1.5px solid var(--nhs-border); background: var(--nhs-white);
+    border-radius: 3px; font-size: 16px; color: var(--nhs-text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s; margin-left: auto;
+}
+.refresh-btn:hover { border-color: var(--nhs-mid); color: var(--nhs-mid); background: var(--nhs-pale); }
+.ab-info {
+    margin-left: auto; font-size: 11px; color: var(--nhs-text-muted);
+    font-family: var(--font-head); text-transform: uppercase; letter-spacing: 0.07em;
+}
+
+.ab-loading { padding: 60px; text-align: center; }
+
+/* Table */
+.ab-table-wrap { overflow: auto; padding: 12px 16px 0; }
+.ab-table {
+    width: 100%; border-collapse: collapse; background: white;
+    border: 1px solid var(--nhs-border); border-radius: 3px; overflow: hidden;
+    table-layout: fixed;
+}
+
+.ab-th {
+    padding: 10px 12px; text-align: left; font-family: var(--font-head);
+    font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.75);
+    text-transform: uppercase; letter-spacing: 0.09em; white-space: nowrap;
+    background: var(--nhs-dk); border-right: 1px solid rgba(255,255,255,0.08);
+}
+.ab-th:last-child { border-right: none; }
+.ab-th-app { width: 20%; }
+.ab-th-avail { width: 12%; }
+.ab-th-agent { background: rgba(58,125,68,0.55); color: rgba(255,255,255,0.85); width: 16%; }
+.th-slot { font-size: 8px; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1px; }
+
+.ab-row { border-bottom: 1px solid var(--nhs-border); cursor: pointer; transition: background 0.08s; }
+.ab-row:hover { background: var(--nhs-hover); }
+
+.ab-td {
+    padding: 9px 12px; font-size: 12px; vertical-align: middle;
+    border-right: 1px solid var(--nhs-border); overflow: hidden;
+}
+.ab-td:last-child { border-right: none; }
+.ab-td-agent { padding: 7px 9px; }
+
+.app-addr {
+    font-weight: 700; font-size: 12px; color: var(--nhs-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px;
+}
+.ab-row:hover .app-addr { color: var(--nhs-mid); text-decoration: underline; }
+.app-dev { font-size: 10px; color: var(--nhs-text-muted); margin-top: 2px; }
+
+.vendor-name { font-weight: 600; color: var(--nhs-text-mid); font-size: 12px; }
+
+/* Availability badge per row */
+.avail-badge {
+    display: flex; flex-direction: column; gap: 1px;
+    padding: 4px 8px; border-radius: 3px; border-left: 3px solid;
+}
+.avail-date { font-family: var(--font-head); font-size: 11px; font-weight: 700; }
+.avail-urgency { font-size: 9px; font-weight: 600; }
+
+.avail-normal { background: var(--nhs-pale); border-color: var(--nhs-mid); }
+.avail-normal .avail-date { color: var(--nhs-dk); }
+
+.avail-gold { background: var(--nhs-gold-lt); border-color: var(--nhs-gold); }
+.avail-gold .avail-date { color: #6B4A00; }
+.avail-gold .avail-urgency { color: #8A6000; }
+
+.avail-urgent { background: #FFEBEE; border-color: #EF5350; }
+.avail-urgent .avail-date { color: #B71C1C; }
+.avail-urgent .avail-urgency { color: #C62828; }
+
+.avail-tbc { background: var(--nhs-off); border-color: var(--nhs-border); }
+.avail-tbc .avail-date { color: var(--nhs-text-muted); font-weight: 500; }
+
+/* Status badge */
+.status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 3px; font-family: var(--font-head);
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.status-badge.all-booked { background: var(--nhs-pale); color: #1B5E20; border: 1px solid #A5D6A7; }
+.status-badge.pending { background: var(--nhs-gold-lt); color: #7A5A00; border: 1px solid #F0D080; }
+
+/* Agent cells */
+.agent-booked {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 8px; background: var(--nhs-pale);
+    border-left: 3px solid var(--nhs-mid); border-radius: 2px;
+}
+.agent-av {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--nhs-dk);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-size: 8px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.agent-info { flex: 1; min-width: 0; }
+.agent-name { font-weight: 600; font-size: 11px; color: var(--nhs-dk); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent-appt { font-size: 10px; color: var(--nhs-text-muted); white-space: nowrap; }
+.tick { color: var(--nhs-mid); font-size: 14px; font-weight: 700; flex-shrink: 0; }
+
+.agent-empty {
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; background: var(--nhs-off); border: 1px dashed var(--nhs-border); border-radius: 2px;
+}
+.unassigned-lbl { font-size: 10px; color: var(--nhs-text-lt); font-style: italic; }
+
+.ab-empty { text-align: center; padding: 48px 20px; color: var(--nhs-text-muted); font-size: 13px; font-style: italic; }
+
+/* Pagination */
+.ab-paging {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px; margin-top: 8px;
+}
+.pg-info { font-size: 11px; color: var(--nhs-text-muted); }
+.pg-btns { display: flex; gap: 6px; align-items: center; }
+.pg-btn {
+    width: 28px; height: 28px; border-radius: 3px; border: 1px solid var(--nhs-border);
+    background: white; font-size: 14px; color: var(--nhs-text-mid);
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.1s;
+}
+.pg-btn:hover:not(:disabled) { background: var(--nhs-dk); color: white; border-color: var(--nhs-dk); }
+.pg-btn:disabled { opacity: 0.3; cursor: default; }
+.pg-current { font-family: var(--font-head); font-size: 12px; font-weight: 700; color: var(--nhs-dk); }

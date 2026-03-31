@@ -1,0 +1,40 @@
+<template>
+    <div class="form-card">
+        <div class="section-banner">
+            <div class="dot"></div>
+            <h2>Vendor Notes</h2>
+            <template if:true={notesCount}>
+                <span class="notes-count">{notesCount}</span>
+            </template>
+        </div>
+        <div class="notes-body">
+            <div class="notes-add">
+                <textarea class="notes-textarea" placeholder="Type a new note…" onchange={handleNoteInput}></textarea>
+                <button class="btn btn-primary notes-save-btn" onclick={handleSaveNote} disabled={isSaveDisabled}>Add Note</button>
+            </div>
+            <template if:true={hasNotes}>
+                <div class="notes-history">
+                    <template for:each={pagedNotes} for:item="note">
+                        <div key={note.Id} class="note-card">
+                            <div class="note-header">
+                                <span class="note-number">{note.Name}</span>
+                                <span class="note-meta">{note.createdByName} &bull; {note.formattedDate}</span>
+                            </div>
+                            <div class="note-text">{note.Notes__c}</div>
+                        </div>
+                    </template>
+                </div>
+                <template if:true={showPaging}>
+                    <div class="paging-bar">
+                        <button class="page-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249; Prev</button>
+                        <span class="page-label">{pageLabel}</span>
+                        <button class="page-btn" onclick={handleNextPage} disabled={isNextDisabled}>Next &#8250;</button>
+                    </div>
+                </template>
+            </template>
+            <template if:false={hasNotes}>
+                <div class="notes-empty">No notes yet. Add the first note above.</div>
+            </template>
+        </div>
+    </div>
+</template>
