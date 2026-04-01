@@ -688,6 +688,16 @@ select.field-input {
     border: 1.5px solid var(--border);
 }
 .btn-secondary:hover { background: var(--nhs-sage-tint); }
+.btn-comms {
+    color: #1A4FCC;
+    border-color: #C5D5F9;
+    background: #EFF4FF;
+}
+.btn-comms:hover {
+    background: #1A4FCC;
+    color: #fff;
+    border-color: #1A4FCC;
+}
 .btn-ghost {
     background: transparent;
     color: var(--text-muted);

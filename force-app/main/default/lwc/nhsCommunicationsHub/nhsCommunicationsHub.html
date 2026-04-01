@@ -1,0 +1,329 @@
+<template>
+    <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+
+    <template if:false={isLoading}>
+
+        <!-- PAGE HEADER -->
+        <header class="page-header">
+            <div class="logo-mark">
+                <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="14" cy="20" r="11" fill="none" stroke="#1A4FCC" stroke-width="3.5"></circle>
+                    <circle cx="26" cy="20" r="11" fill="none" stroke="#1A4FCC" stroke-width="3.5" opacity="0.55"></circle>
+                    <circle cx="14" cy="20" r="4" fill="#1A4FCC"></circle>
+                    <circle cx="26" cy="20" r="4" fill="#1A4FCC" opacity="0.55"></circle>
+                </svg>
+            </div>
+            <div>
+                <h1 class="page-title">Communications Hub</h1>
+                <p class="page-subtitle">{opportunityName} &middot; {propertyAddress}</p>
+            </div>
+            <span class="record-chip">{totalInteractions} Total Interactions</span>
+        </header>
+
+        <!-- MAIN LAYOUT: Timeline left, Compose panel right -->
+        <div class="comms-layout">
+
+            <!-- LEFT: COMMS CARD -->
+            <div class={commsCardClass}>
+
+                <!-- Banner -->
+                <div class="section-banner">
+                    <div class="banner-left">
+                        <div class="banner-dot"></div>
+                        <h2>All Communications</h2>
+                    </div>
+                    <span class="banner-total">Emails &middot; Calls</span>
+                </div>
+
+                <!-- Stats Strip -->
+                <div class="stats-strip stats-strip-2">
+                    <div class="stat-cell" data-channel="email" onclick={handleStatClick}>
+                        <div class="stat-icon stat-icon-email">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-count stat-count-email">{emailCount}</div>
+                            <div class="stat-label">Emails</div>
+                        </div>
+                    </div>
+                    <div class="stat-cell" data-channel="call" onclick={handleStatClick}>
+                        <div class="stat-icon stat-icon-call">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-count stat-count-call">{callCount}</div>
+                            <div class="stat-label">Calls</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <span class="toolbar-label">Log:</span>
+                    <button class="btn-channel btn-email" onclick={handleComposeEmail}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                        Email
+                    </button>
+                    <button class="btn-channel btn-call" onclick={handleLogCall}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        Log Call
+                    </button>
+                    <div class="toolbar-spacer"></div>
+                    <button class="btn-channel btn-refresh" onclick={handleRefreshComms}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                        Refresh
+                    </button>
+                    <div class="search-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" placeholder="Search communications..." value={searchQuery} oninput={handleSearchInput}>
+                    </div>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <template for:each={filterTabs} for:item="tab">
+                        <div key={tab.id} class={tab.cssClass} data-channel={tab.id} onclick={handleTabClick}>
+                            <template if:true={tab.showIcon}>
+                                <template if:true={tab.isEmail}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                </template>
+                                <template if:true={tab.isCall}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                </template>
+                                <template if:true={tab.isMissed}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                </template>
+                            </template>
+                            {tab.label} <span class={tab.badgeClass}>{tab.count}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <template for:each={groupedEntries} for:item="group">
+                        <template if:true={group.visible}>
+                            <div key={group.dateKey} class="date-divider">
+                                <span>{group.dateLabel}</span>
+                            </div>
+                            <template for:each={group.entries} for:item="entry">
+                                <template if:true={entry.visible}>
+                                    <div key={entry.id} class={entry.entryCssClass} data-id={entry.id} onclick={handleEntryClick}>
+                                        <div class={entry.channelIconClass}>
+                                            <template if:true={entry.isEmailChannel}>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                            </template>
+                                            <template if:true={entry.isCallChannel}>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                            </template>
+                                            <template if:true={entry.isMissedChannel}>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                                            </template>
+                                        </div>
+                                        <div class={entry.avatarClass}>{entry.initials}</div>
+                                        <div class="entry-body">
+                                            <div class="entry-top">
+                                                <span class="entry-name">{entry.displayName}</span>
+                                                <span class={entry.directionClass}>{entry.directionLabel}</span>
+                                            </div>
+                                            <div class="entry-subject">{entry.subject}</div>
+                                            <div class="entry-preview">{entry.preview}</div>
+                                        </div>
+                                        <div class="entry-meta">
+                                            <span class="entry-time">{entry.timeDisplay}</span>
+                                            <span class={entry.statusPillClass}>{entry.statusLabel}</span>
+                                            <template if:true={entry.isUnread}>
+                                                <div class={entry.unreadDotClass}></div>
+                                            </template>
+                                            <template if:true={entry.hasDuration}>
+                                                <div class="duration-tag">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                    {entry.duration}
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </template>
+                    </template>
+
+                    <template if:true={showEmptyState}>
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            <p>No communications found for this filter.</p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Compose Bar -->
+                <div class="compose-bar">
+                    <span>Quick compose:</span>
+                    <button class="compose-btn cb-email" onclick={handleComposeEmail}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        Email
+                    </button>
+                    <button class="compose-btn cb-call" onclick={handleLogCall}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        Log Call
+                    </button>
+                    <div class="spacer"></div>
+                    <button class="view-all-btn" onclick={handleViewAll}>View full activity log &rarr;</button>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: COMPOSE SIDE PANEL -->
+            <template if:true={showComposePanel}>
+                <div class="side-panel">
+                    <!-- Panel Header -->
+                    <div class="panel-header">
+                        <h3 class="panel-title">{composeTitle}</h3>
+                        <button class="panel-close" onclick={handleCloseCompose}>&times;</button>
+                    </div>
+
+                    <!-- Panel Body -->
+                    <div class="panel-body">
+
+                        <!-- TEMPLATE LIBRARY (overlay inside panel) -->
+                        <template if:true={showTemplateLibrary}>
+                            <div class="tpl-library">
+                                <div class="tpl-library-header">
+                                    <button class="tpl-back-btn" onclick={handleCloseTemplateLibrary}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                        Back
+                                    </button>
+                                    <span class="tpl-library-title">Template Library</span>
+                                    <span class="tpl-library-count">{templateLibraryCount}</span>
+                                </div>
+                                <div class="tpl-search-wrap">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
+                                    </svg>
+                                    <input type="text" placeholder="Search templates..." value={templateSearchQuery} oninput={handleTemplateSearchInput}>
+                                </div>
+                                <div class="tpl-list">
+                                    <template for:each={filteredTemplates} for:item="tpl">
+                                        <div key={tpl.id} class="tpl-card" data-id={tpl.id} data-name={tpl.name} onclick={handleSelectTemplate}>
+                                            <div class="tpl-card-icon">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                            </div>
+                                            <div class="tpl-card-body">
+                                                <div class="tpl-card-name">{tpl.name}</div>
+                                                <div class="tpl-card-subject">{tpl.subject}</div>
+                                            </div>
+                                            <div class="tpl-card-arrow">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- EMAIL FORM (hidden when library is open) -->
+                        <template if:false={showTemplateLibrary}>
+                        <template if:true={isComposeEmail}>
+                            <!-- Template selector -->
+                            <div class="tpl-selector">
+                                <template if:true={hasTemplateSelected}>
+                                    <div class="tpl-selected-badge">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                        <span class="tpl-selected-name">{selectedTemplateName}</span>
+                                        <button class="tpl-clear-btn" onclick={handleClearTemplate}>&times;</button>
+                                    </div>
+                                    <button class="tpl-change-btn" onclick={handleOpenTemplateLibrary}>Change</button>
+                                </template>
+                                <template if:false={hasTemplateSelected}>
+                                    <button class="tpl-browse-btn" onclick={handleOpenTemplateLibrary}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                        Browse Template Library
+                                    </button>
+                                    <span class="tpl-or">or compose freeform below</span>
+                                </template>
+                            </div>
+
+                            <template if:true={isLoadingTemplate}>
+                                <div class="template-loading">
+                                    <lightning-spinner alternative-text="Loading template" size="small"></lightning-spinner>
+                                    <span>Loading template...</span>
+                                </div>
+                            </template>
+                            <div class="form-field">
+                                <label class="form-label">To</label>
+                                <input type="email" class="form-input" value={composeTo} onchange={handleComposeToChange} placeholder="recipient@email.com">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">CC</label>
+                                <input type="email" class="form-input" value={composeCc} onchange={handleComposeCcChange} placeholder="cc@email.com (optional)">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-input" value={composeSubject} onchange={handleComposeSubjectChange} placeholder="Email subject">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Body</label>
+                                <lightning-input-rich-text value={composeBody} onchange={handleComposeBodyChange} placeholder="Type your message..."></lightning-input-rich-text>
+                            </div>
+                        </template>
+
+                        <!-- CALL FORM -->
+                        <template if:true={isComposeCall}>
+                            <div class="form-field">
+                                <label class="form-label">Contact</label>
+                                <input type="text" class="form-input" value={vendor1Name} disabled>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-field form-half">
+                                    <label class="form-label">Call Type</label>
+                                    <lightning-combobox name="callType" value={composeCallType} options={callTypeOptions} onchange={handleCallTypeChange} variant="label-hidden" class="custom-combobox"></lightning-combobox>
+                                </div>
+                                <div class="form-field form-half">
+                                    <label class="form-label">Status</label>
+                                    <lightning-combobox name="callStatus" value={composeCallStatus} options={callStatusOptions} onchange={handleCallStatusChange} variant="label-hidden" class="custom-combobox"></lightning-combobox>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-input" value={composeSubject} onchange={handleComposeSubjectChange} placeholder="Call subject">
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-textarea" onchange={handleComposeBodyChange} placeholder="Call notes..." rows="5">{composeBody}</textarea>
+                            </div>
+                        </template>
+                        </template>
+                    </div>
+
+                    <!-- Panel Footer -->
+                    <div class="panel-footer">
+                        <button class="btn-panel-cancel" onclick={handleCloseCompose}>Cancel</button>
+                        <template if:true={isComposeEmail}>
+                            <button class="btn-panel-send" onclick={handleSendEmail} disabled={isSending}>
+                                <template if:true={isSending}>Sending...</template>
+                                <template if:false={isSending}>Send Email</template>
+                            </button>
+                        </template>
+                        <template if:true={isComposeCall}>
+                            <button class="btn-panel-send btn-panel-call" onclick={handleSaveCall} disabled={isSending}>
+                                <template if:true={isSending}>Saving...</template>
+                                <template if:false={isSending}>Log Call</template>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </template>
+</template>

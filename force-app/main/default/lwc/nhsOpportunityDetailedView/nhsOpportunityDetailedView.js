@@ -102,6 +102,7 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
     isLoading = true;
     @track showPdfModal = false;
     @track pdfStatus = 'Generating PDF...';
+    @track showCommsHub = false;
 
     get schemeOptions() {
         return [
@@ -625,6 +626,10 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
                 this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'Failed to refresh.', variant: 'error' }));
             })
             .finally(() => { this.isLoading = false; });
+    }
+
+    handleToggleCommsHub() {
+        this.showCommsHub = !this.showCommsHub;
     }
 
     handleCancel() {

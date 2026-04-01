@@ -553,8 +553,17 @@
         </div>
     </template>
 
+    <!-- COMMUNICATIONS HUB (expands on-demand above action bar) -->
+    <template if:true={showCommsHub}>
+        <c-nhs-communications-hub record-id={recordId}></c-nhs-communications-hub>
+    </template>
+
     <!-- ACTION BAR -->
     <div class="action-bar">
+        <button class="btn btn-secondary btn-comms" onclick={handleToggleCommsHub}>
+            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Comms Hub
+        </button>
         <button class="btn btn-secondary" onclick={handleGeneratePdf}>
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 14 14"><path d="M3.5 1v3H1v8.5h12V4h-2.5V1h-7zm1 1h5v2h-5V2zM2 5h10v6.5H2V5zm2 1.5v1h6v-1H4zm0 2v1h4v-1H4z" fill="currentColor"/></svg>
             Generate PDF
