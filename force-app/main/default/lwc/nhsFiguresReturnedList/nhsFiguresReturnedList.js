@@ -2,8 +2,6 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getFiguresReturnedApplications from '@salesforce/apex/FiguresReturnedController.getFiguresReturnedApplications';
 
-const PAGE_SIZE = 15;
-
 function fmtMoney(v) {
     if (v == null) return '—';
     return '£' + Number(v).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -12,6 +10,7 @@ function fmtMoney(v) {
 export default class NhsFiguresReturnedList extends NavigationMixin(LightningElement) {
     @track allApps = [];
     @track searchTerm = '';
+    @track pageSize = 10;
     @track currentPage = 1;
     isLoading = true;
 
@@ -42,20 +41,21 @@ export default class NhsFiguresReturnedList extends NavigationMixin(LightningEle
     }
 
     get displayedApps() {
-        const start = (this.currentPage - 1) * PAGE_SIZE;
-        return this.allApps.slice(start, start + PAGE_SIZE);
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.allApps.slice(start, start + this.pageSize);
     }
 
     get hasApps() { return this.displayedApps.length > 0; }
     get totalCount() { return this.allApps.length; }
-    get totalPages() { return Math.ceil(this.totalCount / PAGE_SIZE) || 1; }
-    get showPaging() { return this.totalCount > PAGE_SIZE; }
-    get pageStart() { return ((this.currentPage - 1) * PAGE_SIZE) + 1; }
-    get pageEnd() { return Math.min(this.currentPage * PAGE_SIZE, this.totalCount); }
+    get totalPages() { return Math.ceil(this.totalCount / this.pageSize) || 1; }
+    get showPaging() { return this.totalCount > this.pageSize; }
+    get pageStart() { return ((this.currentPage - 1) * this.pageSize) + 1; }
+    get pageEnd() { return Math.min(this.currentPage * this.pageSize, this.totalCount); }
     get isPrevDisabled() { return this.currentPage <= 1; }
     get isNextDisabled() { return this.currentPage >= this.totalPages; }
     handlePrevPage() { if (this.currentPage > 1) this.currentPage--; }
     handleNextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+    handlePageSize(event) { this.pageSize = parseInt(event.target.value, 10); this.currentPage = 1; }
 
     handleRefresh() { this.loadData(); }
 

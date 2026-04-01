@@ -118,10 +118,20 @@
         </div>
         <template if:true={showPaging}>
             <div class="ab-paging">
+                <div class="arc-page-size">
+                    <span class="arc-pg-label">Show</span>
+                    <select class="arc-pg-select" onchange={handlePageSize}>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="arc-pg-label">per page</span>
+                </div>
                 <span class="pg-info">Showing {pageStart}–{pageEnd} of {filteredCount}</span>
                 <div class="pg-btns">
                     <button class="pg-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8249;</button>
-                    <span class="pg-current">{currentPage}</span>
+                    <span class="arc-pg-current">{currentPage} / {totalPages}</span>
                     <button class="pg-btn" onclick={handleNextPage} disabled={isNextDisabled}>&#8250;</button>
                 </div>
             </div>

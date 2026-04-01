@@ -50,11 +50,22 @@
                                     </div>
                                     <div class="col-slots">
                                         <template for:each={col.pagedSlots} for:item="slot">
-                                            <button key={slot.key} class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
-                                                <span class="sb-day">{slot.dayName}</span>
-                                                <span class="sb-date">{slot.shortDate}</span>
-                                                <span class="sb-time">{slot.timeLabel}</span>
-                                            </button>
+                                            <div key={slot.key} class="slot-wrapper">
+                                                <button class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
+                                                    <span class="sb-day">{slot.dayName}</span>
+                                                    <span class="sb-date">{slot.shortDate}</span>
+                                                    <span class="sb-time">{slot.timeLabel}</span>
+                                                </button>
+                                                <template if:true={slot.isExpanded}>
+                                                    <div class="sub-slots">
+                                                        <template for:each={slot.subSlots} for:item="sub">
+                                                            <button key={sub.subKey} class="sub-slot-btn" data-slot-key={slot.key} data-agent={col.num} data-mins={sub.mins} onclick={handleSubSlotBook}>
+                                                                {sub.label}
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                     <template if:false={col.hasPagedSlots}>
@@ -89,11 +100,22 @@
                                     </div>
                                     <div class="col-slots">
                                         <template for:each={col.pagedSlots} for:item="slot">
-                                            <button key={slot.key} class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
-                                                <span class="sb-day">{slot.dayName}</span>
-                                                <span class="sb-date">{slot.shortDate}</span>
-                                                <span class="sb-time">{slot.timeLabel}</span>
-                                            </button>
+                                            <div key={slot.key} class="slot-wrapper">
+                                                <button class="slot-btn" data-slot-key={slot.key} data-agent={col.num} onclick={handleBookSlot}>
+                                                    <span class="sb-day">{slot.dayName}</span>
+                                                    <span class="sb-date">{slot.shortDate}</span>
+                                                    <span class="sb-time">{slot.timeLabel}</span>
+                                                </button>
+                                                <template if:true={slot.isExpanded}>
+                                                    <div class="sub-slots">
+                                                        <template for:each={slot.subSlots} for:item="sub">
+                                                            <button key={sub.subKey} class="sub-slot-btn" data-slot-key={slot.key} data-agent={col.num} data-mins={sub.mins} onclick={handleSubSlotBook}>
+                                                                {sub.label}
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </template>
                                     </div>
                                     <template if:false={col.hasPagedSlots}>

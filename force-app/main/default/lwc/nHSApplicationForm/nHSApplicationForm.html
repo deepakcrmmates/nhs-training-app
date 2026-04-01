@@ -115,37 +115,42 @@
                         <lightning-icon icon-name="utility:retail_execution" size="small"></lightning-icon>
                         <h2>Property Details</h2>
                     </div>
-                    
-                    <!-- Search Component shifted above Address fields -->
+
+                    <!-- Search Component -->
                     <template if:false={isReadOnly}>
                         <div class="slds-m-bottom_medium">
                             <label class="modern-label">Search Property</label>
-                            <c-idealaddresslookup 
-                                selected-icon-name="standard:account" 
+                            <c-idealaddresslookup
+                                selected-icon-name="standard:account"
                                 object-label="Property"
-                                object-api-name="NHS_Property__c" 
+                                object-api-name="NHS_Property__c"
                                 field-api-name="Name"
-                                other-field-api-name="Industry" 
+                                other-field-api-name="Industry"
                                 onvalueselected={handleValueSelectedOnAccounts}>
                             </c-idealaddresslookup>
                         </div>
                     </template>
 
+                    <!-- Compact address display after selection -->
+                    <template if:true={propertAddress}>
+                        <div class="address-summary">
+                            <div class="address-text">{propertAddress}</div>
+                        </div>
+                    </template>
+
+                    <!-- Hidden field mapping (needed for data binding) -->
                     <template if:false={isReadOnly}>
-                        <lightning-record-edit-form object-api-name="NHS_Property__c">
-                            <template for:each={mapData} for:item="keyValue">
-                                <div key={keyValue.key} class="slds-m-bottom_medium">
-                                    <div class="modern-grid">
+                        <div class="hidden-fields">
+                            <lightning-record-edit-form object-api-name="NHS_Property__c">
+                                <template for:each={mapData} for:item="keyValue">
+                                    <div key={keyValue.key}>
                                         <template for:each={keyValue.value} for:item="field">
                                             <lightning-input-field key={field.fieldPath} field-name={field.fieldPath} data-field-name={field.fieldPath} disabled></lightning-input-field>
                                         </template>
                                     </div>
-                                </div>
-                            </template>
-                        </lightning-record-edit-form>
-                    </template>
-                    <template if:true={isReadOnly}>
-                        <div class="slds-text-heading_small">{propertAddress}</div>
+                                </template>
+                            </lightning-record-edit-form>
+                        </div>
                     </template>
                 </section>
 

@@ -27,6 +27,8 @@ export default class NhsVendorAvailability extends LightningElement {
     @api vendorEmail = '';
     @track slots = {};
     @track weekOffset = 0;
+    @track satEnabled = false;
+    @track sunEnabled = false;
     isLoading = true;
 
     connectedCallback() {
@@ -48,6 +50,18 @@ export default class NhsVendorAvailability extends LightningElement {
                     }
                 });
                 this.slots = loaded;
+
+                // Auto-enable weekend toggles if there's existing weekend data
+                let hasSat = false, hasSun = false;
+                records.forEach(rec => {
+                    if (!rec.Date__c) return;
+                    const d = new Date(rec.Date__c + 'T00:00:00');
+                    if (d.getDay() === 6) hasSat = true;
+                    if (d.getDay() === 0) hasSun = true;
+                });
+                if (hasSat) this.satEnabled = true;
+                if (hasSun) this.sunEnabled = true;
+
                 this.isLoading = false;
             })
             .catch(error => {
@@ -98,7 +112,10 @@ export default class NhsVendorAvailability extends LightningElement {
             dayDate.setDate(dayDate.getDate() + d);
             const dateStr = this.fmtDate(dayDate);
             const dow = dayDate.getDay();
-            const isWeekday = dow >= 1 && dow <= 5;
+            const isSat = dow === 6;
+            const isSun = dow === 0;
+            const isWeekday = (dow >= 1 && dow <= 5) || (isSat && this.satEnabled) || (isSun && this.sunEnabled);
+            const isWeekendDisabled = (isSat && !this.satEnabled) || (isSun && !this.sunEnabled);
             const isPast = dateStr < tomorrowStr;
             const isToday = dateStr === todayStr;
 
@@ -114,9 +131,12 @@ export default class NhsVendorAvailability extends LightningElement {
                 dayNumber: dayDate.getDate(),
                 isWeekday,
                 isPast,
+                isSat,
+                isSun,
+                isWeekendDisabled,
                 showQuick: isWeekday && !isPast,
-                headerClass: `cal-header${isWeekday ? '' : ' weekend'}${isToday ? ' today' : ''}`,
-                quickCellClass: `cal-quick${isWeekday ? '' : ' weekend'}${isPast ? ' past' : ''}`,
+                headerClass: `cal-header${isWeekendDisabled ? ' weekend' : ''}${isToday ? ' today' : ''}`,
+                quickCellClass: `cal-quick${isWeekendDisabled ? ' weekend' : ''}${isPast ? ' past' : ''}`,
                 allBtnClass: `qbtn${allOn ? ' on' : ''}`,
                 amBtnClass: `qbtn am${amOn ? ' on' : ''}${amPartial ? ' partial' : ''}`,
                 pmBtnClass: `qbtn pm${pmOn ? ' on' : ''}${pmPartial ? ' partial' : ''}`
@@ -127,7 +147,7 @@ export default class NhsVendorAvailability extends LightningElement {
             const cells = days.map(day => {
                 const isOn = !!this.slots[`${day.dateStr}_${hour.fieldNum}`];
                 let cls = 'cal-slot';
-                if (!day.isWeekday) cls += ' weekend';
+                if (day.isWeekendDisabled) cls += ' weekend';
                 else if (day.isPast) cls += ' past';
                 else if (isOn) cls += ' on';
                 return {
@@ -150,7 +170,8 @@ export default class NhsVendorAvailability extends LightningElement {
         const dateStr = el.dataset.date;
         const hour = el.dataset.hour;
         if (!dateStr || !hour) return;
-        if (el.classList.contains('weekend') || el.classList.contains('past')) return;
+        if (el.classList.contains('past')) return;
+        if (el.classList.contains('weekend')) return;
         const key = `${dateStr}_${hour}`;
         this.slots = { ...this.slots, [key]: !this.slots[key] };
     }
@@ -169,6 +190,12 @@ export default class NhsVendorAvailability extends LightningElement {
         this.slots = newSlots;
     }
 
+    handleWeekendToggle(event) {
+        const day = event.target.dataset.day;
+        if (day === 'sat') this.satEnabled = event.target.checked;
+        else if (day === 'sun') this.sunEnabled = event.target.checked;
+    }
+
     handlePrevWeek() { this.weekOffset--; }
     handleNextWeek() { this.weekOffset++; }
     handleGoToday() { this.weekOffset = 0; }
@@ -183,7 +210,10 @@ export default class NhsVendorAvailability extends LightningElement {
         const weekSun = this.getWeekSunday();
         const dataList = [];
 
-        for (let d = 1; d <= 5; d++) {
+        for (let d = 0; d <= 6; d++) {
+            // Skip weekends unless enabled
+            if (d === 0 && !this.sunEnabled) continue;
+            if (d === 6 && !this.satEnabled) continue;
             const dayDate = new Date(weekSun);
             dayDate.setDate(dayDate.getDate() + d);
             const dateStr = this.fmtDate(dayDate);

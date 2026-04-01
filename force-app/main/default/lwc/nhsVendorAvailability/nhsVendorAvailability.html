@@ -35,6 +35,16 @@
                     <!-- Day headers -->
                     <template for:each={currentWeek.days} for:item="day">
                         <div key={day.dateStr} class={day.headerClass}>
+                            <template if:true={day.isSat}>
+                                <label class="wkend-toggle">
+                                    <input type="checkbox" checked={satEnabled} data-day="sat" onchange={handleWeekendToggle}>
+                                </label>
+                            </template>
+                            <template if:true={day.isSun}>
+                                <label class="wkend-toggle">
+                                    <input type="checkbox" checked={sunEnabled} data-day="sun" onchange={handleWeekendToggle}>
+                                </label>
+                            </template>
                             <span class="dname">{day.dayName}</span>
                             <span class="dnum">{day.dayNumber}</span>
                         </div>

@@ -4,8 +4,6 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { updateRecord } from 'lightning/uiRecordApi';
 import getVendorAvailabilityApplications from '@salesforce/apex/VendorAvailabilityListController.getVendorAvailabilityApplications';
 
-const PAGE_SIZE = 15;
-
 function fmtDate(d) {
     if (!d) return 'Not set';
     return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -25,6 +23,7 @@ export default class NhsVendorAvailabilityList extends NavigationMixin(Lightning
     @track allApps = [];
     @track searchTerm = '';
     @track activeFilter = 'all';
+    @track pageSize = 10;
     @track currentPage = 1;
     isLoading = true;
 
@@ -67,8 +66,8 @@ export default class NhsVendorAvailabilityList extends NavigationMixin(Lightning
     }
 
     get displayedApps() {
-        const start = (this.currentPage - 1) * PAGE_SIZE;
-        return this.filteredApps.slice(start, start + PAGE_SIZE);
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredApps.slice(start, start + this.pageSize);
     }
 
     get hasApps() { return this.displayedApps.length > 0; }
@@ -81,14 +80,15 @@ export default class NhsVendorAvailabilityList extends NavigationMixin(Lightning
     get filterHasClass() { return 'ftag' + (this.activeFilter === 'has' ? ' active' : ''); }
     get filterNoneClass() { return 'ftag' + (this.activeFilter === 'none' ? ' active' : ''); }
 
-    get totalPages() { return Math.ceil(this.filteredCount / PAGE_SIZE) || 1; }
-    get showPaging() { return this.filteredCount > PAGE_SIZE; }
-    get pageStart() { return ((this.currentPage - 1) * PAGE_SIZE) + 1; }
-    get pageEnd() { return Math.min(this.currentPage * PAGE_SIZE, this.filteredCount); }
+    get totalPages() { return Math.ceil(this.filteredCount / this.pageSize) || 1; }
+    get showPaging() { return this.filteredCount > this.pageSize; }
+    get pageStart() { return ((this.currentPage - 1) * this.pageSize) + 1; }
+    get pageEnd() { return Math.min(this.currentPage * this.pageSize, this.filteredCount); }
     get isPrevDisabled() { return this.currentPage <= 1; }
     get isNextDisabled() { return this.currentPage >= this.totalPages; }
     handlePrevPage() { if (this.currentPage > 1) this.currentPage--; }
     handleNextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+    handlePageSize(event) { this.pageSize = parseInt(event.target.value, 10); this.currentPage = 1; }
 
     handleRefresh() { this.loadData(); }
 

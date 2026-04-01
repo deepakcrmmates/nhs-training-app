@@ -106,6 +106,15 @@
     letter-spacing: 0.06em;
 }
 .cal-header.today .dname { color: var(--nhs-sage-dark); }
+
+/* Weekend enable toggle */
+.wkend-toggle {
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; margin-bottom: 2px;
+}
+.wkend-toggle input[type="checkbox"] {
+    width: 13px; height: 13px; accent-color: var(--nhs-sage-dark); cursor: pointer;
+}
 .dnum {
     display: block; font-family: var(--font-sans); font-size: 16px;
     font-weight: 700; color: var(--text-dark); line-height: 1.3;

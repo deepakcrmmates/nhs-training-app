@@ -127,7 +127,7 @@
     transition: all 0.15s; font-family: var(--font-sans); text-align: left;
     width: 100%;
 }
-.slot-btn:hover { border-color: var(--nhs-sage); background: var(--nhs-sage-tint); transform: translateY(-1px); }
+.slot-btn:hover { border-color: var(--nhs-sage); background: var(--nhs-sage-tint); }
 .sb-day {
     font-size: 11px; font-weight: 700; color: var(--nhs-sage-dark);
     min-width: 28px;
@@ -140,6 +140,20 @@
     font-family: var(--font-mono); font-size: 11px; color: var(--text-dark);
     font-weight: 600; margin-left: auto;
 }
+
+/* Sub-slot time selection */
+.slot-wrapper { display: flex; flex-direction: column; gap: 2px; }
+.sub-slots {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;
+    padding: 4px 0;
+}
+.sub-slot-btn {
+    padding: 6px 4px; border: 1.5px solid var(--border-light); border-radius: 5px;
+    background: var(--white); font-family: var(--font-mono); font-size: 11px;
+    font-weight: 700; color: var(--nhs-dk); cursor: pointer; transition: all 0.15s;
+    text-align: center;
+}
+.sub-slot-btn:hover { background: var(--nhs-sage-dark); color: #fff; border-color: var(--nhs-sage-dark); }
 
 .col-empty {
     padding: 24px 12px; text-align: center; font-size: 12px;

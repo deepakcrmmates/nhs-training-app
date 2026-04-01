@@ -455,12 +455,14 @@ export default class NHSApplicationForm extends LightningElement {
 
         if (isCheckbox && propertyTypes.includes(field)) {
             if (value) {
-                // If checking one, uncheck all others in the group
-                propertyTypes.forEach(type => {
-                    this.formData.Property[type] = (type === field);
-                });
+                // Allow up to 2 selections — if already 2 checked, uncheck the oldest
+                const currentlyChecked = propertyTypes.filter(t => this.formData.Property[t] && t !== field);
+                if (currentlyChecked.length >= 2) {
+                    // Uncheck the first one to make room
+                    this.formData.Property[currentlyChecked[0]] = false;
+                }
+                this.formData.Property[field] = true;
             } else {
-                // If unchecking, just update this one
                 this.formData.Property[field] = false;
             }
         } else {

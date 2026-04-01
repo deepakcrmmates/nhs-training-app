@@ -28,6 +28,7 @@ export default class NhsAgentBooking extends LightningElement {
     @track weekOffsets = { '1': 0, '2': 0, '3': 0 };
     @track amendingAgents = {};
     @track confirmingCancel = {};
+    @track expandedSlot = ''; // 'slotKey_agentNum' when a slot is expanded for sub-time selection
     cancelNotes = {};
     isLoading = true;
 
@@ -139,7 +140,17 @@ export default class NhsAgentBooking extends LightningElement {
                 const sat = new Date(sun);
                 sat.setDate(sat.getDate() + 6);
                 weekLabel = `${sun.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${sat.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
-                pagedSlots = this.allSlots.filter(s => s.weekSunday === currentWeek);
+                pagedSlots = this.allSlots.filter(s => s.weekSunday === currentWeek).map(s => {
+                    const expandKey = `${s.key}_${ac.num}`;
+                    const isExpanded = this.expandedSlot === expandKey;
+                    const h = parseInt(s.hour, 10);
+                    const subSlots = ['00', '15', '30', '45'].map(m => ({
+                        subKey: `${s.key}_${m}`,
+                        label: `${h}:${m}`,
+                        mins: m
+                    }));
+                    return { ...s, isExpanded, subSlots };
+                });
             }
 
             let bookedDate = '', bookedTime = '';
@@ -256,9 +267,19 @@ export default class NhsAgentBooking extends LightningElement {
         }
     }
 
-    async handleBookSlot(event) {
+    handleBookSlot(event) {
         const slotKey = event.currentTarget.dataset.slotKey;
         const agentNum = event.currentTarget.dataset.agent;
+        const expandKey = `${slotKey}_${agentNum}`;
+
+        // Toggle expand — show sub-time options
+        this.expandedSlot = this.expandedSlot === expandKey ? '' : expandKey;
+    }
+
+    async handleSubSlotBook(event) {
+        const slotKey = event.currentTarget.dataset.slotKey;
+        const agentNum = event.currentTarget.dataset.agent;
+        const mins = event.currentTarget.dataset.mins;
         const [dateStr, hr] = slotKey.split('_');
 
         let agentId, agentName;
@@ -272,7 +293,6 @@ export default class NhsAgentBooking extends LightningElement {
             }));
             return;
         }
-        // If not amending and already booked, block
         if (this.getAgentEvent(agentId) && !this.amendingAgents[agentNum]) {
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Already Booked', message: `${agentName} already has a booking. Click Amend to change.`, variant: 'warning'
@@ -281,8 +301,9 @@ export default class NhsAgentBooking extends LightningElement {
         }
 
         this.isLoading = true;
+        this.expandedSlot = '';
         const startHour = parseInt(hr, 10);
-        const startDT = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:00:00`);
+        const startDT = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:${mins}:00`);
         const endDT = new Date(startDT.getTime() + 60 * 60000);
 
         try {

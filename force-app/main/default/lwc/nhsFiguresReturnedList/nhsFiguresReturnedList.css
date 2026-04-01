@@ -94,3 +94,8 @@
 .pg-btn:hover:not(:disabled) { background: var(--nhs-dk); color: white; border-color: var(--nhs-dk); }
 .pg-btn:disabled { opacity: 0.3; cursor: default; }
 .pg-current { font-size: 12px; font-weight: 700; color: var(--nhs-dk); }
+.arc-page-size{display:flex;align-items:center;gap:6px;}
+.arc-pg-label{font-size:11px;color:#6B8A6B;}
+.arc-pg-select{padding:4px 8px;border:1px solid #D4DDD4;border-radius:3px;font-size:12px;color:#1A2E1A;outline:none;cursor:pointer;}
+.arc-pg-select:focus{border-color:#3A7D44;}
+.arc-pg-current{font-size:12px;font-weight:700;color:#2C5F2E;}

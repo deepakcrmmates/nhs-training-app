@@ -136,8 +136,8 @@
                     <td class="cell-label">Expectations</td>
                     <td class="cell-input">
                         <div class="currency-wrapper-centered">
-                            <span class="currency-prefix">£</span>
-                            <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.expectations} data-field="expectations" onchange={handleInputChange}>
+                            <span class="currency-prefix expectations-prefix">£</span>
+                            <input type="number" step="0.01" class="field-input-currency expectations-value" placeholder="0.00" value={formData.expectations} data-field="expectations" onchange={handleInputChange}>
                         </div>
                     </td>
                 </tr>
@@ -558,6 +558,9 @@
         <button class="btn btn-secondary" onclick={handleGeneratePdf}>
             <svg class="btn-icon" width="14" height="14" viewBox="0 0 14 14"><path d="M3.5 1v3H1v8.5h12V4h-2.5V1h-7zm1 1h5v2h-5V2zM2 5h10v6.5H2V5zm2 1.5v1h6v-1H4zm0 2v1h4v-1H4z" fill="currentColor"/></svg>
             Generate PDF
+        </button>
+        <button class="btn btn-secondary" onclick={handleRefreshData}>
+            &#8635; Refresh
         </button>
         <div class="action-bar-spacer"></div>
         <button class="btn btn-primary" onclick={handleSave}>Save Application</button>

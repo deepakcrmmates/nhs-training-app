@@ -205,6 +205,14 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     /* ── View Mode ── */
     @track viewMode          = 'kanban'; // 'kanban' or 'list'
     @track selectedListStage = 'All';
+    @track listPage = 1;
+    @track listPageSize = 10;
+
+    /* ── Archived Paging & Date Range ── */
+    @track arcDateFrom = '';
+    @track arcDateTo = '';
+    @track arcCurrentPage = 1;
+    @track arcPageSize = 10;
 
     /* ── Advanced Filters ── */
     @track hbOptions      = [];
@@ -318,23 +326,28 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
             const col = (this.rawColumns || []).find(c => c.stageName === s);
             return sum + (col ? col.cardCount || 0 : 0);
         }, 0);
-        const tabs = [{ label: 'All', value: 'All', count: allCount, cls: 'lv-tab' + (this.selectedListStage === 'All' ? ' on' : '') }];
+        const isAllOn = this.selectedListStage === 'All';
+        const tabs = [{ label: 'All', value: 'All', count: allCount, cls: 'lv-tab' + (isAllOn ? ' on' : ''), tabStyle: isAllOn ? 'background:#2C5F2E;border-color:#2C5F2E;color:#fff;' : '' }];
 
         const stages = [...activeStages, 'Sale Cancelled'];
         stages.forEach(s => {
             const col = (this.rawColumns || []).find(c => c.stageName === s);
             const count = col ? col.cardCount || 0 : 0;
+            const colour = stageColour(s);
+            const isOn = this.selectedListStage === s;
             tabs.push({
                 label: s === 'Sale Cancelled' ? 'Application Cancelled' : s,
                 value: s,
                 count,
-                cls: 'lv-tab' + (this.selectedListStage === s ? ' on' : '')
+                cls: 'lv-tab' + (isOn ? ' on' : ''),
+                tabStyle: isOn ? `background:${colour};border-color:${colour};color:#fff;` : `border-color:${colour};color:${colour};`,
+                dotStyle: `background:${colour};`
             });
         });
         return tabs;
     }
 
-    get listCards() {
+    get allListCards() {
         const activeStages = ['To be contacted', '1st Contact', '2nd Contact', '3rd Contact'];
         let cards = [];
 
@@ -359,12 +372,17 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
                 (c.ownerName && c.ownerName.toLowerCase().includes(cs))
             );
         }
+        return cards;
+    }
 
-        // Group by stage for sub-stage headers
+    get listCards() {
+        const start = (this.listPage - 1) * this.listPageSize;
+        const paged = this.allListCards.slice(start, start + this.listPageSize);
+
         const showSubStage = this.selectedListStage === 'All';
         let lastStage = '';
 
-        return cards.map(c => {
+        return paged.map(c => {
             const isNewStage = showSubStage && c.stageName !== lastStage;
             lastStage = c.stageName;
             return {
@@ -380,39 +398,81 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
                 listRowClass: 'va-row' + (c.pinned ? ' lv-pinned' : '') + (c.archived ? ' lv-archived' : ''),
                 isCancelled: c.stageName === 'Sale Cancelled',
                 isNewStage,
-                stageLabel: c.stageName
+                stageLabel: c.stageName,
+                stageColour: stageColour(c.stageName),
+                stageDividerStyle: `background:${stageColour(c.stageName)};`
             };
         });
     }
-    handleListStageClick(e) { this.selectedListStage = e.currentTarget.dataset.stage; }
+    handleListStageClick(e) { this.selectedListStage = e.currentTarget.dataset.stage; this.listPage = 1; }
+
+    // List view paging
+    get listTotalCount() { return this.allListCards.length; }
+    get listTotalPages() { return Math.ceil(this.listTotalCount / this.listPageSize) || 1; }
+    get listPageStart() { return this.listTotalCount > 0 ? ((this.listPage - 1) * this.listPageSize) + 1 : 0; }
+    get listPageEnd() { return Math.min(this.listPage * this.listPageSize, this.listTotalCount); }
+    get listIsPrevDisabled() { return this.listPage <= 1; }
+    get listIsNextDisabled() { return this.listPage >= this.listTotalPages; }
+    get listShowPaging() { return this.listTotalCount > this.listPageSize; }
+    handleListPageSize(e) { this.listPageSize = parseInt(e.target.value, 10); this.listPage = 1; }
+    handleListPrevPage() { if (this.listPage > 1) this.listPage--; }
+    handleListNextPage() { if (this.listPage < this.listTotalPages) this.listPage++; }
 
     /* ── Archived View getters ── */
     get archivedCards() {
         const cs = this.clientSearch ? this.clientSearch.toLowerCase() : '';
+        const from = this.arcDateFrom || '';
+        const to = this.arcDateTo || '';
         const all = [];
         (this.rawColumns || []).forEach(col => {
             (col.cards || []).forEach(c => {
-                if (c.archived) {
-                    if (cs && !(
-                        (c.name && c.name.toLowerCase().includes(cs)) ||
-                        (c.houseBuilder && c.houseBuilder.toLowerCase().includes(cs)) ||
-                        (c.development && c.development.toLowerCase().includes(cs)) ||
-                        (c.vendorName && c.vendorName.toLowerCase().includes(cs)) ||
-                        (c.ownerName && c.ownerName.toLowerCase().includes(cs))
-                    )) return;
-                    all.push({
-                        ...c,
-                        stageName: col.stageName,
-                        closeDateFormatted: fmtD(c.closeDate),
-                        avInitials: ini(c.ownerName),
-                        avStyle: avSt(c.ownerName),
-                        vendorName: c.vendorName || ''
-                    });
-                }
+                if (!c.archived) return;
+                // Text search
+                if (cs && !(
+                    (c.name && c.name.toLowerCase().includes(cs)) ||
+                    (c.houseBuilder && c.houseBuilder.toLowerCase().includes(cs)) ||
+                    (c.development && c.development.toLowerCase().includes(cs)) ||
+                    (c.vendorName && c.vendorName.toLowerCase().includes(cs)) ||
+                    (c.ownerName && c.ownerName.toLowerCase().includes(cs))
+                )) return;
+                // Date range filter on closeDate
+                if (from && c.closeDate && c.closeDate < from) return;
+                if (to && c.closeDate && c.closeDate > to) return;
+
+                all.push({
+                    ...c,
+                    stageName: col.stageName,
+                    closeDateFormatted: fmtD(c.closeDate),
+                    avInitials: ini(c.ownerName),
+                    avStyle: avSt(c.ownerName),
+                    vendorName: c.vendorName || ''
+                });
             });
         });
         return all;
     }
+
+    get arcTotalCount() {
+        let count = 0;
+        (this.rawColumns || []).forEach(col => { (col.cards || []).forEach(c => { if (c.archived) count++; }); });
+        return count;
+    }
+    get arcFilteredCount() { return this.archivedCards.length; }
+    get arcTotalPages() { return Math.ceil(this.arcFilteredCount / this.arcPageSize) || 1; }
+    get arcPageStart() { return this.arcFilteredCount > 0 ? ((this.arcCurrentPage - 1) * this.arcPageSize) + 1 : 0; }
+    get arcPageEnd() { return Math.min(this.arcCurrentPage * this.arcPageSize, this.arcFilteredCount); }
+    get arcIsPrevDisabled() { return this.arcCurrentPage <= 1; }
+    get arcIsNextDisabled() { return this.arcCurrentPage >= this.arcTotalPages; }
+    get arcPagedCards() {
+        const start = (this.arcCurrentPage - 1) * this.arcPageSize;
+        return this.archivedCards.slice(start, start + this.arcPageSize);
+    }
+
+    handleArcDateFrom(e) { this.arcDateFrom = e.target.value; this.arcCurrentPage = 1; }
+    handleArcDateTo(e) { this.arcDateTo = e.target.value; this.arcCurrentPage = 1; }
+    handleArcPageSize(e) { this.arcPageSize = parseInt(e.target.value, 10); this.arcCurrentPage = 1; }
+    handleArcPrevPage() { if (this.arcCurrentPage > 1) this.arcCurrentPage--; }
+    handleArcNextPage() { if (this.arcCurrentPage < this.arcTotalPages) this.arcCurrentPage++; }
 
     /* ══ Kanban getters ══════════════════════════════════════════════════ */
     /* flowPills removed */
@@ -584,7 +644,23 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
 
     handleRefresh()   { this.doRefresh(); }
     handleCardClick(e) { const id=e.currentTarget.dataset.id; if(id) this[NavigationMixin.Navigate]({type:'standard__recordPage',attributes:{recordId:id,actionName:'view'}}); }
-    handleArchiveClick(e) { e.stopPropagation(); const id=e.currentTarget.dataset.id; const arc=e.currentTarget.dataset.archived==='true'; archiveOpportunity({opportunityId:id,archived:!arc}).then(()=>{this.showToast(arc?'Unarchived':'Archived');this.doRefresh();}).catch(err=>this.showToast(err.body?.message||'Error','error')); }
+    handleArchiveClick(e) {
+        e.stopPropagation();
+        const id = e.currentTarget.dataset.id;
+        const arc = e.currentTarget.dataset.archived === 'true';
+        archiveOpportunity({ opportunityId: id, archived: !arc })
+            .then(() => {
+                if (arc) {
+                    // Unarchiving — reset stage to "To be contacted" and NHS Process to "Application"
+                    return updateRecord({ fields: { Id: id, StageName: 'To be contacted', NHS_Process__c: 'Application' } });
+                }
+            })
+            .then(() => {
+                this.showToast(arc ? 'Unarchived — moved to To be contacted' : 'Archived');
+                this.doRefresh();
+            })
+            .catch(err => this.showToast(err.body?.message || 'Error', 'error'));
+    }
 
     handleMoveToVendorAvail(e) {
         e.stopPropagation();

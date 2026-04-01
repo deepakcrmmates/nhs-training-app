@@ -156,7 +156,8 @@
                         <!-- Stage tabs -->
                         <div class="lv-tabs">
                             <template for:each={listStages} for:item="tab">
-                                <button key={tab.value} class={tab.cls} data-stage={tab.value} onclick={handleListStageClick}>
+                                <button key={tab.value} class={tab.cls} style={tab.tabStyle} data-stage={tab.value} onclick={handleListStageClick}>
+                                    <template if:true={tab.dotStyle}><span class="lvt-dot" style={tab.dotStyle}></span></template>
                                     <span class="lvt-label">{tab.label}</span>
                                     <span class="lvt-count">{tab.count}</span>
                                 </button>
@@ -167,21 +168,20 @@
                             <table class="va-table">
                                 <thead>
                                     <tr>
-                                        <th class="va-th va-th-app">Application</th>
-                                        <th class="va-th">Vendor</th>
+                                        <th class="va-th va-th-app">Address</th>
+                                        <th class="va-th">Housebuilder</th>
                                         <th class="va-th">Development</th>
                                         <th class="va-th">Plot</th>
-                                        <th class="va-th">Housebuilder</th>
+                                        <th class="va-th">Vendor</th>
                                         <th class="va-th">Received</th>
-                                        <th class="va-th">Owner</th>
                                         <th class="va-th va-th-act">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <template for:each={listCards} for:item="c">
                                         <template if:true={c.isNewStage}>
-                                            <tr key={c.stageLabel} class="stage-divider-row">
-                                                <td colspan="8" class="stage-divider-cell">{c.stageLabel}</td>
+                                            <tr key={c.stageLabel} class="stage-divider-row" style={c.stageDividerStyle}>
+                                                <td colspan="7" class="stage-divider-cell">{c.stageLabel}</td>
                                             </tr>
                                         </template>
                                         <tr key={c.id} class="va-row">
@@ -191,17 +191,11 @@
                                                     {c.name}
                                                 </div>
                                             </td>
-                                            <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
+                                            <td class="va-td"><span class="hb-name">{c.houseBuilder}</span></td>
                                             <td class="va-td">{c.development}</td>
                                             <td class="va-td">{c.plot}</td>
-                                            <td class="va-td"><span class="hb-name">{c.houseBuilder}</span></td>
+                                            <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
                                             <td class="va-td"><span class="lv-date">{c.closeDateFormatted}</span></td>
-                                            <td class="va-td">
-                                                <div class="lv-owner">
-                                                    <div class="ava" style={c.avStyle}>{c.avInitials}</div>
-                                                    <span class="ow-n">{c.ownerName}</span>
-                                                </div>
-                                            </td>
                                             <td class="va-td va-td-act">
                                                 <template if:false={c.isCancelled}>
                                                     <button class="btn-move-next" data-id={c.id} onclick={handleMoveToVendorAvail}>Move Next</button>
@@ -213,10 +207,28 @@
                                         </tr>
                                     </template>
                                     <template if:false={listCards.length}>
-                                        <tr><td colspan="8" class="va-empty">No applications in this stage</td></tr>
+                                        <tr><td colspan="7" class="va-empty">No applications in this stage</td></tr>
                                     </template>
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="arc-paging">
+                            <div class="arc-page-size">
+                                <span class="arc-pg-label">Show</span>
+                                <select class="arc-pg-select" onchange={handleListPageSize}>
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="arc-pg-label">per page</span>
+                            </div>
+                            <span class="arc-pg-info">Showing {listPageStart}–{listPageEnd} of {listTotalCount}</span>
+                            <div class="arc-pg-btns">
+                                <button class="pg-btn" onclick={handleListPrevPage} disabled={listIsPrevDisabled}>&#8249;</button>
+                                <span class="arc-pg-current">{listPage} / {listTotalPages}</span>
+                                <button class="pg-btn" onclick={handleListNextPage} disabled={listIsNextDisabled}>&#8250;</button>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -232,8 +244,14 @@
                     <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input type="text" placeholder="Search archived…" value={searchTerm} oninput={handleSearch}>
                 </div>
+                <div class="arc-date-range">
+                    <label class="arc-date-label">From</label>
+                    <input type="date" class="arc-date-input" value={arcDateFrom} onchange={handleArcDateFrom}>
+                    <label class="arc-date-label">To</label>
+                    <input type="date" class="arc-date-input" value={arcDateTo} onchange={handleArcDateTo}>
+                </div>
                 <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
-                <div class="arc-info">{archivedCards.length} archived applications</div>
+                <div class="arc-info">{arcFilteredCount} of {arcTotalCount} archived</div>
             </div>
 
             <template if:true={isLoading}><div class="load-wrap"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div></template>
@@ -242,41 +260,55 @@
                     <table class="va-table">
                         <thead>
                             <tr>
-                                <th class="va-th va-th-app">Application</th>
-                                <th class="va-th">Vendor</th>
-                                <th class="va-th">Original Stage</th>
-                                <th class="va-th">Development</th>
+                                <th class="va-th va-th-app">Address</th>
                                 <th class="va-th">Housebuilder</th>
-                                <th class="va-th">Owner</th>
-                                <th class="va-th" style="width:10%;text-align:center">Action</th>
+                                <th class="va-th">Development</th>
+                                <th class="va-th">Plot</th>
+                                <th class="va-th">Vendor</th>
+                                <th class="va-th">Received</th>
+                                <th class="va-th va-th-act">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <template for:each={archivedCards} for:item="c">
+                            <template for:each={arcPagedCards} for:item="c">
                                 <tr key={c.id} class="va-row">
                                     <td class="va-td" data-id={c.id} onclick={handleCardClick}>
                                         <div class="app-addr">{c.name}</div>
                                     </td>
-                                    <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
-                                    <td class="va-td"><span class="arc-stage-badge">{c.stageName}</span></td>
-                                    <td class="va-td">{c.development}</td>
                                     <td class="va-td"><span class="hb-name">{c.houseBuilder}</span></td>
-                                    <td class="va-td">
-                                        <div class="lv-owner">
-                                            <div class="ava" style={c.avStyle}>{c.avInitials}</div>
-                                            <span class="ow-n">{c.ownerName}</span>
-                                        </div>
-                                    </td>
-                                    <td class="va-td" style="text-align:center">
+                                    <td class="va-td">{c.development}</td>
+                                    <td class="va-td">{c.plot}</td>
+                                    <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
+                                    <td class="va-td"><span class="lv-date">{c.closeDateFormatted}</span></td>
+                                    <td class="va-td va-td-act">
                                         <button class="btn-unarchive" data-id={c.id} data-archived="true" onclick={handleArchiveClick}>Unarchive</button>
                                     </td>
                                 </tr>
                             </template>
-                            <template if:false={archivedCards.length}>
+                            <template if:false={arcFilteredCount}>
                                 <tr><td colspan="7" class="va-empty">No archived applications found</td></tr>
                             </template>
                         </tbody>
                     </table>
+                </div>
+                <!-- Paging -->
+                <div class="arc-paging">
+                    <div class="arc-page-size">
+                        <span class="arc-pg-label">Show</span>
+                        <select class="arc-pg-select" onchange={handleArcPageSize}>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="arc-pg-label">per page</span>
+                    </div>
+                    <span class="arc-pg-info">Showing {arcPageStart}–{arcPageEnd} of {arcFilteredCount}</span>
+                    <div class="arc-pg-btns">
+                        <button class="pg-btn" onclick={handleArcPrevPage} disabled={arcIsPrevDisabled}>&#8249;</button>
+                        <span class="arc-pg-current">{arcCurrentPage} / {arcTotalPages}</span>
+                        <button class="pg-btn" onclick={handleArcNextPage} disabled={arcIsNextDisabled}>&#8250;</button>
+                    </div>
                 </div>
             </template>
         </template>

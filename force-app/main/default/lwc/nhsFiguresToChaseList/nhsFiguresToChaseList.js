@@ -2,8 +2,6 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getFiguresToChaseApplications from '@salesforce/apex/FiguresToChaseController.getFiguresToChaseApplications';
 
-const PAGE_SIZE = 15;
-
 function fmtDt(dt) {
     if (!dt) return '—';
     const d = new Date(dt);
@@ -34,6 +32,7 @@ export default class NhsFiguresToChaseList extends NavigationMixin(LightningElem
     @track allApps = [];
     @track searchTerm = '';
     @track activeFilter = 'all';
+    @track pageSize = 10;
     @track currentPage = 1;
     isLoading = true;
 
@@ -96,8 +95,8 @@ export default class NhsFiguresToChaseList extends NavigationMixin(LightningElem
     }
 
     get displayedApps() {
-        const start = (this.currentPage - 1) * PAGE_SIZE;
-        return this.filteredApps.slice(start, start + PAGE_SIZE);
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredApps.slice(start, start + this.pageSize);
     }
 
     get hasApps() { return this.displayedApps.length > 0; }
@@ -114,14 +113,15 @@ export default class NhsFiguresToChaseList extends NavigationMixin(LightningElem
     get filterDesktopClass() { return 'ftag ftag-purple' + (this.activeFilter === 'desktop' ? ' active' : ''); }
     get filterReceivedClass() { return 'ftag ftag-green' + (this.activeFilter === 'received' ? ' active' : ''); }
 
-    get totalPages() { return Math.ceil(this.filteredCount / PAGE_SIZE) || 1; }
-    get showPaging() { return this.filteredCount > PAGE_SIZE; }
-    get pageStart() { return ((this.currentPage - 1) * PAGE_SIZE) + 1; }
-    get pageEnd() { return Math.min(this.currentPage * PAGE_SIZE, this.filteredCount); }
+    get totalPages() { return Math.ceil(this.filteredCount / this.pageSize) || 1; }
+    get showPaging() { return this.filteredCount > this.pageSize; }
+    get pageStart() { return ((this.currentPage - 1) * this.pageSize) + 1; }
+    get pageEnd() { return Math.min(this.currentPage * this.pageSize, this.filteredCount); }
     get isPrevDisabled() { return this.currentPage <= 1; }
     get isNextDisabled() { return this.currentPage >= this.totalPages; }
     handlePrevPage() { if (this.currentPage > 1) this.currentPage--; }
     handleNextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+    handlePageSize(event) { this.pageSize = parseInt(event.target.value, 10); this.currentPage = 1; }
 
     handleRefresh() { this.loadData(); }
 

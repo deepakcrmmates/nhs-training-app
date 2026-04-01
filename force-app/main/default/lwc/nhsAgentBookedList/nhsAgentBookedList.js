@@ -2,8 +2,6 @@ import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getAgentBookedApplications from '@salesforce/apex/AgentBookedListController.getAgentBookedApplications';
 
-const PAGE_SIZE = 15;
-
 function ini(name) {
     if (!name) return '??';
     const p = name.trim().split(' ');
@@ -46,6 +44,7 @@ export default class NhsAgentBookedList extends NavigationMixin(LightningElement
     @track searchTerm = '';
     @track activeFilter = 'all';
     @track timeFilter = '';
+    @track pageSize = 10;
     @track currentPage = 1;
     isLoading = true;
 
@@ -120,8 +119,8 @@ export default class NhsAgentBookedList extends NavigationMixin(LightningElement
     }
 
     get displayedApps() {
-        const start = (this.currentPage - 1) * PAGE_SIZE;
-        return this.filteredApps.slice(start, start + PAGE_SIZE);
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.filteredApps.slice(start, start + this.pageSize);
     }
 
     get hasApps() { return this.displayedApps.length > 0; }
@@ -136,14 +135,15 @@ export default class NhsAgentBookedList extends NavigationMixin(LightningElement
     get filter24hClass() { return 'ftag ftag-time' + (this.timeFilter === '24h' ? ' active' : ''); }
     get filter48hClass() { return 'ftag ftag-time' + (this.timeFilter === '48h' ? ' active' : ''); }
 
-    get totalPages() { return Math.ceil(this.filteredCount / PAGE_SIZE) || 1; }
-    get showPaging() { return this.filteredCount > PAGE_SIZE; }
-    get pageStart() { return ((this.currentPage - 1) * PAGE_SIZE) + 1; }
-    get pageEnd() { return Math.min(this.currentPage * PAGE_SIZE, this.filteredCount); }
+    get totalPages() { return Math.ceil(this.filteredCount / this.pageSize) || 1; }
+    get showPaging() { return this.filteredCount > this.pageSize; }
+    get pageStart() { return ((this.currentPage - 1) * this.pageSize) + 1; }
+    get pageEnd() { return Math.min(this.currentPage * this.pageSize, this.filteredCount); }
     get isPrevDisabled() { return this.currentPage <= 1; }
     get isNextDisabled() { return this.currentPage >= this.totalPages; }
     handlePrevPage() { if (this.currentPage > 1) this.currentPage--; }
     handleNextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+    handlePageSize(event) { this.pageSize = parseInt(event.target.value, 10); this.currentPage = 1; }
 
     handleRefresh() { this.loadData(); }
 

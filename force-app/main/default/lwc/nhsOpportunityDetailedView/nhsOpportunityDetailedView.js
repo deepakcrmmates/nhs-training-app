@@ -1,5 +1,6 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import { getRecord, updateRecord } from 'lightning/uiRecordApi';
+import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAccountDetails from '@salesforce/apex/customLookupController.getAccountDetails';
@@ -279,8 +280,12 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
         return this.isArchived ? 'archived-badge active' : 'archived-badge';
     }
 
+    _wiredResult;
+
     @wire(getRecord, { recordId: '$recordId', optionalFields: FIELDS })
-    wiredRecord({ error, data }) {
+    wiredRecord(result) {
+        this._wiredResult = result;
+        const { error, data } = result;
         if (data) {
             this.isLoading = false;
             this.mapDataToForm(data);
@@ -608,6 +613,18 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             return dt.toISOString();
         }
         return null;
+    }
+
+    handleRefreshData() {
+        this.isLoading = true;
+        refreshApex(this._wiredResult)
+            .then(() => {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Refreshed', message: 'Data refreshed successfully.', variant: 'success' }));
+            })
+            .catch(() => {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'Failed to refresh.', variant: 'error' }));
+            })
+            .finally(() => { this.isLoading = false; });
     }
 
     handleCancel() {
