@@ -48,7 +48,33 @@
             </div>
         </header>
 
+        <!-- ARCHIVED INFO BANNER -->
+        <template if:true={isArchived}>
+            <div class="archived-banner">
+                <div class="archived-banner-icon">
+                    <svg width="20" height="20" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                </div>
+                <div class="archived-banner-content">
+                    <div class="archived-banner-title">This application has been archived</div>
+                    <div class="archived-banner-details">
+                        <template if:true={archivedDateFormatted}>
+                            <span class="archived-banner-dt">
+                                <svg width="12" height="12" fill="none" stroke="#dc2626" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {archivedDateFormatted}
+                            </span>
+                        </template>
+                        <template if:true={formData.archiveReason}>
+                            <span class="archived-banner-reason">
+                                <strong>Reason:</strong> {formData.archiveReason}
+                            </span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <!-- SECTION 1: PROPERTY DETAILS -->
+        <template if:true={notFinalChecks}>
         <div class="form-card">
             <div class="section-banner">
                 <div class="dot"></div>
@@ -137,7 +163,7 @@
                     <td class="cell-input">
                         <div class="currency-wrapper-centered">
                             <span class="currency-prefix expectations-prefix">£</span>
-                            <input type="number" step="0.01" class="field-input-currency expectations-value" placeholder="0.00" value={formData.expectations} data-field="expectations" onchange={handleInputChange}>
+                            <input type="text" inputmode="decimal" class="field-input-currency expectations-value" placeholder="0.00" value={formData.expectations} data-field="expectations" onchange={handleInputChange}>
                         </div>
                     </td>
                 </tr>
@@ -424,19 +450,19 @@
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Initial} data-field="agent1Initial" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent1Initial} data-field="agent1Initial" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Initial} data-field="agent2Initial" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent2Initial} data-field="agent2Initial" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Initial} data-field="agent3Initial" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent3Initial} data-field="agent3Initial" onchange={handleInputChange}>
                     </div>
                 </td>
             </tr>
@@ -445,19 +471,19 @@
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Target} data-field="agent1Target" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent1Target} data-field="agent1Target" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Target} data-field="agent2Target" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent2Target} data-field="agent2Target" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Target} data-field="agent3Target" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent3Target} data-field="agent3Target" onchange={handleInputChange}>
                     </div>
                 </td>
             </tr>
@@ -466,19 +492,19 @@
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent1Bottom} data-field="agent1Bottom" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent1Bottom} data-field="agent1Bottom" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent2Bottom} data-field="agent2Bottom" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent2Bottom} data-field="agent2Bottom" onchange={handleInputChange}>
                     </div>
                 </td>
                 <td class="cell-input agent-val" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" placeholder="0.00" value={formData.agent3Bottom} data-field="agent3Bottom" onchange={handleInputChange}>
+                        <input type="text" inputmode="decimal" class="field-input-currency" placeholder="0.00" value={formData.agent3Bottom} data-field="agent3Bottom" onchange={handleInputChange}>
                     </div>
                 </td>
             </tr>
@@ -492,27 +518,30 @@
                 <td class="cell-currency" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" value={formData.market} data-field="market" onchange={handleInputChange} placeholder="0.00">
+                        <input type="text" inputmode="decimal" class="field-input-currency" value={formData.market} data-field="market" onchange={handleInputChange} placeholder="0.00">
                     </div>
                 </td>
                 <td class="cell-currency" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" value={formData.target} data-field="target" onchange={handleInputChange} placeholder="0.00">
+                        <input type="text" inputmode="decimal" class="field-input-currency" value={formData.target} data-field="target" onchange={handleInputChange} placeholder="0.00">
                     </div>
                 </td>
                 <td class="cell-currency" colspan="2">
                     <div class="currency-wrapper-centered">
                         <span class="currency-prefix">£</span>
-                        <input type="number" step="0.01" class="field-input-currency" value={formData.forced} data-field="forced" onchange={handleInputChange} placeholder="0.00">
+                        <input type="text" inputmode="decimal" class="field-input-currency" value={formData.forced} data-field="forced" onchange={handleInputChange} placeholder="0.00">
                     </div>
                 </td>
             </tr>
         </table>
     </div>
+    </template>
 
     <!-- DROPBOX FILES -->
+    <template if:true={notFinalChecks}>
     <c-nhs-dropbox-browser property-address={formData.propertyAddress}></c-nhs-dropbox-browser>
+    </template>
 
     <!-- SECTION 3: VENDOR AVAILABILITY (shown at Vendor Availability stage) -->
     <template if:true={showVendorAvailability}>
@@ -538,8 +567,15 @@
         </c-nhs-agent-booking>
     </template>
 
-    <!-- SECTION: VENDOR NOTES (always visible) -->
+    <!-- SECTION: FINAL CHECKS (shown at Final Checks stage) -->
+    <template if:true={showFinalChecks}>
+        <c-nhs-final-checks-page record-id={recordId}></c-nhs-final-checks-page>
+    </template>
+
+    <!-- SECTION: VENDOR NOTES -->
+    <template if:true={notFinalChecks}>
     <c-nhs-vendor-notes record-id={recordId}></c-nhs-vendor-notes>
+    </template>
 
     <!-- PDF LIGHTBOX -->
     <template if:true={showPdfModal}>
@@ -575,5 +611,29 @@
         <button class="btn btn-primary" onclick={handleSave}>Save Application</button>
         <button class="btn btn-ghost" onclick={handleCancel}>Cancel</button>
     </div>
+
+    <!-- Archive Reason Modal -->
+    <template if:true={showArchiveModal}>
+        <div class="archive-overlay" onclick={handleArchiveOverlayClick}>
+            <div class="archive-modal" onclick={handleArchiveModalClick}>
+                <div class="archive-modal-icon">
+                    <svg width="28" height="28" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                </div>
+                <h3 class="archive-modal-title">Archive Application</h3>
+                <p class="archive-modal-desc">Please provide a reason for archiving this application.</p>
+                <lightning-textarea
+                    label="Archive Reason"
+                    variant="label-hidden"
+                    placeholder="Enter reason for archiving..."
+                    onchange={handleArchiveReasonInput}
+                    class="archive-textarea">
+                </lightning-textarea>
+                <div class="archive-modal-actions">
+                    <button class="archive-cancel-btn" onclick={handleArchiveCancel}>Cancel</button>
+                    <button class="archive-confirm-btn" onclick={handleArchiveConfirm}>Archive Application</button>
+                </div>
+            </div>
+        </div>
+    </template>
 </template>
 </template>

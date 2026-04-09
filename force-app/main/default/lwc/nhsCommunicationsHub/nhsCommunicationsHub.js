@@ -4,8 +4,9 @@ import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import getCommunications from '@salesforce/apex/NHSCommunicationsController.getCommunications';
 import getOpportunityContext from '@salesforce/apex/NHSCommunicationsController.getOpportunityContext';
-import sendEmail from '@salesforce/apex/NHSCommunicationsController.sendEmail';
+import sendEmailWithAttachments from '@salesforce/apex/NHSCommunicationsController.sendEmailWithAttachments';
 import logCall from '@salesforce/apex/NHSCommunicationsController.logCall';
+import sendSms from '@salesforce/apex/NHSCommunicationsController.sendSms';
 import getEmailTemplates from '@salesforce/apex/NHSCommunicationsController.getEmailTemplates';
 import getRenderedTemplate from '@salesforce/apex/NHSCommunicationsController.getRenderedTemplate';
 
@@ -35,6 +36,13 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
     @track composeCallStatus = 'Completed';
     @track isSending = false;
     @track selectedTemplateId = '';
+    @track attachmentFiles = [];
+    @track smsTo = '';
+    @track smsBody = '';
+
+    get acceptedFormats() {
+        return ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt'];
+    }
     @track selectedTemplateName = '';
     @track isLoadingTemplate = false;
 
@@ -194,11 +202,19 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
     get isComposeEmail() {
         return this.composeType === 'email';
     }
+    get isComposeSms() {
+        return this.composeType === 'sms';
+    }
     get isComposeCall() {
         return this.composeType === 'call';
     }
     get composeTitle() {
-        return this.composeType === 'email' ? 'Compose Email' : 'Log Call';
+        if (this.composeType === 'email') return 'Compose Email';
+        if (this.composeType === 'sms') return 'Send SMS';
+        return 'Log Call';
+    }
+    get smsCharCount() {
+        return this.smsBody ? this.smsBody.length : 0;
     }
     get filteredTemplates() {
         const q = this.templateSearchQuery.toLowerCase();
@@ -324,6 +340,7 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
         this.composeSubject = '';
         this.composeBody = '';
         this.selectedTemplateId = '';
+        this.attachmentFiles = [];
         this.showComposePanel = true;
 
         // Load templates once
@@ -407,6 +424,15 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
     handleComposeBodyChange(event) {
         this.composeBody = event.target.value;
     }
+    handleUploadFinished(event) {
+        const uploadedFiles = event.detail.files;
+        const newFiles = uploadedFiles.map(f => ({ documentId: f.documentId, name: f.name }));
+        this.attachmentFiles = [...this.attachmentFiles, ...newFiles];
+    }
+    handleRemoveAttachment(event) {
+        const removeId = event.currentTarget.dataset.id;
+        this.attachmentFiles = this.attachmentFiles.filter(f => f.documentId !== removeId);
+    }
     handleCallTypeChange(event) {
         this.composeCallType = event.detail.value;
     }
@@ -426,13 +452,15 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
 
         this.isSending = true;
         try {
-            const result = await sendEmail({
+            const attachmentIds = this.attachmentFiles.map(f => f.documentId);
+            const result = await sendEmailWithAttachments({
                 opportunityId: this.recordId,
                 toAddress: this.composeTo,
                 subject: this.composeSubject,
                 body: this.composeBody,
                 ccAddress: this.composeCc,
-                templateId: this.selectedTemplateId || null
+                templateId: this.selectedTemplateId || null,
+                contentDocumentIds: attachmentIds
             });
 
             if (result.status === 'success') {
@@ -454,6 +482,65 @@ export default class NhsCommunicationsHub extends NavigationMixin(LightningEleme
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
                 message: error.body?.message || error.message || 'Failed to send email',
+                variant: 'error'
+            }));
+        } finally {
+            this.isSending = false;
+        }
+    }
+
+    // ── Compose SMS ──
+    handleComposeSms() {
+        this.composeType = 'sms';
+        this.smsTo = this.vendor1Mobile || '';
+        this.smsBody = '';
+        this.showComposePanel = true;
+    }
+
+    handleSmsToChange(event) {
+        this.smsTo = event.target.value;
+    }
+    handleSmsBodyChange(event) {
+        this.smsBody = event.target.value;
+    }
+
+    async handleSendSms() {
+        if (!this.smsTo || !this.smsBody) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Missing Fields',
+                message: 'Please enter a mobile number and message.',
+                variant: 'warning'
+            }));
+            return;
+        }
+
+        this.isSending = true;
+        try {
+            const result = await sendSms({
+                opportunityId: this.recordId,
+                toNumber: this.smsTo,
+                body: this.smsBody
+            });
+
+            if (result.status === 'success') {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'SMS Sent',
+                    message: `SMS sent to ${this.smsTo}`,
+                    variant: 'success'
+                }));
+                this.showComposePanel = false;
+                await refreshApex(this._wiredCommsResult);
+            } else {
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Error',
+                    message: result.message,
+                    variant: 'error'
+                }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Error',
+                message: error.body?.message || error.message || 'Failed to send SMS',
                 variant: 'error'
             }));
         } finally {

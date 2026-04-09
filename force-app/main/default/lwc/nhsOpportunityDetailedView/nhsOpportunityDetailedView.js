@@ -5,6 +5,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { NavigationMixin } from 'lightning/navigation';
 import getAccountDetails from '@salesforce/apex/customLookupController.getAccountDetails';
 import saveDesktopValuation from '@salesforce/apex/customLookupController.saveDesktopValuation';
+import updateVendorContact from '@salesforce/apex/customLookupController.updateVendorContact';
 import generatePDF from '@salesforce/apex/PdfGeneratorController.generatePDF';
 import getHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.getHourlyAvailability';
 
@@ -77,6 +78,10 @@ import RECOMMENDED_MARKET_FIELD from '@salesforce/schema/Opportunity.Current_Ask
 import RECOMMENDED_TARGET_FIELD from '@salesforce/schema/Opportunity.Target_Sale__c';
 import RECOMMENDED_FORCED_FIELD from '@salesforce/schema/Opportunity.Forced_Sale__c';
 
+// Archive
+import ARCHIVE_REASON_FIELD from '@salesforce/schema/Opportunity.Archive_Reason__c';
+import ARCHIVED_DATE_TIME_FIELD from '@salesforce/schema/Opportunity.Archived_Date_Time__c';
+
 const FIELDS = [
     NAME_FIELD, HOUSE_BUILDER_FIELD, HOUSE_BUILDER_NAME_FIELD, PROPERTY_ADDRESS_FIELD, VENDOR_1_FIELD, VENDOR_1_NAME_FIELD,
     VENDOR_2_FIELD, VENDOR_2_NAME_FIELD, APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD,
@@ -85,7 +90,8 @@ const FIELDS = [
     AGENT_2_FIELD, AGENT_2_NAME_FIELD, AGENT_2_PHONE_FIELD, AGENT_2_EMAIL_FIELD, AGENT_2_APPT_FIELD, AGENT_2_EMAILED_FIELD, AGENT_2_VERBALLY_CONFIRMED_FIELD, AGENT_2_INITIAL_PRICE_FIELD, AGENT_2_TARGET_SALE_FIELD, AGENT_2_BOTTOM_LINE_FIELD,
     AGENT_3_FIELD, AGENT_3_NAME_FIELD, AGENT_3_PHONE_FIELD, AGENT_3_EMAIL_FIELD, AGENT_3_APPT_FIELD, AGENT_3_EMAILED_FIELD, AGENT_3_VERBALLY_CONFIRMED_FIELD, AGENT_3_INITIAL_PRICE_FIELD, AGENT_3_TARGET_SALE_FIELD, AGENT_3_BOTTOM_LINE_FIELD,
     RECOMMENDED_MARKET_FIELD, RECOMMENDED_TARGET_FIELD, RECOMMENDED_FORCED_FIELD,
-    AGENT_1_DESKTOP_VAL_FIELD, AGENT_2_DESKTOP_VAL_FIELD, AGENT_3_DESKTOP_VAL_FIELD
+    AGENT_1_DESKTOP_VAL_FIELD, AGENT_2_DESKTOP_VAL_FIELD, AGENT_3_DESKTOP_VAL_FIELD,
+    ARCHIVE_REASON_FIELD, ARCHIVED_DATE_TIME_FIELD
 ];
 
 export default class NhsOpportunityDetailedView extends NavigationMixin(LightningElement) {
@@ -103,6 +109,9 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
     @track showPdfModal = false;
     @track pdfStatus = 'Generating PDF...';
     @track showCommsHub = false;
+    @track showArchiveModal = false;
+    @track archiveReasonInput = '';
+    @track pendingArchiveOldStage = '';
 
     get schemeOptions() {
         return [
@@ -120,6 +129,8 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             { label: 'Figures to Chase', value: 'Figures to chased' },
             { label: 'Valuations Ready', value: 'Valuations Ready' },
             { label: 'Figures Returned', value: 'Figures returned' },
+            { label: 'Final Checks', value: 'Final Checks' },
+            { label: 'Vendor Discussions', value: 'Vendor Discussions' },
             { label: 'Archived', value: 'Archived' }
         ];
     }
@@ -128,11 +139,20 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
         const newStage = event.detail.value;
         const oldStage = this.formData.nhsProcess;
 
+        // Intercept Archive — prompt for reason
+        if (newStage === 'Archived') {
+            this.pendingArchiveOldStage = oldStage;
+            this.archiveReasonInput = '';
+            this.showArchiveModal = true;
+            // Reset combobox to old stage visually while modal is open
+            this.formData = { ...this.formData, nhsProcess: oldStage };
+            return;
+        }
+
         // Validate: moving to Agents Booked requires at least 1 future vendor slot
         if (newStage === 'Agents Booked' && oldStage === 'Vendor Availability') {
             try {
                 const records = await getHourlyAvailability({ opportunityId: this.recordId });
-                // Filter to tomorrow onwards only
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const tomorrow = new Date(today);
@@ -154,6 +174,27 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             }
         }
 
+        // Validate: moving to Final Checks requires all financial values
+        if (newStage === 'Final Checks') {
+            const fin = [
+                'agent1Initial', 'agent1Target', 'agent1Bottom',
+                'agent2Initial', 'agent2Target', 'agent2Bottom',
+                'agent3Initial', 'agent3Target', 'agent3Bottom',
+                'market', 'target', 'forced'
+            ];
+            const missing = fin.filter(f => !this.formData[f] || Number(this.formData[f]) <= 0);
+            if (missing.length > 0) {
+                this.formData = { ...this.formData, nhsProcess: oldStage };
+                this.dispatchEvent(new ShowToastEvent({
+                    title: 'Cannot Move to Final Checks',
+                    message: 'All financial values must be entered before moving to Final Checks: Initial Asking Price, Target Sale, Bottom Line (all 3 agents) and NHS Recommended (Market, Target, Forced).',
+                    variant: 'error',
+                    mode: 'sticky'
+                }));
+                return;
+            }
+        }
+
         this.formData = { ...this.formData, nhsProcess: newStage };
         const fields = {};
         fields[ID_FIELD.fieldApiName] = this.recordId;
@@ -166,12 +207,75 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
                 variant: 'success'
             }));
         } catch (error) {
+            console.error('Stage update error:', JSON.stringify(error));
+            let msg = 'Failed to update stage.';
+            if (error.body) {
+                if (error.body.output && error.body.output.errors && error.body.output.errors.length) {
+                    msg = error.body.output.errors.map(e => e.message).join('; ');
+                } else if (error.body.output && error.body.output.fieldErrors) {
+                    const fieldErrs = error.body.output.fieldErrors;
+                    msg = Object.values(fieldErrs).flat().map(e => e.message).join('; ');
+                } else if (error.body.message) {
+                    msg = error.body.message;
+                }
+            } else if (error.message) {
+                msg = error.message;
+            }
+            this.formData = { ...this.formData, nhsProcess: oldStage };
             this.dispatchEvent(new ShowToastEvent({
                 title: 'Error',
-                message: error.body?.message || error.message || 'Failed to update stage.',
+                message: msg,
                 variant: 'error'
             }));
         }
+    }
+
+    // ── Archive Modal ──
+    handleArchiveReasonInput(e) { this.archiveReasonInput = e.detail.value; }
+    handleArchiveCancel() {
+        this.showArchiveModal = false;
+        this.archiveReasonInput = '';
+    }
+    handleArchiveOverlayClick() { this.handleArchiveCancel(); }
+    handleArchiveModalClick(e) { e.stopPropagation(); }
+
+    async handleArchiveConfirm() {
+        const reason = (this.archiveReasonInput || '').trim();
+        if (!reason) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Reason Required',
+                message: 'Please enter a reason for archiving this application.',
+                variant: 'warning'
+            }));
+            return;
+        }
+        this.showArchiveModal = false;
+        this.formData = { ...this.formData, nhsProcess: 'Archived' };
+
+        const fields = {};
+        fields[ID_FIELD.fieldApiName] = this.recordId;
+        fields[NHS_PROCESS_FIELD.fieldApiName] = 'Archived';
+        fields[ARCHIVE_REASON_FIELD.fieldApiName] = reason;
+        fields[ARCHIVED_DATE_TIME_FIELD.fieldApiName] = new Date().toISOString();
+        try {
+            await updateRecord({ fields });
+            this.formData = {
+                ...this.formData,
+                archiveReason: reason,
+                archivedDateTime: new Date().toISOString()
+            };
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Application Archived',
+                message: 'The application has been archived.',
+                variant: 'success'
+            }));
+            await refreshApex(this._wiredResult);
+        } catch (error) {
+            let msg = error.body?.message || error.message || 'Failed to archive.';
+            this.formData = { ...this.formData, nhsProcess: this.pendingArchiveOldStage };
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));
+        }
+        this.archiveReasonInput = '';
     }
 
     get yesNoOptions() {
@@ -189,7 +293,9 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             { label: 'Book Agents', value: 'Agents Booked' },
             { label: 'Figures to Chase', value: 'Figures to chased' },
             { label: 'Valuations Ready', value: 'Valuations Ready' },
-            { label: 'Figures Returned', value: 'Figures returned' }
+            { label: 'Figures Returned', value: 'Figures returned' },
+            { label: 'Final Checks', value: 'Final Checks' },
+            { label: 'Vendor Discussions', value: 'Vendor Discussions' }
         ];
         const current = this.formData.nhsProcess || '';
         const currentIdx = mainStages.findIndex(s => s.value === current);
@@ -266,6 +372,16 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
         return this.formData.nhsProcess === 'Archived';
     }
 
+    get archivedDateFormatted() {
+        const dt = this.formData.archivedDateTime;
+        if (!dt) return '';
+        const d = new Date(dt);
+        return d.toLocaleDateString('en-GB', {
+            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
     get showVendorAvailability() {
         return this.formData.nhsProcess === 'Vendor Availability';
     }
@@ -275,6 +391,14 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             'Agents Booked', 'Figures to chased', 'Valuations Ready', 'Figures returned'
         ];
         return stagesWithBooking.includes(this.formData.nhsProcess);
+    }
+
+    get showFinalChecks() {
+        return this.formData.nhsProcess === 'Final Checks';
+    }
+
+    get notFinalChecks() {
+        return this.formData.nhsProcess !== 'Final Checks';
     }
 
     get archivedClass() {
@@ -371,7 +495,11 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
                 : (this.formData.agent2DesktopVal || false),
             agent3DesktopVal: fields.Agent_3_Desktop_Valuation__c
                 ? (fields.Agent_3_Desktop_Valuation__c.value || false)
-                : (this.formData.agent3DesktopVal || false)
+                : (this.formData.agent3DesktopVal || false),
+
+            // Archive
+            archiveReason: fields.Archive_Reason__c?.value || '',
+            archivedDateTime: fields.Archived_Date_Time__c?.value || ''
         };
 
         // Split Appointments
@@ -527,6 +655,16 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
         const recordInput = { fields };
 
         try {
+            // Update Vendor 1 Contact details first (Mobile, Phone, Email are formula fields on Opportunity)
+            if (this.formData.vendor1) {
+                await updateVendorContact({
+                    contactId: this.formData.vendor1,
+                    mobile: this.formData.mobile || null,
+                    phone: this.formData.landline || null,
+                    email: this.formData.email || null
+                });
+            }
+
             await updateRecord(recordInput);
 
             // Save Desktop Valuation via Apex (UI API doesn't support these fields)

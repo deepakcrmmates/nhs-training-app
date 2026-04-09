@@ -61,6 +61,16 @@ public class customLookupController {
          update opp;
      }
 
+     @AuraEnabled
+     public static void updateVendorContact(Id contactId, String mobile, String phone, String email) {
+         if (contactId == null) return;
+         Contact c = new Contact(Id = contactId);
+         c.MobilePhone = mobile;
+         c.Phone = phone;
+         c.Email = email;
+         update c;
+     }
+
      public class ResultWrapper{
          @AuraEnabled public String mainField{get;set;}
          @AuraEnabled public String subField{get;set;}
