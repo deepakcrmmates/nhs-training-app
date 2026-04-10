@@ -35,9 +35,9 @@ public class AccountLogoUploader {
           // Upload to Dropbox with try-catch to handle potential errors
         
         try {
-            DropboxFileService.uploadFileToDropbox(accountId, contentDocumentId, 'Logo', null, null);
+            BoxFileService.uploadFileToDropbox(accountId, contentDocumentId, 'Logo', null, null);
         } catch (Exception e) {
-            System.debug('❌ [ERROR] Failed to upload file to Dropbox for Account ' + accountId + ': ' + e.getMessage()+' '+'line Number-: '+ e.getLineNumber());
+            System.debug('Failed to upload file to Box for Account ' + accountId + ': ' + e.getMessage() + ' line: ' + e.getLineNumber());
         }
         return fileUrl;
     }

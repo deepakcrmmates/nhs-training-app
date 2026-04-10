@@ -34,30 +34,31 @@ public with sharing class NHSCommunicationsController {
             results.add(comm);
         }
 
-        // Query Twilio SMS messages linked to this opportunity
-        List<Twilio_SMS__c> smsMessages = [
-            SELECT Id, Body__c, Mobile__c, From_Number__c, Direction__c, Status__c,
-                   Date_Time__c, Contact__r.Name
-            FROM Twilio_SMS__c
-            WHERE Opportunity__c = :opportunityId
-            ORDER BY Date_Time__c DESC
+        // Query TwilioSF managed package SMS messages linked to this opportunity
+        List<TwilioSF__Message__c> smsMessages = [
+            SELECT Id, TwilioSF__Body__c, TwilioSF__To_Number__c, TwilioSF__From_Number__c,
+                   TwilioSF__Direction__c, TwilioSF__Status__c, TwilioSF__Date_Created__c,
+                   TwilioSF__Unread__c, TwilioSF__Contact__r.Name, TwilioSF__Recipient_Name__c
+            FROM TwilioSF__Message__c
+            WHERE TwilioSF__SF_Parent_Record_Id__c = :opportunityId
+            ORDER BY TwilioSF__Date_Created__c DESC
             LIMIT 100
         ];
 
-        for (Twilio_SMS__c sms : smsMessages) {
+        for (TwilioSF__Message__c sms : smsMessages) {
             Map<String, Object> comm = new Map<String, Object>();
-            Boolean isInbound = sms.Direction__c == 'Inbound';
+            Boolean isInbound = sms.TwilioSF__Direction__c == 'inbound';
             comm.put('Id', sms.Id);
             comm.put('Channel__c', 'SMS');
-            comm.put('Direction__c', sms.Direction__c);
-            comm.put('Contact_Name__c', sms.Contact__r != null ? sms.Contact__r.Name : 'Unknown');
+            comm.put('Direction__c', isInbound ? 'Inbound' : 'Outbound');
+            comm.put('Contact_Name__c', sms.TwilioSF__Contact__r != null ? sms.TwilioSF__Contact__r.Name : (sms.TwilioSF__Recipient_Name__c != null ? sms.TwilioSF__Recipient_Name__c : 'Unknown'));
             comm.put('Subject__c', 'SMS');
-            comm.put('Preview__c', truncateText(sms.Body__c, 150));
-            comm.put('DateTime__c', sms.Date_Time__c);
-            comm.put('Status__c', sms.Status__c != null ? sms.Status__c : 'Queued');
-            comm.put('Is_Unread__c', false);
-            comm.put('ToAddress', sms.Mobile__c);
-            comm.put('FromAddress', sms.From_Number__c);
+            comm.put('Preview__c', truncateText(sms.TwilioSF__Body__c, 150));
+            comm.put('DateTime__c', sms.TwilioSF__Date_Created__c);
+            comm.put('Status__c', sms.TwilioSF__Status__c != null ? sms.TwilioSF__Status__c : 'queued');
+            comm.put('Is_Unread__c', sms.TwilioSF__Unread__c);
+            comm.put('ToAddress', sms.TwilioSF__To_Number__c);
+            comm.put('FromAddress', sms.TwilioSF__From_Number__c);
             results.add(comm);
         }
 
@@ -235,69 +236,25 @@ public with sharing class NHSCommunicationsController {
         Map<String, String> result = new Map<String, String>();
 
         try {
-            // Read Twilio config from Custom Setting
-            Twilio_Config__c config = Twilio_Config__c.getInstance();
-            if (config == null || String.isBlank(config.Account_SID__c) || String.isBlank(config.Auth_Token__c)) {
-                result.put('status', 'error');
-                result.put('message', 'Twilio is not configured. Go to Setup > Custom Settings > Twilio Config to enter your credentials.');
-                return result;
-            }
-
             // Get vendor contact for this opportunity
             Opportunity opp = [SELECT Id, Vendor_1__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
 
-            // Call Twilio REST API
-            String endpoint = 'https://api.twilio.com/2010-04-01/Accounts/' + config.Account_SID__c + '/Messages.json';
-
-            HttpRequest req = new HttpRequest();
-            req.setEndpoint(endpoint);
-            req.setMethod('POST');
-            req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-            Blob authBlob = Blob.valueOf(config.Account_SID__c + ':' + config.Auth_Token__c);
-            req.setHeader('Authorization', 'Basic ' + EncodingUtil.base64Encode(authBlob));
-
-            String payload = 'To=' + EncodingUtil.urlEncode(toNumber, 'UTF-8')
-                + '&Body=' + EncodingUtil.urlEncode(body, 'UTF-8');
-
-            // Use From Number directly (more reliable for international SMS)
-            if (String.isNotBlank(config.From_Number__c)) {
-                payload += '&From=' + EncodingUtil.urlEncode(config.From_Number__c, 'UTF-8');
-            } else if (String.isNotBlank(config.Messaging_Service_SID__c)) {
-                payload += '&MessagingServiceSid=' + EncodingUtil.urlEncode(config.Messaging_Service_SID__c, 'UTF-8');
+            // Create TwilioSF Message record — managed package trigger handles sending
+            TwilioSF__Message__c msg = new TwilioSF__Message__c();
+            msg.TwilioSF__To_Number__c = toNumber;
+            msg.TwilioSF__Body__c = body;
+            msg.TwilioSF__Direction__c = 'outbound-api';
+            msg.TwilioSF__Status__c = 'queued';
+            msg.TwilioSF__Date_Created__c = Datetime.now();
+            msg.TwilioSF__SF_Parent_Record_Id__c = opportunityId;
+            if (opp.Vendor_1__c != null) {
+                msg.TwilioSF__Contact__c = opp.Vendor_1__c;
             }
-            req.setBody(payload);
+            insert msg;
 
-            Http http = new Http();
-            HttpResponse resp = http.send(req);
-
-            Map<String, Object> responseBody = (Map<String, Object>) JSON.deserializeUntyped(resp.getBody());
-
-            // Create SMS record for tracking
-            Twilio_SMS__c sms = new Twilio_SMS__c();
-            sms.Opportunity__c = opportunityId;
-            sms.Contact__c = opp.Vendor_1__c;
-            sms.Mobile__c = toNumber;
-            sms.Body__c = body;
-            sms.From_Number__c = config.From_Number__c;
-            sms.Direction__c = 'Outbound';
-            sms.Date_Time__c = Datetime.now();
-
-            if (resp.getStatusCode() == 201 || resp.getStatusCode() == 200) {
-                sms.Status__c = 'Sent';
-                sms.Message_SID__c = (String) responseBody.get('sid');
-                result.put('status', 'success');
-                result.put('message', 'SMS sent successfully');
-            } else {
-                sms.Status__c = 'Failed';
-                String errMsg = (String) responseBody.get('message');
-                sms.Error_Message__c = errMsg;
-                result.put('status', 'error');
-                result.put('message', errMsg != null ? errMsg : 'SMS sending failed (HTTP ' + resp.getStatusCode() + ')');
-            }
-
-            insert sms;
-            result.put('messageId', sms.Id);
+            result.put('status', 'success');
+            result.put('message', 'SMS queued for delivery');
+            result.put('messageId', msg.Id);
         } catch (Exception e) {
             result.put('status', 'error');
             result.put('message', e.getMessage());

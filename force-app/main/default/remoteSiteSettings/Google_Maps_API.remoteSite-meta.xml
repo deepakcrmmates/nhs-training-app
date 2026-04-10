@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RemoteSiteSetting xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Google_Maps_API</fullName>
+    <isActive>true</isActive>
+    <url>https://maps.googleapis.com</url>
+    <description>Google Maps Geocoding API for agent distance calculation</description>
+    <disableProtocolSecurity>false</disableProtocolSecurity>
+</RemoteSiteSetting>

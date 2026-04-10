@@ -41,8 +41,9 @@ public with sharing class FiguresToChaseController {
             Boolean a2FigMissing = a2Visited && opp.Agent_2_Initial_Asking_Price__c == null;
             Boolean a3FigMissing = a3Visited && opp.Agent_3_Initial_Asking_Price__c == null;
 
-            // Only include if at least one agent has visited and their figure is missing
-            if (!a1FigMissing && !a2FigMissing && !a3FigMissing) continue;
+            // Always show records in "Figures to chased" stage
+            // For "Agents Booked" stage, only show if at least one agent has visited with missing figure
+            if (opp.NHS_Process__c == 'Agents Booked' && !a1FigMissing && !a2FigMissing && !a3FigMissing) continue;
 
             AppWrapper w = new AppWrapper();
             w.id = opp.Id;

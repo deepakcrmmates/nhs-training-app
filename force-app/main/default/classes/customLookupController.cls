@@ -71,6 +71,40 @@ public class customLookupController {
          update c;
      }
 
+     @AuraEnabled
+     public static Map<String, String> createQuickAgent(String accountName, String email, String contactFirstName, String contactLastName, String mobile, String phone) {
+         Map<String, String> result = new Map<String, String>();
+         try {
+             // Create Account with Estate Agents record type
+             Id estateAgentRT = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Estate_Agents').getRecordTypeId();
+             Account acc = new Account();
+             acc.Name = accountName;
+             acc.RecordTypeId = estateAgentRT;
+             if (String.isNotBlank(email)) acc.Email__c = email;
+             if (String.isNotBlank(phone)) acc.Phone = phone;
+             insert acc;
+
+             // Create Contact linked to the Account
+             Contact con = new Contact();
+             con.AccountId = acc.Id;
+             con.FirstName = contactFirstName;
+             con.LastName = contactLastName;
+             if (String.isNotBlank(email)) con.Email = email;
+             if (String.isNotBlank(mobile)) con.MobilePhone = mobile;
+             if (String.isNotBlank(phone)) con.Phone = phone;
+             insert con;
+
+             result.put('status', 'success');
+             result.put('accountId', acc.Id);
+             result.put('accountName', acc.Name);
+             result.put('contactId', con.Id);
+         } catch (Exception e) {
+             result.put('status', 'error');
+             result.put('message', e.getMessage());
+         }
+         return result;
+     }
+
      public class ResultWrapper{
          @AuraEnabled public String mainField{get;set;}
          @AuraEnabled public String subField{get;set;}

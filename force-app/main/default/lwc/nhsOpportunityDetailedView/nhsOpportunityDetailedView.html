@@ -223,6 +223,10 @@
         <div class="section-banner">
             <div class="dot"></div>
             <h2>Agent Details / Valuation Figures / Recommendations</h2>
+            <button class="banner-btn" onclick={handleOpenAssignAgent} title="Find & Assign Nearest Agents">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                Assign Agent
+            </button>
         </div>
 
         <table class="form-table">
@@ -235,49 +239,58 @@
             <tr>
                 <td class="cell-label">Company Name</td>
                 <td class="cell-input agent-name-cell name-value-cell" colspan="2">
-                    <c-custom-lookup-lwc
-                        class="name-value-lookup"
-                        hide-entity-icon
-                        action-icon-name="utility:edit"
-                        selected-icon-name="standard:account"
-                        object-label="Account"
-                        object-api-name="Account"
-                        field-api-name="Name"
-                        selected-record-id={formData.agent1}
-                        selected-record-name={formData.agent1Name}
-                        data-field="agent1"
-                        onvalueselected={handleLookupChange}>
-                    </c-custom-lookup-lwc>
+                    <div class="agent-lookup-row">
+                        <c-custom-lookup-lwc
+                            class="name-value-lookup"
+                            hide-entity-icon
+                            action-icon-name="utility:edit"
+                            selected-icon-name="standard:account"
+                            object-label="Account"
+                            object-api-name="Account"
+                            field-api-name="Name"
+                            selected-record-id={formData.agent1}
+                            selected-record-name={formData.agent1Name}
+                            data-field="agent1"
+                            onvalueselected={handleLookupChange}>
+                        </c-custom-lookup-lwc>
+                        <button class="agent-add-btn" data-agent="agent1" onclick={handleOpenQuickAgent} title="Create New Agent">+</button>
+                    </div>
                 </td>
                 <td class="cell-input agent-name-cell name-value-cell" colspan="2">
-                    <c-custom-lookup-lwc
-                        class="name-value-lookup"
-                        hide-entity-icon
-                        action-icon-name="utility:edit"
-                        selected-icon-name="standard:account"
-                        object-label="Account"
-                        object-api-name="Account"
-                        field-api-name="Name"
-                        selected-record-id={formData.agent2}
-                        selected-record-name={formData.agent2Name}
-                        data-field="agent2"
-                        onvalueselected={handleLookupChange}>
-                    </c-custom-lookup-lwc>
+                    <div class="agent-lookup-row">
+                        <c-custom-lookup-lwc
+                            class="name-value-lookup"
+                            hide-entity-icon
+                            action-icon-name="utility:edit"
+                            selected-icon-name="standard:account"
+                            object-label="Account"
+                            object-api-name="Account"
+                            field-api-name="Name"
+                            selected-record-id={formData.agent2}
+                            selected-record-name={formData.agent2Name}
+                            data-field="agent2"
+                            onvalueselected={handleLookupChange}>
+                        </c-custom-lookup-lwc>
+                        <button class="agent-add-btn" data-agent="agent2" onclick={handleOpenQuickAgent} title="Create New Agent">+</button>
+                    </div>
                 </td>
                 <td class="cell-input agent-name-cell name-value-cell" colspan="2">
-                    <c-custom-lookup-lwc
-                        class="name-value-lookup"
-                        hide-entity-icon
-                        action-icon-name="utility:edit"
-                        selected-icon-name="standard:account"
-                        object-label="Account"
-                        object-api-name="Account"
-                        field-api-name="Name"
-                        selected-record-id={formData.agent3}
-                        selected-record-name={formData.agent3Name}
-                        data-field="agent3"
-                        onvalueselected={handleLookupChange}>
-                    </c-custom-lookup-lwc>
+                    <div class="agent-lookup-row">
+                        <c-custom-lookup-lwc
+                            class="name-value-lookup"
+                            hide-entity-icon
+                            action-icon-name="utility:edit"
+                            selected-icon-name="standard:account"
+                            object-label="Account"
+                            object-api-name="Account"
+                            field-api-name="Name"
+                            selected-record-id={formData.agent3}
+                            selected-record-name={formData.agent3Name}
+                            data-field="agent3"
+                            onvalueselected={handleLookupChange}>
+                        </c-custom-lookup-lwc>
+                        <button class="agent-add-btn" data-agent="agent3" onclick={handleOpenQuickAgent} title="Create New Agent">+</button>
+                    </div>
                 </td>
             </tr>
             <tr>
@@ -538,11 +551,6 @@
     </div>
     </template>
 
-    <!-- DROPBOX FILES -->
-    <template if:true={notFinalChecks}>
-    <c-nhs-dropbox-browser property-address={formData.propertyAddress}></c-nhs-dropbox-browser>
-    </template>
-
     <!-- SECTION 3: VENDOR AVAILABILITY (shown at Vendor Availability stage) -->
     <template if:true={showVendorAvailability}>
         <c-nhs-vendor-availability
@@ -572,7 +580,12 @@
         <c-nhs-final-checks-page record-id={recordId}></c-nhs-final-checks-page>
     </template>
 
-    <!-- SECTION: VENDOR NOTES -->
+    <!-- BOX FILE STORAGE (always last before Vendor Notes) -->
+    <template if:true={notFinalChecks}>
+    <c-nhs-box-browser property-address={formData.propertyAddress} record-id={recordId}></c-nhs-box-browser>
+    </template>
+
+    <!-- VENDOR NOTES (always last) -->
     <template if:true={notFinalChecks}>
     <c-nhs-vendor-notes record-id={recordId}></c-nhs-vendor-notes>
     </template>
@@ -632,6 +645,200 @@
                     <button class="archive-cancel-btn" onclick={handleArchiveCancel}>Cancel</button>
                     <button class="archive-confirm-btn" onclick={handleArchiveConfirm}>Archive Application</button>
                 </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- QUICK AGENT CREATE MODAL -->
+    <template if:true={showQuickAgent}>
+        <div class="archive-overlay" onclick={handleCloseQuickAgent}>
+            <div class="archive-modal quick-agent-modal" onclick={handleArchiveModalClick}>
+                <div class="qa-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4A6B5E" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                </div>
+                <h3 class="qa-title">{quickAgentTitle}</h3>
+                <p class="qa-desc">Create a new Estate Agent account and contact</p>
+                <div class="qa-form">
+                    <div class="qa-field">
+                        <label class="qa-label">Company Name *</label>
+                        <input type="text" class="qa-input" data-field="name" value={quickAgent.name} onchange={handleQuickAgentInput} placeholder="Estate agent company name">
+                    </div>
+                    <div class="qa-row">
+                        <div class="qa-field qa-half">
+                            <label class="qa-label">First Name</label>
+                            <input type="text" class="qa-input" data-field="firstName" value={quickAgent.firstName} onchange={handleQuickAgentInput} placeholder="First name">
+                        </div>
+                        <div class="qa-field qa-half">
+                            <label class="qa-label">Last Name *</label>
+                            <input type="text" class="qa-input" data-field="lastName" value={quickAgent.lastName} onchange={handleQuickAgentInput} placeholder="Last name">
+                        </div>
+                    </div>
+                    <div class="qa-field">
+                        <label class="qa-label">Email</label>
+                        <input type="email" class="qa-input" data-field="email" value={quickAgent.email} onchange={handleQuickAgentInput} placeholder="email@company.com">
+                    </div>
+                    <div class="qa-row">
+                        <div class="qa-field qa-half">
+                            <label class="qa-label">Mobile</label>
+                            <input type="tel" class="qa-input" data-field="mobile" value={quickAgent.mobile} onchange={handleQuickAgentInput} placeholder="+44...">
+                        </div>
+                        <div class="qa-field qa-half">
+                            <label class="qa-label">Phone</label>
+                            <input type="tel" class="qa-input" data-field="phone" value={quickAgent.phone} onchange={handleQuickAgentInput} placeholder="+44...">
+                        </div>
+                    </div>
+                </div>
+                <div class="archive-modal-actions">
+                    <button class="archive-cancel-btn" onclick={handleCloseQuickAgent}>Cancel</button>
+                    <button class="qa-create-btn" onclick={handleCreateQuickAgent} disabled={isCreatingAgent}>
+                        <template if:true={isCreatingAgent}>Creating...</template>
+                        <template if:false={isCreatingAgent}>Create Agent</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ASSIGN AGENT LIGHTBOX -->
+    <template if:true={showAssignAgent}>
+        <div class="archive-overlay" onclick={handleCloseAssignAgent}>
+            <div class="af-modal" onclick={handleArchiveModalClick}>
+                <div class="af-header">
+                    <div class="af-header-left">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A6B5E" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                        <h3>Assign Agent</h3>
+                    </div>
+                    <div class="af-steps">
+                        <span class={isStep1}>1</span>
+                        <span class="af-step-line"></span>
+                        <span class={isStep2}>2</span>
+                        <span class="af-step-line"></span>
+                        <span class={isStep3}>3</span>
+                    </div>
+                    <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
+                </div>
+
+                <!-- STEP 1: Property & Radius -->
+                <template if:true={isStep1}>
+                    <div class="af-step-body">
+                        <div class="af-prop-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4A6B5E" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <div>
+                                <div class="af-prop-label">Property Address</div>
+                                <div class="af-prop-addr">{formData.propertyAddress}</div>
+                            </div>
+                        </div>
+                        <div class="af-radius-field">
+                            <label class="af-radius-label">Search Radius</label>
+                            <lightning-combobox
+                                name="radius"
+                                value={assignRadius}
+                                options={radiusOptions}
+                                onchange={handleRadiusChange}
+                                variant="label-hidden"
+                                class="af-radius-combo">
+                            </lightning-combobox>
+                        </div>
+                        <div class="af-step-actions">
+                            <button class="af-cancel-btn" onclick={handleCloseAssignAgent}>Cancel</button>
+                            <button class="af-next-btn" onclick={handleSearchAgents}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                                Search Agents
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- STEP 2: Agent List -->
+                <template if:true={isStep2}>
+                    <template if:true={assignAgentInfo}>
+                        <div class="af-info">{assignAgentInfo}</div>
+                    </template>
+
+                    <template if:true={isLoadingAgents}>
+                        <div class="af-loading">
+                            <lightning-spinner alternative-text="Searching" size="medium"></lightning-spinner>
+                            <p>Searching for estate agents within {assignRadius} miles...</p>
+                        </div>
+                    </template>
+
+                    <template if:false={isLoadingAgents}>
+                        <template if:true={hasNearbyAgents}>
+                            <div class="af-list">
+                                <template for:each={nearbyAgents} for:item="agent">
+                                    <div class={agent.rowClass} key={agent.id}>
+                                        <div class="af-agent-info">
+                                            <div class="af-agent-name">
+                                                {agent.name}
+                                                <a href={agent.rightmoveLink} target="_blank" class="af-rm-link" title="View on Rightmove">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00DEB6" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                </a>
+                                            </div>
+                                            <div class="af-agent-meta">
+                                                <span class="af-distance">{agent.distanceLabel}</span>
+                                                <span class="af-postcode">{agent.postcode}</span>
+                                                <template if:true={agent.city}>
+                                                    <span class="af-city">{agent.city}</span>
+                                                </template>
+                                            </div>
+                                            <template if:true={agent.email}>
+                                                <div class="af-agent-contact">{agent.email}</div>
+                                            </template>
+                                        </div>
+                                        <div class="af-actions">
+                                            <template if:true={agent.isAssigned}>
+                                                <span class="af-assigned-badge">{agent.assignedLabel}</span>
+                                            </template>
+                                            <template if:false={agent.isAssigned}>
+                                                <template if:true={agent.canAssignAgent2}>
+                                                    <button class="af-assign-btn af-btn-2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
+                                                </template>
+                                                <template if:true={agent.canAssignAgent3}>
+                                                    <button class="af-assign-btn af-btn-3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasNearbyAgents}>
+                            <div class="af-empty">No agents found within {assignRadius} miles. Try increasing the radius.</div>
+                        </template>
+                        <div class="af-step-actions">
+                            <button class="af-back-btn" onclick={handleBackToStep1}>Back</button>
+                            <template if:true={assignedAgent2Name}>
+                                <span class="af-selected-badge af-sel-2">Agent 2: {assignedAgent2Name}</span>
+                            </template>
+                            <template if:true={assignedAgent3Name}>
+                                <span class="af-selected-badge af-sel-3">Agent 3: {assignedAgent3Name}</span>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- STEP 3: Confirmation -->
+                <template if:true={isStep3}>
+                    <div class="af-step-body af-confirm">
+                        <div class="af-confirm-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                        <h3 class="af-confirm-title">Agents Assigned</h3>
+                        <div class="af-confirm-detail">
+                            <div class="af-confirm-row">
+                                <span class="af-confirm-label af-label-2">Agent 2</span>
+                                <span class="af-confirm-name">{assignedAgent2Name}</span>
+                            </div>
+                            <div class="af-confirm-row">
+                                <span class="af-confirm-label af-label-3">Agent 3</span>
+                                <span class="af-confirm-name">{assignedAgent3Name}</span>
+                            </div>
+                        </div>
+                        <div class="af-step-actions">
+                            <button class="af-next-btn" onclick={handleConfirmAssignment}>Done</button>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
     </template>

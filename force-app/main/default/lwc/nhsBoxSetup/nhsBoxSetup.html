@@ -1,0 +1,218 @@
+<template>
+    <div class="setup-card">
+        <div class="setup-header">
+            <div class="setup-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#0061D5"><path d="M6.5 4L1 7.5l5.5 3.5L12 7.5 6.5 4zm11 0L12 7.5l5.5 3.5L23 7.5 17.5 4zM1 14.5L6.5 18l5.5-3.5L6.5 11 1 14.5zm16.5 3.5l5.5-3.5L17.5 11 12 14.5l5.5 3.5zM12 15.5L6.5 19l-1.2-.8L12 14l6.7 4.2-1.2.8L12 15.5z"/></svg>
+            </div>
+            <div>
+                <h1>Box Integration</h1>
+                <p>Connect your Box account for file storage</p>
+            </div>
+        </div>
+
+        <div class="setup-body">
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </template>
+
+            <template if:false={isLoading}>
+                <!-- Connection Status -->
+                <div class="status-section">
+                    <h3>Connection Status</h3>
+                    <div class={statusBadgeClass}>
+                        <span class="status-dot"></span>
+                        {statusMessage}
+                    </div>
+                    <div class="checklist">
+                        <span class={clientIdClass}>{checkClientId}</span>
+                        <span class={clientSecretClass}>{checkClientSecret}</span>
+                        <span class={refreshTokenClass}>{checkRefreshToken}</span>
+                    </div>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="step-section">
+                    <h3>Step 1: Box App Credentials</h3>
+                    <p>Create a Box app at <strong>developer.box.com</strong> with OAuth 2.0 authentication. Add your Client ID and Client Secret in <strong>Setup > Custom Settings > Box Config > Manage</strong>.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-section">
+                    <h3>Step 2: Connect to Box</h3>
+                    <template if:true={isConnected}>
+                        <p class="connected-msg">Connected to Box</p>
+                        <button class="btn-reconnect" onclick={handleConnect}>Reconnect</button>
+                    </template>
+                    <template if:false={isConnected}>
+                        <button class="btn-connect" onclick={handleConnect}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 4L1 7.5l5.5 3.5L12 7.5 6.5 4zm11 0L12 7.5l5.5 3.5L23 7.5 17.5 4zM1 14.5L6.5 18l5.5-3.5L6.5 11 1 14.5zm16.5 3.5l5.5-3.5L17.5 11 12 14.5l5.5 3.5zM12 15.5L6.5 19l-1.2-.8L12 14l6.7 4.2-1.2.8L12 15.5z"/></svg>
+                            Connect to Box
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Step 3 -->
+                <template if:true={showCodeInput}>
+                    <div class="step-section highlight">
+                        <h3>Step 3: Paste Authorization Code</h3>
+                        <p>After authorising in the popup, paste the code from the URL here.</p>
+                        <div class="code-input-row">
+                            <input type="text" class="code-input" value={authCode} onchange={handleCodeChange} placeholder="Paste authorisation code here...">
+                            <button class="btn-exchange" onclick={handleExchangeCode} disabled={isExchanging}>
+                                <template if:true={isExchanging}>Exchanging...</template>
+                                <template if:false={isExchanging}>Exchange Token</template>
+                            </button>
+                        </div>
+                        <template if:true={exchangeMessage}>
+                            <div class={exchangeMsgClass}>{exchangeMessage}</div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Step 4: Test & Browse -->
+                <template if:true={showTestSection}>
+                    <div class="step-section">
+                        <h3>Step 4: Test Connection &amp; Browse Files</h3>
+                        <button class="btn-connect btn-test" onclick={handleTestConnection} disabled={isTesting}>
+                            <template if:true={isTesting}>Testing...</template>
+                            <template if:false={isTesting}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                Browse Box Files
+                            </template>
+                        </button>
+
+                        <template if:true={testResultMessage}>
+                            <div class={testResultClass}>{testResultMessage}</div>
+                        </template>
+
+                        <!-- File Browser -->
+                        <template if:true={showBrowser}>
+                            <div class="browser">
+                                <!-- Breadcrumbs -->
+                                <div class="breadcrumbs">
+                                    <template for:each={breadcrumbs} for:item="crumb">
+                                        <span key={crumb.id} class="crumb" data-id={crumb.id} data-name={crumb.name} onclick={handleBreadcrumbClick}>{crumb.name}</span>
+                                    </template>
+                                </div>
+
+                                <!-- Toolbar -->
+                                <div class="browser-toolbar">
+                                    <template if:false={showNewFolderInput}>
+                                        <button class="btn-new-folder" onclick={handleShowNewFolder}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            New Folder
+                                        </button>
+                                        <button class="btn-upload" onclick={handleUploadClick} disabled={isUploading}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                            <template if:true={isUploading}>Uploading...</template>
+                                            <template if:false={isUploading}>Upload File</template>
+                                        </button>
+                                        <button class="btn-nhs-folder" onclick={handleShowNhsFolder}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                                            NHS Folder Structure
+                                        </button>
+                                        <input type="file" class="file-upload-input" onchange={handleFileSelected} multiple>
+                                    </template>
+                                    <template if:true={showNewFolderInput}>
+                                        <div class="new-folder-row">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0061D5"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                                            <input type="text" class="new-folder-input" value={newFolderName} onchange={handleNewFolderNameChange} placeholder="Folder name...">
+                                            <button class="btn-folder-create" onclick={handleCreateFolder} disabled={isCreatingFolder}>
+                                                <template if:true={isCreatingFolder}>Creating...</template>
+                                                <template if:false={isCreatingFolder}>Create</template>
+                                            </button>
+                                            <button class="btn-folder-cancel" onclick={handleCancelNewFolder}>Cancel</button>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- NHS Folder Structure -->
+                                <template if:true={showNhsFolderInput}>
+                                    <div class="nhs-folder-panel">
+                                        <div class="nhs-folder-header">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#4A6B5E"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                                            <span>Create NHS Folder Structure</span>
+                                        </div>
+                                        <p class="nhs-folder-desc">Enter the property name. Subfolders will be created automatically: <strong>Application</strong>, <strong>Valuations</strong>, <strong>Photos</strong>, <strong>Will Report</strong></p>
+                                        <div class="new-folder-row">
+                                            <input type="text" class="new-folder-input" value={nhsFolderName} onchange={handleNhsFolderNameChange} placeholder="Property name...">
+                                            <button class="btn-folder-create" onclick={handleCreateNhsFolder} disabled={isCreatingNhsFolder}>
+                                                <template if:true={isCreatingNhsFolder}>Creating...</template>
+                                                <template if:false={isCreatingNhsFolder}>Create</template>
+                                            </button>
+                                            <button class="btn-folder-cancel" onclick={handleCancelNhsFolder}>Cancel</button>
+                                        </div>
+                                        <template if:true={hasNhsFolderStatus}>
+                                            <div class="nhs-folder-progress">
+                                                <template for:each={nhsFolderStatus} for:item="item">
+                                                    <div class="upload-row" key={item.id}>
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#4A6B5E"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                                                        <span class="upload-file-name">{item.name}</span>
+                                                        <span class={item.statusClass}>{item.statusLabel}</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Upload Progress -->
+                                <template if:true={showUploadProgress}>
+                                    <div class="upload-progress">
+                                        <template for:each={uploadProgress} for:item="file">
+                                            <div class="upload-row" key={file.id}>
+                                                <svg class="upload-file-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                                <span class="upload-file-name">{file.name}</span>
+                                                <span class="upload-file-size">{file.size}</span>
+                                                <span class={file.statusClass}>{file.statusLabel}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Loading -->
+                                <template if:true={isBrowsing}>
+                                    <div class="browser-loading">
+                                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                    </div>
+                                </template>
+
+                                <!-- Items -->
+                                <template if:false={isBrowsing}>
+                                    <template if:true={hasFolderItems}>
+                                        <div class="browser-list">
+                                            <template for:each={folderItems} for:item="item">
+                                                <template if:true={item.isFolder}>
+                                                    <div class="browser-item browser-folder" key={item.id} data-id={item.id} data-name={item.name} onclick={handleFolderClick}>
+                                                        <svg class="item-icon folder-icon" width="20" height="20" viewBox="0 0 24 24" fill="#0061D5"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                                                        <span class="item-name">{item.name}</span>
+                                                        <span class="item-badge badge-folder">{item.typeLabel}</span>
+                                                        <svg class="item-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                    </div>
+                                                </template>
+                                                <template if:true={item.isFile}>
+                                                    <div class="browser-item browser-file" key={item.id}>
+                                                        <svg class="item-icon file-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                                        <span class="item-name">{item.name}</span>
+                                                        <span class="item-size">{item.size}</span>
+                                                        <span class="item-date">{item.modified}</span>
+                                                        <button class="btn-download" data-id={item.id} data-name={item.name} onclick={handleDownload} title="Download">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                                        </button>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template if:true={isEmpty}>
+                                        <div class="browser-empty">This folder is empty</div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

@@ -6,6 +6,9 @@ import { NavigationMixin } from 'lightning/navigation';
 import getAccountDetails from '@salesforce/apex/customLookupController.getAccountDetails';
 import saveDesktopValuation from '@salesforce/apex/customLookupController.saveDesktopValuation';
 import updateVendorContact from '@salesforce/apex/customLookupController.updateVendorContact';
+import createQuickAgent from '@salesforce/apex/customLookupController.createQuickAgent';
+import findNearestAgents from '@salesforce/apex/AgentFinderController.findNearestAgents';
+import assignAgent from '@salesforce/apex/AgentFinderController.assignAgent';
 import generatePDF from '@salesforce/apex/PdfGeneratorController.generatePDF';
 import getHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.getHourlyAvailability';
 
@@ -106,6 +109,34 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
     };
 
     isLoading = true;
+    quickAgentField = null; // 'agent1', 'agent2', or 'agent3'
+    showAssignAgent = false;
+    nearbyAgents = [];
+    isLoadingAgents = false;
+    isAssigning = false;
+    assignAgentInfo = '';
+    assignStep = 1; // 1=radius, 2=select agents, 3=confirmation
+    assignRadius = '5';
+    assignedAgent2Name = '';
+    assignedAgent3Name = '';
+
+    get radiusOptions() {
+        return [
+            { label: '0.5 miles', value: '0.5' },
+            { label: '1 mile', value: '1' },
+            { label: '2 miles', value: '2' },
+            { label: '3 miles', value: '3' },
+            { label: '5 miles', value: '5' },
+            { label: '7 miles', value: '7' },
+            { label: '10 miles', value: '10' }
+        ];
+    }
+    get isStep1() { return this.assignStep === 1; }
+    get isStep2() { return this.assignStep === 2; }
+    get isStep3() { return this.assignStep === 3; }
+    get hasNearbyAgents() { return this.nearbyAgents.length > 0; }
+    quickAgent = { name: '', email: '', firstName: '', lastName: '', mobile: '', phone: '' };
+    isCreatingAgent = false;
     @track showPdfModal = false;
     @track pdfStatus = 'Generating PDF...';
     @track showCommsHub = false;
@@ -533,6 +564,156 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
                 time: dt.toTimeString().split(' ')[0].substring(0, 5)
             };
         }
+    }
+
+    // ── Quick Agent Create ──
+    get showQuickAgent() { return this.quickAgentField != null; }
+    get quickAgentTitle() {
+        const num = this.quickAgentField ? this.quickAgentField.replace('agent', 'Agent ') : '';
+        return 'Create New ' + num;
+    }
+
+    handleOpenQuickAgent(event) {
+        this.quickAgentField = event.currentTarget.dataset.agent;
+        this.quickAgent = { name: '', email: '', firstName: '', lastName: '', mobile: '', phone: '' };
+    }
+
+    handleCloseQuickAgent() {
+        this.quickAgentField = null;
+    }
+
+    handleQuickAgentInput(event) {
+        const field = event.target.dataset.field;
+        this.quickAgent = { ...this.quickAgent, [field]: event.target.value };
+    }
+
+    async handleCreateQuickAgent() {
+        if (!this.quickAgent.name || !this.quickAgent.lastName) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Missing Fields', message: 'Company Name and Last Name are required.', variant: 'warning' }));
+            return;
+        }
+        this.isCreatingAgent = true;
+        try {
+            const result = await createQuickAgent({
+                accountName: this.quickAgent.name,
+                email: this.quickAgent.email,
+                contactFirstName: this.quickAgent.firstName,
+                contactLastName: this.quickAgent.lastName,
+                mobile: this.quickAgent.mobile,
+                phone: this.quickAgent.phone
+            });
+            if (result.status === 'success') {
+                // Set the agent lookup to the new account
+                this.formData = {
+                    ...this.formData,
+                    [this.quickAgentField]: result.accountId,
+                    [this.quickAgentField + 'Name']: result.accountName
+                };
+                this.dispatchEvent(new ShowToastEvent({ title: 'Success', message: result.accountName + ' created', variant: 'success' }));
+                this.quickAgentField = null;
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to create agent', variant: 'error' }));
+        }
+        this.isCreatingAgent = false;
+    }
+
+    // ── Assign Agent (3-step wizard) ──
+    handleOpenAssignAgent() {
+        this.showAssignAgent = true;
+        this.assignStep = 1;
+        this.assignRadius = '5';
+        this.nearbyAgents = [];
+        this.assignAgentInfo = '';
+        this.assignedAgent2Name = '';
+        this.assignedAgent3Name = '';
+    }
+
+    handleCloseAssignAgent() {
+        this.showAssignAgent = false;
+    }
+
+    handleRadiusChange(event) {
+        this.assignRadius = event.detail.value;
+    }
+
+    async handleSearchAgents() {
+        this.assignStep = 2;
+        this.isLoadingAgents = true;
+        this.nearbyAgents = [];
+        this.assignAgentInfo = '';
+        try {
+            const result = await findNearestAgents({ opportunityId: this.recordId, maxDistanceMiles: parseFloat(this.assignRadius) });
+            if (result.status === 'success') {
+                this.nearbyAgents = (result.agents || []).map(a => ({
+                    ...a,
+                    distanceLabel: a.distance + ' miles',
+                    canAssignAgent2: !a.isAssigned && a.id !== this.formData.agent1,
+                    canAssignAgent3: !a.isAssigned && a.id !== this.formData.agent1,
+                    assignedLabel: a.isAgent2 ? 'Agent 2' : (a.isAgent3 ? 'Agent 3' : ''),
+                    rowClass: 'af-row' + (a.isAssigned ? ' af-assigned' : ''),
+                    rightmoveLink: a.rightmoveUrl || ('https://www.rightmove.co.uk/estate-agents/' + (a.postcode ? a.postcode.split(' ')[0] : '') + '.html?brandName=' + encodeURIComponent(a.name || '') + '&branchType=ALL')
+                }));
+                this.assignAgentInfo = this.nearbyAgents.length + ' agents found within ' + this.assignRadius + ' miles of ' + result.propertyPostcode;
+            } else {
+                this.assignAgentInfo = result.message;
+            }
+        } catch (error) {
+            this.assignAgentInfo = error.body?.message || 'Failed to find agents';
+        }
+        this.isLoadingAgents = false;
+    }
+
+    handleBackToStep1() {
+        this.assignStep = 1;
+    }
+
+    async handleAssignToSlot(event) {
+        const agentId = event.currentTarget.dataset.id;
+        const agentName = event.currentTarget.dataset.name;
+        const slot = event.currentTarget.dataset.slot;
+        this.isAssigning = true;
+        try {
+            const result = await assignAgent({ opportunityId: this.recordId, agentId: agentId, agentSlot: slot });
+            if (result.status === 'success') {
+                this.formData = {
+                    ...this.formData,
+                    [slot]: agentId,
+                    [slot + 'Name']: agentName
+                };
+                if (slot === 'agent2') this.assignedAgent2Name = agentName;
+                if (slot === 'agent3') this.assignedAgent3Name = agentName;
+
+                // Update list
+                this.nearbyAgents = this.nearbyAgents.map(a => ({
+                    ...a,
+                    isAgent2: slot === 'agent2' && a.id === agentId ? true : a.isAgent2,
+                    isAgent3: slot === 'agent3' && a.id === agentId ? true : a.isAgent3,
+                    isAssigned: a.id === agentId ? true : a.isAssigned,
+                    assignedLabel: (slot === 'agent2' && a.id === agentId) ? 'Agent 2' : ((slot === 'agent3' && a.id === agentId) ? 'Agent 3' : a.assignedLabel),
+                    canAssignAgent2: a.id === agentId ? false : a.canAssignAgent2,
+                    canAssignAgent3: a.id === agentId ? false : a.canAssignAgent3,
+                    rowClass: a.id === agentId ? 'af-row af-assigned' : a.rowClass
+                }));
+
+                // If both assigned, go to step 3
+                if (this.assignedAgent2Name && this.assignedAgent3Name) {
+                    this.assignStep = 3;
+                }
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to assign', variant: 'error' }));
+        }
+        this.isAssigning = false;
+    }
+
+    handleConfirmAssignment() {
+        this.showAssignAgent = false;
+        this.dispatchEvent(new ShowToastEvent({ title: 'Agents Assigned', message: 'Agent 2: ' + this.assignedAgent2Name + ' | Agent 3: ' + this.assignedAgent3Name, variant: 'success' }));
     }
 
     handleInputChange(event) {
