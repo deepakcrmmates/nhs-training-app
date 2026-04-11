@@ -709,11 +709,11 @@
                         <h3>Assign Agent</h3>
                     </div>
                     <div class="af-steps">
-                        <span class={isStep1}>1</span>
+                        <div class={step1Class}><span class="af-step-num">1</span><span class="af-step-text">Search</span></div>
                         <span class="af-step-line"></span>
-                        <span class={isStep2}>2</span>
+                        <div class={step2Class}><span class="af-step-num">2</span><span class="af-step-text">Select Agents</span></div>
                         <span class="af-step-line"></span>
-                        <span class={isStep3}>3</span>
+                        <div class={step3Class}><span class="af-step-num">3</span><span class="af-step-text">Confirm</span></div>
                     </div>
                     <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
                 </div>
@@ -781,21 +781,28 @@
                                                     <span class="af-city">{agent.city}</span>
                                                 </template>
                                             </div>
-                                            <template if:true={agent.email}>
-                                                <div class="af-agent-contact">{agent.email}</div>
-                                            </template>
+                                            <div class="af-agent-contact">
+                                                <template if:true={agent.phone}>
+                                                    <span>T: {agent.phone}</span>
+                                                </template>
+                                                <template if:true={agent.mobile}>
+                                                    <span>M: {agent.mobile}</span>
+                                                </template>
+                                                <template if:true={agent.email}>
+                                                    <span>{agent.email}</span>
+                                                </template>
+                                            </div>
                                         </div>
                                         <div class="af-actions">
                                             <template if:true={agent.isAssigned}>
                                                 <span class="af-assigned-badge">{agent.assignedLabel}</span>
+                                                <button class="af-change-btn" data-id={agent.id} data-name={agent.name} data-slot={agent.isAgent2} onclick={handleUnassignAgent} title="Change">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                </button>
                                             </template>
                                             <template if:false={agent.isAssigned}>
-                                                <template if:true={agent.canAssignAgent2}>
-                                                    <button class="af-assign-btn af-btn-2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
-                                                </template>
-                                                <template if:true={agent.canAssignAgent3}>
-                                                    <button class="af-assign-btn af-btn-3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
-                                                </template>
+                                                <button class="af-assign-btn af-btn-2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
+                                                <button class="af-assign-btn af-btn-3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
                                             </template>
                                         </div>
                                     </div>

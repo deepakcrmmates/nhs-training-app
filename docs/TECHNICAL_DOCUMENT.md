@@ -4,7 +4,7 @@
 **Client:** New Home Solutions
 **Development Partner:** CRM Mates Ltd, London
 **Lead Salesforce Consultant:** Deepak K Rana
-**Last Updated:** 10 April 2026
+**Last Updated:** 11 April 2026
 
 ---
 
@@ -38,7 +38,7 @@ CRM Mates Ltd is the development partner responsible for the design, build, and 
 | Lightning Web Components | 107+ |
 | Apex Classes (production) | 77 |
 | Apex Test Classes | 30+ |
-| External Integrations | 7 |
+| External Integrations | 8 |
 | Opportunity Custom Fields | 192 |
 | Record Types (Opportunity) | 13 |
 | NHS Process Stages | 9 |
@@ -253,6 +253,30 @@ Managed by TwilioSF package. Key fields used by NHS CRM:
 | `Root_Folder_Id__c` | Box root folder ID for account storage |
 | `Access_Token__c` | Cached access token (avoids repeated token refreshes) |
 | `Token_Expiry__c` | Access token expiry timestamp (50 min from refresh) |
+
+#### Google_Maps_Config__c (Hierarchy)
+
+| Field | Purpose |
+|---|---|
+| `API_Key__c` | Google Maps API key (Geocoding + Distance Matrix) |
+| `Daily_Limit__c` | Max API requests per day (default 100) |
+| `Requests_Today__c` | Counter for today's requests (auto-resets daily) |
+| `Last_Reset_Date__c` | Date of last counter reset |
+| `Distance_Method__c` | `"Distance Matrix"` (driving, default) or `"Geocoding"` (aerial) |
+
+### Account — Geo & Agent Fields
+
+| Field | Type | Purpose |
+|---|---|---|
+| `Geo_Latitude__c` | Number | Cached latitude from Google Maps geocoding |
+| `Geo_Longitude__c` | Number | Cached longitude from Google Maps geocoding |
+| `Rightmove_URL__c` | URL | Link to agent's Rightmove profile page |
+
+### Opportunity — Box Integration
+
+| Field | Type | Purpose |
+|---|---|---|
+| `Box_Folder_Id__c` | Text | Permanently links Opportunity to Box folder by ID |
 
 ### DropBox__mdt (Custom Metadata — Legacy)
 
@@ -513,6 +537,7 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | 5 | File Storage (legacy) | Dropbox | Custom Metadata: `DropBox__mdt` | Being replaced by Box |
 | 6 | Property Data | UK Property Data (RapidAPI) | Named Credential: `UKPropertyDataAPI` | Working |
 | 7 | Address Lookup | Ideal Postcodes | Custom Label | Working |
+| 8 | Agent Distance / Geocoding | Google Maps Geocoding API | Custom Setting: `Google_Maps_Config__c` | Working |
 
 ### Box (File Storage)
 
@@ -623,12 +648,39 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | Method | `propertytools.api.v1.Public/GetPropertyReport` |
 | Purpose | Detailed property reports by postcode/PAON |
 
-### Google Maps
+### Google Maps (Geocoding + Distance Matrix + Street View)
 
 | Detail | Value |
 |---|---|
-| Endpoint | `https://maps.googleapis.com/maps/api/streetview/metadata` |
-| Purpose | Street View imagery and property visualisation |
+| Geocoding Endpoint | `https://maps.googleapis.com/maps/api/geocode/json` |
+| Distance Matrix Endpoint | `https://maps.googleapis.com/maps/api/distancematrix/json` |
+| Street View Endpoint | `https://maps.googleapis.com/maps/api/streetview/metadata` |
+| Credentials | Custom Setting: `Google_Maps_Config__c` (API_Key, Daily_Limit, Requests_Today, Last_Reset_Date, Distance_Method) |
+| Purpose | Agent distance calculation (Assign Agent wizard) + Street View imagery |
+| Distance Methods | **Distance Matrix** (driving distance + drive time, default) or **Geocoding** (aerial/Haversine) — configurable in Custom Setting |
+| Coordinate Caching | `Geo_Latitude__c` / `Geo_Longitude__c` on Account — each agent geocoded once, cached permanently |
+| Rate Limiting | Daily counter auto-resets. Default 100/day. Free tier: $200/month ≈ 40,000 requests |
+| Remote Site | `Google_Maps_API` (`https://maps.googleapis.com`) |
+
+**Distance Matrix Flow:**
+1. Pre-filter agents by aerial distance (1.5× radius) using cached coordinates — no API call
+2. Send 1 Distance Matrix API call with up to 25 agent postcodes as destinations
+3. Returns actual driving miles + estimated drive time for each agent
+4. Filter by user-selected radius, sort by distance, return top 10
+
+**Apex Class:** `AgentFinderController`
+- `findNearestAgents(opportunityId, maxDistanceMiles)` — 3-step wizard backend: geocodes property (1 call), pre-filters by aerial distance, then Distance Matrix for driving distances (1 call for up to 25 agents)
+- `assignAgent(opportunityId, agentId, agentSlot)` — assigns agent to Agent 2 or Agent 3 with duplicate prevention
+- Coordinates cached permanently on Account (`Geo_Latitude__c`, `Geo_Longitude__c`) — only geocoded once per agent
+
+**Assign Agent Wizard (3-step LWC):**
+1. **Search** — property address display, radius selection (0.5–10 miles)
+2. **Select Agents** — top 10 nearest agents with distance, drive time, Rightmove link, phone/mobile/email. Assign as Agent 2 (blue) or Agent 3 (purple)
+3. **Confirm** — confirmation screen with both assignments, Done button
+
+**Account Fields for Agents:**
+- `Geo_Latitude__c` / `Geo_Longitude__c` — cached coordinates from Google Geocoding
+- `Rightmove_URL__c` — agent Rightmove profile link (auto-generated search URL if not set)
 
 ---
 
@@ -854,6 +906,17 @@ force-app/main/default/
 | 2026-04-10 | Access token caching for Box | Access_Token__c and Token_Expiry__c fields, ensureAccessToken() pattern to avoid DML-after-callout |
 | 2026-04-10 | Box folder name sanitization | / and \ characters replaced with - to prevent Box API errors |
 | 2026-04-10 | BoxCallback Visualforce page and Box_Setup tab | OAuth redirect handler, tab added to New Home Solutions app |
+| 2026-04-10 | Migrated SMS to Twilio managed package | Removed custom Twilio_SMS__c and Twilio_Config__c, sendSms creates TwilioSF__Message__c, getCommunications queries managed object |
+| 2026-04-10 | Built Assign Agent wizard | 3-step wizard: radius selection, nearest agents list with Google Maps Geocoding, agent assignment with duplicate prevention |
+| 2026-04-10 | AgentFinderController with geocoding | Google Maps API for postcode geocoding, Haversine distance calculation, postcode area filtering, cached coordinates on Account |
+| 2026-04-10 | Google_Maps_Config__c Custom Setting | API Key, Daily Limit (default 100), Requests Today counter with auto-reset, Remote Site Setting |
+| 2026-04-10 | Geo caching on Account | Geo_Latitude__c and Geo_Longitude__c fields — one-time geocode per agent, subsequent searches use cached coordinates (1 API call per search) |
+| 2026-04-10 | Rightmove_URL__c on Account | Links to agent Rightmove profile, auto-generated search URL if not set, shown in Assign Agent lightbox |
+| 2026-04-10 | Quick Agent Create (+) button | Modal on Agent 1/2/3 lookups — creates Account (Estate Agent RT) + Contact with Company Name, First/Last Name, Email, Mobile, Phone |
+| 2026-04-10 | Figures to Chase filter fix | Records in "Figures to chased" stage now always shown regardless of agent visit status |
+| 2026-04-10 | Application page section reorder | Box File Storage and Vendor Notes always appear as last two sections |
+| 2026-04-11 | Added Distance Matrix API for driving distances | Configurable via Distance_Method__c: "Distance Matrix" (driving + drive time) or "Geocoding" (aerial). 1 API call per search for up to 25 agents |
+| 2026-04-11 | Assign Agent wizard improvements | Phone/Mobile shown in agent list, dropdown overflow fix, step labels (Search, Select Agents, Confirm) |
 
 ---
 

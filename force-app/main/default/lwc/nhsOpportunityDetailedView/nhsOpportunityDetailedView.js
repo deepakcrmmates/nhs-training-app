@@ -134,6 +134,9 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
     get isStep1() { return this.assignStep === 1; }
     get isStep2() { return this.assignStep === 2; }
     get isStep3() { return this.assignStep === 3; }
+    get step1Class() { return 'af-step' + (this.assignStep === 1 ? ' af-step-active' : '') + (this.assignStep > 1 ? ' af-step-done' : ''); }
+    get step2Class() { return 'af-step' + (this.assignStep === 2 ? ' af-step-active' : '') + (this.assignStep > 2 ? ' af-step-done' : ''); }
+    get step3Class() { return 'af-step' + (this.assignStep === 3 ? ' af-step-active' : ''); }
     get hasNearbyAgents() { return this.nearbyAgents.length > 0; }
     quickAgent = { name: '', email: '', firstName: '', lastName: '', mobile: '', phone: '' };
     isCreatingAgent = false;
@@ -649,7 +652,7 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             if (result.status === 'success') {
                 this.nearbyAgents = (result.agents || []).map(a => ({
                     ...a,
-                    distanceLabel: a.distance + ' miles',
+                    distanceLabel: a.distance + ' miles' + (a.duration ? ' (' + a.duration + ')' : '') + (a.distanceType === 'aerial' ? ' ✈' : ' 🚗'),
                     canAssignAgent2: !a.isAssigned && a.id !== this.formData.agent1,
                     canAssignAgent3: !a.isAssigned && a.id !== this.formData.agent1,
                     assignedLabel: a.isAgent2 ? 'Agent 2' : (a.isAgent3 ? 'Agent 3' : ''),
@@ -678,6 +681,9 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
         try {
             const result = await assignAgent({ opportunityId: this.recordId, agentId: agentId, agentSlot: slot });
             if (result.status === 'success') {
+                // Clear previous agent from this slot
+                const prevAgentId = this.formData[slot];
+
                 this.formData = {
                     ...this.formData,
                     [slot]: agentId,
@@ -686,17 +692,35 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
                 if (slot === 'agent2') this.assignedAgent2Name = agentName;
                 if (slot === 'agent3') this.assignedAgent3Name = agentName;
 
-                // Update list
-                this.nearbyAgents = this.nearbyAgents.map(a => ({
-                    ...a,
-                    isAgent2: slot === 'agent2' && a.id === agentId ? true : a.isAgent2,
-                    isAgent3: slot === 'agent3' && a.id === agentId ? true : a.isAgent3,
-                    isAssigned: a.id === agentId ? true : a.isAssigned,
-                    assignedLabel: (slot === 'agent2' && a.id === agentId) ? 'Agent 2' : ((slot === 'agent3' && a.id === agentId) ? 'Agent 3' : a.assignedLabel),
-                    canAssignAgent2: a.id === agentId ? false : a.canAssignAgent2,
-                    canAssignAgent3: a.id === agentId ? false : a.canAssignAgent3,
-                    rowClass: a.id === agentId ? 'af-row af-assigned' : a.rowClass
-                }));
+                // Rebuild list — unassign previous, assign new
+                this.nearbyAgents = this.nearbyAgents.map(a => {
+                    const isNewAgent = a.id === agentId;
+                    const wasPrevAgent = a.id === prevAgentId && prevAgentId !== agentId;
+
+                    let isA2 = a.isAgent2;
+                    let isA3 = a.isAgent3;
+
+                    if (slot === 'agent2') {
+                        if (isNewAgent) isA2 = true;
+                        if (wasPrevAgent) isA2 = false;
+                    }
+                    if (slot === 'agent3') {
+                        if (isNewAgent) isA3 = true;
+                        if (wasPrevAgent) isA3 = false;
+                    }
+
+                    const isAssigned = isA2 || isA3;
+                    return {
+                        ...a,
+                        isAgent2: isA2,
+                        isAgent3: isA3,
+                        isAssigned: isAssigned,
+                        assignedLabel: isA2 ? 'Agent 2' : (isA3 ? 'Agent 3' : ''),
+                        canAssignAgent2: !isAssigned && a.id !== this.formData.agent1,
+                        canAssignAgent3: !isAssigned && a.id !== this.formData.agent1,
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '')
+                    };
+                });
 
                 // If both assigned, go to step 3
                 if (this.assignedAgent2Name && this.assignedAgent3Name) {
@@ -707,6 +731,51 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             }
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to assign', variant: 'error' }));
+        }
+        this.isAssigning = false;
+    }
+
+    async handleUnassignAgent(event) {
+        const agentId = event.currentTarget.dataset.id;
+        // Determine which slot this agent is in
+        const agent = this.nearbyAgents.find(a => a.id === agentId);
+        if (!agent) return;
+        const slot = agent.isAgent2 ? 'agent2' : 'agent3';
+
+        this.isAssigning = true;
+        try {
+            // Assign null to clear the slot
+            const result = await assignAgent({ opportunityId: this.recordId, agentId: null, agentSlot: slot });
+            if (result.status === 'success') {
+                this.formData = { ...this.formData, [slot]: null, [slot + 'Name']: '' };
+                if (slot === 'agent2') this.assignedAgent2Name = '';
+                if (slot === 'agent3') this.assignedAgent3Name = '';
+
+                // Update list
+                this.nearbyAgents = this.nearbyAgents.map(a => {
+                    let isA2 = a.isAgent2;
+                    let isA3 = a.isAgent3;
+                    if (a.id === agentId) {
+                        if (slot === 'agent2') isA2 = false;
+                        if (slot === 'agent3') isA3 = false;
+                    }
+                    const isAssigned = isA2 || isA3;
+                    return {
+                        ...a,
+                        isAgent2: isA2,
+                        isAgent3: isA3,
+                        isAssigned: isAssigned,
+                        assignedLabel: isA2 ? 'Agent 2' : (isA3 ? 'Agent 3' : ''),
+                        canAssignAgent2: !isAssigned && a.id !== this.formData.agent1,
+                        canAssignAgent3: !isAssigned && a.id !== this.formData.agent1,
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '')
+                    };
+                });
+
+                this.dispatchEvent(new ShowToastEvent({ title: 'Removed', message: agent.name + ' removed from ' + (slot === 'agent2' ? 'Agent 2' : 'Agent 3'), variant: 'info' }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to unassign', variant: 'error' }));
         }
         this.isAssigning = false;
     }
