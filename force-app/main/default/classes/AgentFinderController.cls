@@ -271,6 +271,93 @@ public with sharing class AgentFinderController {
         return result;
     }
 
+    @AuraEnabled
+    public static List<Map<String, Object>> getAvailableSlots(Id opportunityId) {
+        List<Map<String, Object>> slots = new List<Map<String, Object>>();
+        // Show all vendor availability slots from today onwards (not filtered by Booked__c)
+        List<Vendor_Availability__c> avails = [
+            SELECT Id, Date__c, AM__c, PM__c, Slots__c
+            FROM Vendor_Availability__c
+            WHERE Application__c = :opportunityId
+            AND Date__c >= TODAY
+            ORDER BY Date__c ASC
+            LIMIT 30
+        ];
+
+        for (Vendor_Availability__c va : avails) {
+            Map<String, Object> slot = new Map<String, Object>();
+            slot.put('id', va.Id);
+            slot.put('date', va.Date__c);
+            slot.put('am', va.AM__c);
+            slot.put('pm', va.PM__c);
+            slot.put('time', va.Slots__c);
+
+            DateTime dt = DateTime.newInstance(va.Date__c, Time.newInstance(0, 0, 0, 0));
+            slot.put('dayName', dt.format('EEEE'));
+            slot.put('dateFormatted', dt.format('dd MMM yyyy'));
+            slots.add(slot);
+        }
+        return slots;
+    }
+
+    @AuraEnabled
+    public static Map<String, String> bookAppointment(Id opportunityId, String agentSlot, Id availabilityId, String selectedTime) {
+        Map<String, String> result = new Map<String, String>();
+        try {
+            Vendor_Availability__c va = [SELECT Id, Date__c, AM__c, PM__c, Booked__c, Application__c FROM Vendor_Availability__c WHERE Id = :availabilityId LIMIT 1];
+
+            // Parse selected time
+            List<String> timeParts = selectedTime.split(':');
+            Integer hour = Integer.valueOf(timeParts[0]);
+            Integer minute = Integer.valueOf(timeParts[1]);
+            DateTime apptDateTime = DateTime.newInstance(va.Date__c, Time.newInstance(hour, minute, 0, 0));
+            DateTime apptEndDateTime = apptDateTime.addHours(1);
+
+            // Get opportunity with agent and vendor details
+            Opportunity opp = [SELECT Id, Agent_1__c, Agent_2__c, Agent_3__c, Vendor_1__c, Property_Address__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+
+            // Determine agent ID
+            Id agentId;
+            if (agentSlot == 'agent1') { agentId = opp.Agent_1__c; opp.Agent_1_Appointment__c = apptDateTime; }
+            else if (agentSlot == 'agent2') { agentId = opp.Agent_2__c; opp.Agent_2_Appointment__c = apptDateTime; }
+            else if (agentSlot == 'agent3') { agentId = opp.Agent_3__c; opp.Agent_3_Appointment__c = apptDateTime; }
+            update opp;
+
+            // Do NOT mark Booked__c — same slot stays available for other agents
+
+            // Create an Event record (syncs with Agent Booking component)
+            if (agentId != null && opp.Vendor_1__c != null) {
+                String agentName = [SELECT Name FROM Account WHERE Id = :agentId LIMIT 1].Name;
+
+                // Check if event already exists for this agent + opportunity + vendor
+                List<Event> existing = [SELECT Id FROM Event WHERE Agent__c = :agentId AND WhatId = :opportunityId AND WhoId = :opp.Vendor_1__c LIMIT 1];
+                Event evt;
+                if (!existing.isEmpty()) {
+                    evt = existing[0];
+                } else {
+                    evt = new Event();
+                    evt.Agent__c = agentId;
+                    evt.WhatId = opportunityId;
+                    evt.WhoId = opp.Vendor_1__c;
+                }
+                evt.StartDateTime = apptDateTime;
+                evt.EndDateTime = apptEndDateTime;
+                evt.Subject = 'Valuation appointment with ' + agentName;
+                evt.IsBooked__c = true;
+                evt.Location = opp.Property_Address__c;
+                upsert evt;
+            }
+
+            result.put('status', 'success');
+            result.put('message', 'Appointment booked for ' + apptDateTime.format('dd MMM yyyy HH:mm'));
+            result.put('dateTime', String.valueOf(apptDateTime));
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
     private static Map<String, Decimal> geocodePostcode(String postcode, String apiKey) {
         try {
             String url = GEOCODE_URL + '?address=' + EncodingUtil.urlEncode(postcode + ', UK', 'UTF-8') + '&key=' + apiKey;

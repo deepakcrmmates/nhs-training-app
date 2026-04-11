@@ -9,6 +9,8 @@ import updateVendorContact from '@salesforce/apex/customLookupController.updateV
 import createQuickAgent from '@salesforce/apex/customLookupController.createQuickAgent';
 import findNearestAgents from '@salesforce/apex/AgentFinderController.findNearestAgents';
 import assignAgent from '@salesforce/apex/AgentFinderController.assignAgent';
+import getAvailableSlots from '@salesforce/apex/AgentFinderController.getAvailableSlots';
+import bookAppointment from '@salesforce/apex/AgentFinderController.bookAppointment';
 import generatePDF from '@salesforce/apex/PdfGeneratorController.generatePDF';
 import getHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.getHourlyAvailability';
 
@@ -110,6 +112,63 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
 
     isLoading = true;
     quickAgentField = null; // 'agent1', 'agent2', or 'agent3'
+    // Booking modal
+    showBookingModal = false;
+    bookingAgent = ''; // agent1, agent2, agent3
+    availableSlots = [];
+    isLoadingSlots = false;
+    selectedSlotId = null;
+    selectedTime = null;
+    isBooking = false;
+
+    formatApptDate(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+
+    get agent1ApptDisplay() { return this.agentAppts.agent1.date ? this.formatApptDate(this.agentAppts.agent1.date) + ' — ' + this.agentAppts.agent1.time : ''; }
+    get agent2ApptDisplay() { return this.agentAppts.agent2.date ? this.formatApptDate(this.agentAppts.agent2.date) + ' — ' + this.agentAppts.agent2.time : ''; }
+    get agent3ApptDisplay() { return this.agentAppts.agent3.date ? this.formatApptDate(this.agentAppts.agent3.date) + ' — ' + this.agentAppts.agent3.time : ''; }
+    get agent1HasAppt() { return !!this.agentAppts.agent1.date; }
+    get agent2HasAppt() { return !!this.agentAppts.agent2.date; }
+    get agent3HasAppt() { return !!this.agentAppts.agent3.date; }
+
+    get bookingAgentLabel() {
+        if (this.bookingAgent === 'agent1') return 'Agent 1 (' + (this.formData.agent1Name || '') + ')';
+        if (this.bookingAgent === 'agent2') return 'Agent 2 (' + (this.formData.agent2Name || '') + ')';
+        if (this.bookingAgent === 'agent3') return 'Agent 3 (' + (this.formData.agent3Name || '') + ')';
+        return '';
+    }
+    get hasAvailableSlots() { return this.availableSlots.length > 0; }
+    get canConfirmBooking() { return this.selectedSlotId && this.selectedTime; }
+    get timeOptions() {
+        if (!this.selectedSlotId) return [];
+        const slot = this.availableSlots.find(s => s.id === this.selectedSlotId);
+        if (!slot) return [];
+        const times = [];
+        if (slot.am) {
+            for (let h = 8; h < 12; h++) {
+                for (let m = 0; m < 60; m += 15) {
+                    const val = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+                    const label = (h > 12 ? h - 12 : h) + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' pm' : ' am');
+                    times.push({ value: val, label: label, btnClass: 'bk-time-btn' + (this.selectedTime === val ? ' bk-time-active' : '') });
+                }
+            }
+        }
+        if (slot.pm) {
+            for (let h = 12; h < 18; h++) {
+                for (let m = 0; m < 60; m += 15) {
+                    const val = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+                    const displayH = h > 12 ? h - 12 : h;
+                    const label = displayH + ':' + String(m).padStart(2, '0') + (h >= 12 ? ' pm' : ' am');
+                    times.push({ value: val, label: label, btnClass: 'bk-time-btn' + (this.selectedTime === val ? ' bk-time-active' : '') });
+                }
+            }
+        }
+        return times;
+    }
+
     showAssignAgent = false;
     nearbyAgents = [];
     isLoadingAgents = false;
@@ -621,6 +680,89 @@ export default class NhsOpportunityDetailedView extends NavigationMixin(Lightnin
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to create agent', variant: 'error' }));
         }
         this.isCreatingAgent = false;
+    }
+
+    // ── Booking Modal ──
+    async handleOpenBooking(event) {
+        this.bookingAgent = event.currentTarget.dataset.agent;
+        this.showBookingModal = true;
+        this.isLoadingSlots = true;
+        this.availableSlots = [];
+        this.selectedSlotId = null;
+        this.selectedTime = null;
+        try {
+            const slots = await getAvailableSlots({ opportunityId: this.recordId });
+            this.availableSlots = (slots || []).map(s => ({
+                ...s,
+                isSelected: false,
+                rowClass: 'bk-slot-row'
+            }));
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed to load slots', variant: 'error' }));
+        }
+        this.isLoadingSlots = false;
+    }
+
+    handleCloseBooking() {
+        this.showBookingModal = false;
+    }
+
+    handleSelectSlot(event) {
+        const slotId = event.currentTarget.dataset.id;
+        this.selectedSlotId = slotId;
+        this.selectedTime = null;
+        this.availableSlots = this.availableSlots.map(s => ({
+            ...s,
+            isSelected: s.id === slotId,
+            rowClass: 'bk-slot-row' + (s.id === slotId ? ' bk-slot-selected' : '')
+        }));
+    }
+
+    handleSelectTime(event) {
+        this.selectedTime = event.currentTarget.dataset.time;
+    }
+
+    async handleConfirmBooking() {
+        if (!this.selectedSlotId || !this.selectedTime) return;
+        this.isBooking = true;
+        try {
+            const result = await bookAppointment({
+                opportunityId: this.recordId,
+                agentSlot: this.bookingAgent,
+                availabilityId: this.selectedSlotId,
+                selectedTime: this.selectedTime
+            });
+            if (result.status === 'success') {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Booked', message: result.message, variant: 'success' }));
+                this.showBookingModal = false;
+
+                // Update the local appointment display
+                const dt = new Date(result.dateTime);
+                this.agentAppts[this.bookingAgent] = {
+                    date: dt.toISOString().split('T')[0],
+                    time: dt.toTimeString().split(' ')[0].substring(0, 5)
+                };
+                this.agentAppts = { ...this.agentAppts };
+
+                // Refresh the Agent Booking component
+                const agentBooking = this.template.querySelector('c-nhs-agent-booking');
+                if (agentBooking) {
+                    agentBooking.refreshData();
+                }
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Booking failed', variant: 'error' }));
+        }
+        this.isBooking = false;
+    }
+
+    handleAgentBookedFromBooking(event) {
+        const { agentNum, dateStr, time } = event.detail;
+        const agentKey = 'agent' + agentNum;
+        this.agentAppts[agentKey] = { date: dateStr, time: time };
+        this.agentAppts = { ...this.agentAppts };
     }
 
     // ── Assign Agent (3-step wizard) ──

@@ -34,6 +34,9 @@ export default class NhsAgentBooking extends LightningElement {
 
     connectedCallback() { this.loadData(); }
 
+    @api
+    refreshData() { this.loadData(); }
+
     loadData() {
         this.isLoading = true;
         getVendorAvailability({ currentId: this.recordId })
@@ -276,7 +279,11 @@ export default class NhsAgentBooking extends LightningElement {
         this.expandedSlot = this.expandedSlot === expandKey ? '' : expandKey;
     }
 
-    async handleSubSlotBook(event) {
+    // ── Booking Confirmation ──
+    @track showBookingConfirm = false;
+    @track pendingBooking = {};
+
+    handleSubSlotBook(event) {
         const slotKey = event.currentTarget.dataset.slotKey;
         const agentNum = event.currentTarget.dataset.agent;
         const mins = event.currentTarget.dataset.mins;
@@ -299,6 +306,26 @@ export default class NhsAgentBooking extends LightningElement {
             }));
             return;
         }
+
+        // Show confirmation modal
+        const startHour = parseInt(hr, 10);
+        const startDT = new Date(`${dateStr}T${String(startHour).padStart(2, '0')}:${mins}:00`);
+        const dayName = DAY_SHORT[startDT.getDay()];
+        const displayDate = startDT.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const displayTime = HOUR_LABELS[hr] || `${hr}:${mins}`;
+
+        this.pendingBooking = { slotKey, agentNum, agentId, agentName, mins, dateStr, hr, displayDate, displayTime, dayName };
+        this.showBookingConfirm = true;
+    }
+
+    handleBookingCancel() {
+        this.showBookingConfirm = false;
+        this.pendingBooking = {};
+    }
+
+    async handleBookingConfirm() {
+        this.showBookingConfirm = false;
+        const { agentId, agentName, agentNum, dateStr, hr, mins } = this.pendingBooking;
 
         this.isLoading = true;
         this.expandedSlot = '';
@@ -323,6 +350,10 @@ export default class NhsAgentBooking extends LightningElement {
                 message: `${agentName} booked for ${HOUR_LABELS[hr]} on ${dateStr}`,
                 variant: 'success'
             }));
+            // Notify parent to refresh appointment display
+            this.dispatchEvent(new CustomEvent('agentbooked', {
+                detail: { agentNum, dateStr, time: `${String(startHour).padStart(2, '0')}:${mins}` }
+            }));
             this.loadData();
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({
@@ -332,5 +363,13 @@ export default class NhsAgentBooking extends LightningElement {
             }));
             this.isLoading = false;
         }
+        this.pendingBooking = {};
     }
+
+    stopPropagation(event) { event.stopPropagation(); }
+
+    get confirmAgentName() { return this.pendingBooking.agentName || ''; }
+    get confirmDate() { return this.pendingBooking.displayDate || ''; }
+    get confirmTime() { return this.pendingBooking.displayTime || ''; }
+    get confirmDay() { return this.pendingBooking.dayName || ''; }
 }

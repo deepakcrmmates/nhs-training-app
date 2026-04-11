@@ -1178,6 +1178,77 @@ select.field-input {
 .qa-create-btn:hover:not(:disabled) { background: var(--nhs-sage); }
 .qa-create-btn:disabled { opacity: 0.5; cursor: default; }
 
+/* Appointment display (read-only) */
+.appt-display {
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px 10px; gap: 8px; min-height: 40px;
+}
+.appt-display-text {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1;
+}
+.appt-date-text { font-size: 12px; font-weight: 600; color: var(--navy); }
+.appt-time-text { font-size: 11px; color: var(--text-muted); }
+.appt-empty { font-size: 11px; color: #c5c5c5; font-style: italic; }
+.appt-cal-btn {
+    width: 30px; height: 30px; border: 1.5px solid var(--nhs-sage-light); border-radius: 6px;
+    background: var(--white); color: var(--nhs-sage-dark); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.15s;
+}
+.appt-cal-btn:hover { background: var(--nhs-sage-dark); color: #fff; border-color: var(--nhs-sage-dark); }
+
+/* Booking modal */
+.bk-modal {
+    background: #fff; border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+    max-width: 500px; width: 92%; max-height: 85vh; display: flex;
+    flex-direction: column; overflow: hidden; animation: archScaleIn 0.15s ease;
+}
+.bk-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 24px; border-bottom: 1px solid #e5e7eb;
+}
+.bk-header h3 { font-size: 15px; font-weight: 700; color: var(--nhs-sage-dark); margin: 0; flex: 1; }
+
+/* Slot list */
+.bk-slots { overflow-y: auto; max-height: 40vh; }
+.bk-slot-row {
+    display: flex; align-items: center; gap: 14px; padding: 12px 24px;
+    border-bottom: 1px solid #f3f4f6; cursor: pointer; transition: background 0.1s;
+}
+.bk-slot-row:last-child { border-bottom: none; }
+.bk-slot-row:hover { background: #f9fafb; }
+.bk-slot-selected { background: var(--nhs-sage-tint); border-left: 3px solid var(--nhs-sage-dark); }
+.bk-slot-date { display: flex; flex-direction: column; min-width: 120px; }
+.bk-day { font-size: 14px; font-weight: 700; color: var(--navy); }
+.bk-date { font-size: 12px; color: var(--text-muted); }
+.bk-slot-times { display: flex; gap: 6px; flex: 1; }
+.bk-time-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.bk-am { background: #DBEAFE; color: #2563EB; }
+.bk-pm { background: #FEF3C7; color: #D97706; }
+
+/* Time picker */
+.bk-time-picker {
+    padding: 16px 24px; background: #f9fafb; border-top: 1px solid #e5e7eb;
+}
+.bk-time-label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; display: block;
+}
+.bk-time-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.bk-time-btn {
+    padding: 6px 12px; border: 1.5px solid #e5e7eb; border-radius: 6px;
+    background: #fff; font-family: var(--font-sans); font-size: 12px;
+    font-weight: 600; color: var(--text-mid); cursor: pointer; transition: all 0.12s;
+}
+.bk-time-btn:hover { border-color: var(--nhs-sage); color: var(--nhs-sage-dark); }
+.bk-time-active {
+    background: var(--nhs-sage-dark); color: #fff; border-color: var(--nhs-sage-dark);
+}
+.bk-time-active:hover { background: var(--nhs-sage); }
+
 /* Banner button */
 .banner-btn {
     margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
