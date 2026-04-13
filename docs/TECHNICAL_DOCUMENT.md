@@ -526,20 +526,65 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 
 ## 7. External Integrations
 
-### Integration Summary
+### Custom Settings (API Configuration)
 
-| # | Integration | Provider | Config Location | Status |
+All custom development integrations are managed via Custom Settings:
+
+| Custom Setting | Integration | Fields |
+|---|---|---|
+| `Box_Config__c` | Box File Storage | Client_Id, Client_Secret, Refresh_Token, Access_Token, Token_Expiry, Root_Folder_Id |
+| `Google_Maps_Config__c` | Google Maps (Geocoding + Distance Matrix) | API_Key, Daily_Limit, Requests_Today, Last_Reset_Date, Distance_Method |
+| `NHS_API_Config__c` | Ideal Postcodes, RapidAPI, Street Data, TinyURL | Ideal_Postcodes_Key, RapidAPI_Key, Street_Data_Endpoint, TinyURL_Endpoint |
+
+### Managed Packages
+
+| Package | Namespace | Version | Integration | Config |
 |---|---|---|---|---|
-| 1 | Email Sending | Salesforce Native | — | Working (Resend Email Relay planned) |
-| 2 | Email Templates | Salesforce Lightning | NHS Email Templates folder | 11 templates deployed |
-| 3 | SMS | Twilio Managed Package (TwilioSF v4.159) | `TwilioSF__TwilioMetaData__c` | Working (awaiting UK number) |
-| 4 | File Storage | Box | Custom Setting: `Box_Config__c` | Connected and working |
-| 5 | File Storage (legacy) | Dropbox | Custom Metadata: `DropBox__mdt` | Being replaced by Box |
-| 6 | Property Data | UK Property Data (RapidAPI) | Named Credential: `UKPropertyDataAPI` | Working |
-| 7 | Address Lookup | Ideal Postcodes | Custom Label | Working |
-| 8 | Agent Distance / Geocoding | Google Maps Geocoding API | Custom Setting: `Google_Maps_Config__c` | Working |
+| Twilio For Salesforce | `TwilioSF` | v4.159 | SMS / Chat | `TwilioSF__TwilioMetaData__c` (managed) |
+| Jotform | `jotform` | v1.3 | Forms | Managed |
+| Dropbox for Salesforce | `Dropbox_for_SF` | v1.707 | File Storage (Legacy) | **Deactivated** — replaced by Box |
 
-### Box (File Storage)
+### Full Integration List
+
+| # | Integration | Provider | Type | Config | Apex Classes | Remote Sites | Status |
+|---|---|---|---|---|---|---|---|
+| 1 | **File Storage** | Box | Custom Dev | `Box_Config__c` | BoxOAuthController, BoxFileService, BoxBrowserController | Box_API, Box_Upload, Box_OAuth | **Active** |
+| 2 | **SMS / Chat** | Twilio | Managed + Custom | `TwilioSF__TwilioMetaData__c` | NHSCommunicationsController.sendSms | 6 Twilio managed sites | **Active** (awaiting UK number) |
+| 3 | **Agent Distance** | Google Maps Geocoding | Custom Dev | `Google_Maps_Config__c` | AgentFinderController | Google_Maps_API | **Active** |
+| 4 | **Driving Distance** | Google Maps Distance Matrix | Custom Dev | `Google_Maps_Config__c` | AgentFinderController | Google_Maps_API (shared) | **Active** |
+| 5 | **Address Lookup** | Ideal Postcodes | Custom Dev | `NHS_API_Config__c` | AddressFinderController, IdealPostcodesHandler | IdealPostCode | **Active** |
+| 6 | **Property Reports** | UK Property Data (RapidAPI) | Custom Dev | `NHS_API_Config__c` + Named Credential | PropertyDataService, PropertyReportService | RapidAPI, RapidAPIDirect | **Active** |
+| 7 | **EPC Ratings** | Street Data API | Custom Dev | `NHS_API_Config__c` + Custom Metadata `streetData__mdt` | streetDataService, PropertySearchAPIController | StreetData, img | **Active** |
+| 8 | **Street View** | Google Maps Street View | Custom Dev | `Google_Maps_Config__c` (shared) | StreetViewController | Google_Maps_API (shared) | **Active** |
+| 9 | **Email** | Salesforce Native | Native | — | NHSCommunicationsController | — | **Active** (Resend relay pending) |
+| 10 | **Email Templates** | Salesforce Lightning | Native | NHS Email Templates folder | NHSCommunicationsController | — | **Active** (11 templates) |
+| 11 | **URL Shortener** | TinyURL | Custom Dev | `NHS_API_Config__c` | TinyURLShortenerQueueable | tiny | **Active** |
+| 12 | **Forms** | Jotform | Managed Package | Managed | — | jotform | **Installed** |
+| 13 | **File Storage (Legacy)** | Dropbox | Custom Dev + Managed | `DropBox__mdt` | DropboxFileService, DropboxOAuthController | **6 sites deactivated** | **Deactivated** |
+
+### Remote Site Settings
+
+| Status | Count | Sites |
+|---|---|---|
+| **Active** | 21 | Box (3), Google Maps (1), Ideal Postcodes (1), Street Data (2), RapidAPI (2), Twilio managed (6), Jotform (1), TinyURL (1), CodeBuilder (2), OrgDomain (1), PropertyAPI (1) |
+| **Deactivated** | 7 | Dropbox (6), Twilio_API (1) |
+
+### API Key Management — Where to Change
+
+| To change... | Go to |
+|---|---|
+| Box credentials | Setup > Custom Settings > **Box Config** |
+| Google Maps API key / limits / distance method | Setup > Custom Settings > **Google Maps Config** |
+| Ideal Postcodes API key | Setup > Custom Settings > **NHS API Config** |
+| RapidAPI key (Property Data) | Setup > Custom Settings > **NHS API Config** |
+| Street Data API endpoint | Setup > Custom Settings > **NHS API Config** |
+| TinyURL endpoint | Setup > Custom Settings > **NHS API Config** |
+| Twilio SID / Messaging Service | Twilio app > **TwilioMetaData** (managed) |
+| Email templates | Setup > Email Templates > **NHS Email Templates** folder |
+
+### Integration Details
+
+#### Box (File Storage)
 
 | Detail | Value |
 |---|---|
@@ -547,140 +592,92 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | API Endpoint | `https://api.box.com/2.0` |
 | Upload Endpoint | `https://upload.box.com/api/2.0/files/content` |
 | OAuth Endpoint | `https://account.box.com/api/oauth2/authorize` |
-| Credentials | Custom Setting: `Box_Config__c` (Client_Id, Client_Secret, Refresh_Token, Access_Token, Token_Expiry, Root_Folder_Id) |
 | Folder Structure | `[Root Folder]/[Property Address]/Application\|Valuations\|Photos\|Will Report/` |
 | Folder Mapping | `Opportunity.Box_Folder_Id__c` — permanently links Opportunity to Box folder by ID (not name) |
 | Token Caching | Access token cached in Custom Setting for 50 minutes. `ensureAccessToken()` refreshes only when expired |
-| Processing | `@future(callout=true)` for non-blocking uploads |
-| Remote Sites | `Box_API`, `Box_Upload`, `Box_OAuth` |
-| Callback Page | `BoxCallback` Visualforce page for OAuth redirect |
 | Tab | `Box_Setup` Lightning Tab in New Home Solutions app |
 
-**Apex Classes:**
-- `BoxOAuthController` — OAuth flow, token exchange, cached token refresh, folder/file CRUD, download URLs, connection test, folder browser
-- `BoxFileService` — Upload (multipart), download, shared links, folder management
-- `BoxBrowserController` — Property folder lookup, NHS folder structure creation
+**Apex:** `BoxOAuthController`, `BoxFileService`, `BoxBrowserController`
+**LWC:** `nhsBoxSetup` (OAuth + file browser), `nhsBoxBrowser` (Application page file manager)
 
-**LWC Components:**
-- `nhsBoxSetup` — OAuth setup with connection status, interactive file browser (navigate folders, create folders, upload files, download files, upload progress)
-- `nhsBoxBrowser` — Application page file browser with property folder tree (subfolders with file counts), NHS folder structure creation, upload, download, breadcrumb navigation, new folder creation
-
-**Key Architecture Decisions:**
-- Each LWC `await` call is a separate Apex transaction to avoid DML-after-callout errors
-- `ensureAccessToken()` is called first to refresh + save token (callout + DML in one transaction)
-- Subsequent `browseFolderById()` calls read cached token from Custom Setting (no callout for token, no DML)
-- Box folder names sanitized: `/` and `\` replaced with `-`
-- `Box_Folder_Id__c` on Opportunity permanently maps to Box folder — survives property address changes
-
-### Dropbox (Legacy — Being Replaced)
+#### Twilio (SMS / Chat)
 
 | Detail | Value |
 |---|---|
-| Auth | OAuth2 with refresh token flow |
-| Upload Endpoint | `https://content.dropboxapi.com/2/files/upload` |
-| Shared Links | `https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings` |
-| Credentials | Custom Metadata: `DropBox__mdt` |
-| Folder Structure | `/Private Salesforce Documents/Accounts/[AccountName]/Logo\|Application\|Valuation Assessment Report/` |
-| Status | Being replaced by Box. Code remains but PDF controllers now point to BoxFileService |
+| Package | Twilio For Salesforce (TwilioSF v4.159) |
+| Message Object | `TwilioSF__Message__c` (managed) |
+| Sending | Insert `TwilioSF__Message__c` → managed package trigger handles API call |
+| Features | Outbound SMS, inbound SMS, two-way chat, bulk SMS, opt-in management |
 
-### Twilio (SMS — Managed Package)
+**Apex:** `NHSCommunicationsController.sendSms()` creates `TwilioSF__Message__c` with `SF_Parent_Record_Id__c` for Comms Hub history
 
-| Detail | Value |
-|---|---|
-| Package | Twilio For Salesforce (TwilioSF v4.159, 243 Apex classes) |
-| Config | `TwilioSF__TwilioMetaData__c` (Account SID, Messaging Service SID) |
-| Message Object | `TwilioSF__Message__c` (managed — Contact/Account lookups, status tracking, delivery webhooks) |
-| Sending | Insert `TwilioSF__Message__c` record → managed package trigger handles API call |
-| Features | Outbound SMS, inbound SMS, two-way chat, bulk SMS, opt-in management, team routing, MMS |
-| Status | Configured. Awaiting UK phone number (regulatory submission pending) |
-
-**Apex Method:** `NHSCommunicationsController.sendSms(opportunityId, toNumber, body)`
-- Creates `TwilioSF__Message__c` with `Direction = outbound-api`, `Status = queued`
-- Sets `SF_Parent_Record_Id__c` to Opportunity ID for Comms Hub history
-- Links to vendor Contact
-- Managed package trigger handles delivery and status updates
-- Pre-fills vendor mobile from Opportunity in LWC
-
-### Email (Salesforce Native + Resend Planned)
+#### Google Maps (Geocoding + Distance Matrix)
 
 | Detail | Value |
 |---|---|
-| Current | Salesforce `Messaging.SingleEmailMessage` |
-| Templates | 11 branded HTML templates in "NHS Email Templates" folder (Lightning SFX type) |
-| Attachments | File upload via `ContentDocument` → `EmailFileAttachment` |
+| Distance Methods | **Distance Matrix** (driving distance + drive time, default) or **Geocoding** (aerial/Haversine) |
+| Coordinate Caching | `Geo_Latitude__c` / `Geo_Longitude__c` on Account — each agent geocoded once permanently |
+| Rate Limiting | Daily counter auto-resets. Default 100/day. Free tier: $200/month ≈ 40,000 requests |
+
+**Distance Matrix Flow:** Pre-filter by aerial distance → 1 API call for up to 25 agents → driving miles + drive time
+
+**Assign Agent Wizard:** 3-step LWC (Search → Select Agents → Confirm). Top 10 nearest with Rightmove links, phone/mobile, reassignment support.
+
+#### Email (Salesforce Native)
+
+| Detail | Value |
+|---|---|
+| Sending | `Messaging.SingleEmailMessage` with file attachments |
+| Templates | 11 branded HTML templates (01–09, with 04 cloned x3 agents) |
 | Planned | Resend SMTP Email Relay for reliable delivery |
 | Pending | DNS records for `newhomesolutions.co.uk`, final system email address |
 
-**Email Templates Deployed:**
-
-| # | Template | Recipient |
-|---|---|---|
-| 01 | Application Receipt Confirmation | Builder |
-| 02 | Vendor Valuation Chaser | Vendor |
-| 03 | Builder — Chasing/Awaiting Vendor | Builder |
-| 04a/b/c | Agent Valuation Confirmation (x3 agents) | Agent |
-| 05 | Vendor Appointment Confirmation | Vendor |
-| 06 | Vendor No Contact / Assume Not Proceeding | Vendor |
-| 07 | Housebuilder — Vendor Not Proceeding | Builder |
-| 08 | Housebuilder — Vendor Not Proceeding (Reason) | Builder |
-| 09 | Valuation Figure Return | Builder |
-
-### Ideal Postcodes
+#### Ideal Postcodes
 
 | Detail | Value |
 |---|---|
-| Endpoint | `https://api.ideal-postcodes.co.uk/v1/addresses` |
-| API Key | Stored in Custom Label (`System.Label.idealpcapi`) |
-| Purpose | Address autocomplete and postcode lookup |
+| Endpoint | `https://api.ideal-postcodes.co.uk/v1/` |
+| Config | `NHS_API_Config__c.Ideal_Postcodes_Key__c` |
+| Apex | `AddressFinderController`, `IdealPostcodesHandler` |
 
-### Street Data API
-
-| Detail | Value |
-|---|---|
-| Endpoint | `https://api.data.street.co.uk/street-data-api/v2/` |
-| Purpose | EPC ratings and energy performance data by postcode |
-
-### UK Property Data (RapidAPI)
+#### UK Property Data (RapidAPI)
 
 | Detail | Value |
 |---|---|
 | Endpoint | `https://api-ir7ctmwisa-ew.a.run.app/` |
-| Method | `propertytools.api.v1.Public/GetPropertyReport` |
-| Purpose | Detailed property reports by postcode/PAON |
+| Config | `NHS_API_Config__c.RapidAPI_Key__c` + Named Credential `UKPropertyDataAPI` |
+| Apex | `PropertyDataService`, `PropertyReportService` |
 
-### Google Maps (Geocoding + Distance Matrix + Street View)
+#### Street Data API
 
 | Detail | Value |
 |---|---|
-| Geocoding Endpoint | `https://maps.googleapis.com/maps/api/geocode/json` |
-| Distance Matrix Endpoint | `https://maps.googleapis.com/maps/api/distancematrix/json` |
-| Street View Endpoint | `https://maps.googleapis.com/maps/api/streetview/metadata` |
-| Credentials | Custom Setting: `Google_Maps_Config__c` (API_Key, Daily_Limit, Requests_Today, Last_Reset_Date, Distance_Method) |
-| Purpose | Agent distance calculation (Assign Agent wizard) + Street View imagery |
-| Distance Methods | **Distance Matrix** (driving distance + drive time, default) or **Geocoding** (aerial/Haversine) — configurable in Custom Setting |
-| Coordinate Caching | `Geo_Latitude__c` / `Geo_Longitude__c` on Account — each agent geocoded once, cached permanently |
-| Rate Limiting | Daily counter auto-resets. Default 100/day. Free tier: $200/month ≈ 40,000 requests |
-| Remote Site | `Google_Maps_API` (`https://maps.googleapis.com`) |
+| Endpoint | `https://api.data.street.co.uk/street-data-api/v2/` |
+| Config | `NHS_API_Config__c.Street_Data_Endpoint__c` + Custom Metadata `streetData__mdt` |
+| Apex | `streetDataService`, `PropertySearchAPIController` |
 
-**Distance Matrix Flow:**
-1. Pre-filter agents by aerial distance (1.5× radius) using cached coordinates — no API call
-2. Send 1 Distance Matrix API call with up to 25 agent postcodes as destinations
-3. Returns actual driving miles + estimated drive time for each agent
-4. Filter by user-selected radius, sort by distance, return top 10
+#### TinyURL
 
-**Apex Class:** `AgentFinderController`
-- `findNearestAgents(opportunityId, maxDistanceMiles)` — 3-step wizard backend: geocodes property (1 call), pre-filters by aerial distance, then Distance Matrix for driving distances (1 call for up to 25 agents)
-- `assignAgent(opportunityId, agentId, agentSlot)` — assigns agent to Agent 2 or Agent 3 with duplicate prevention
-- Coordinates cached permanently on Account (`Geo_Latitude__c`, `Geo_Longitude__c`) — only geocoded once per agent
+| Detail | Value |
+|---|---|
+| Endpoint | `http://tinyurl.com/api-create.php` |
+| Config | `NHS_API_Config__c.TinyURL_Endpoint__c` |
+| Apex | `TinyURLShortenerQueueable` |
 
-**Assign Agent Wizard (3-step LWC):**
-1. **Search** — property address display, radius selection (0.5–10 miles)
-2. **Select Agents** — top 10 nearest agents with distance, drive time, Rightmove link, phone/mobile/email. Assign as Agent 2 (blue) or Agent 3 (purple)
-3. **Confirm** — confirmation screen with both assignments, Done button
+#### Dropbox (Legacy — Deactivated)
 
-**Account Fields for Agents:**
-- `Geo_Latitude__c` / `Geo_Longitude__c` — cached coordinates from Google Geocoding
-- `Rightmove_URL__c` — agent Rightmove profile link (auto-generated search URL if not set)
+| Detail | Value |
+|---|---|
+| Config | Custom Metadata: `DropBox__mdt` |
+| Status | Deactivated. 6 Remote Sites deactivated. Code remains for backward compatibility. PDF controllers now use BoxFileService |
+
+### Pending Integrations
+
+| Item | What's needed |
+|---|---|
+| Twilio UK phone number | Regulatory submission pending |
+| Email Relay (Resend) | DNS records for newhomesolutions.co.uk + final system email |
+| Dropbox uninstall | Can remove managed package + Apex classes once confirmed |
 
 ---
 
@@ -917,6 +914,11 @@ force-app/main/default/
 | 2026-04-10 | Application page section reorder | Box File Storage and Vendor Notes always appear as last two sections |
 | 2026-04-11 | Added Distance Matrix API for driving distances | Configurable via Distance_Method__c: "Distance Matrix" (driving + drive time) or "Geocoding" (aerial). 1 API call per search for up to 25 agents |
 | 2026-04-11 | Assign Agent wizard improvements | Phone/Mobile shown in agent list, dropdown overflow fix, step labels (Search, Select Agents, Confirm) |
+| 2026-04-11 | Created NHS_API_Config__c Custom Setting | Centralised API keys: Ideal Postcodes, RapidAPI, Street Data endpoint, TinyURL endpoint |
+| 2026-04-11 | Migrated hardcoded API keys to Custom Settings | AddressFinderController, IdealPostcodesHandler, PropertyDataService, PropertyReportService, PropertySearchAPIController, TinyURLShortenerQueueable |
+| 2026-04-11 | Integration cleanup | Deleted Box__mdt (empty), deleted unused NHSSalesforce Twilio config, deactivated 7 Remote Sites (6 Dropbox + 1 Twilio_API) |
+| 2026-04-11 | Appointment booking lightbox | Read-only DD/MM/YYYY — HH:MM display, calendar icon opens slot picker, books via Vendor Availability, creates Event for Agent Booking sync |
+| 2026-04-11 | Two-way booking sync | Calendar lightbox ↔ Agent Booking component auto-refresh via @api refreshData() and custom event onagentbooked |
 
 ---
 

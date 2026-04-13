@@ -1,6 +1,6 @@
 public class PropertyReportService {
     private static final String BASE_URL = 'https://api-ir7ctmwisa-ew.a.run.app/';
-    private static final String API_KEY = '31167cfcdemsha6750c19120eb41p1a194ejsndc90791e9b4a';
+    private static final String FALLBACK_KEY = '31167cfcdemsha6750c19120eb41p1a194ejsndc90791e9b4a';
     private static final String API_HOST = 'uk-property-data.p.rapidapi.com';
      private static final String API_X = 'ePJXh5UDVEsQrUXbnRbj';
 
@@ -11,7 +11,9 @@ public class PropertyReportService {
         request.setEndpoint(endpoint);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
-        request.setHeader('X-Rapidapi-Key', API_KEY);
+        List<NHS_API_Config__c> configs = [SELECT RapidAPI_Key__c FROM NHS_API_Config__c LIMIT 1];
+        String apiKey = !configs.isEmpty() && String.isNotBlank(configs[0].RapidAPI_Key__c) ? configs[0].RapidAPI_Key__c : FALLBACK_KEY;
+        request.setHeader('X-Rapidapi-Key', apiKey);
         request.setHeader('X-Rapidapi-Host', API_HOST);
           request.setHeader('X-Rapidapi-Host', API_X);
 

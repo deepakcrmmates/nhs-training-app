@@ -4,7 +4,9 @@ public with sharing class AddressFinderController {
         try {
             HttpRequest request = new HttpRequest();
             //api-key = ak_lvk9pji2IKkDT00S7UXmYEBZCqtsc
-            request.setEndpoint('https://api.ideal-postcodes.co.uk/v1/addresses?api_key='+System.Label.idealpcapi+'&query='+query);
+            List<NHS_API_Config__c> configs = [SELECT Ideal_Postcodes_Key__c FROM NHS_API_Config__c LIMIT 1];
+            String apiKey = !configs.isEmpty() && String.isNotBlank(configs[0].Ideal_Postcodes_Key__c) ? configs[0].Ideal_Postcodes_Key__c : System.Label.idealpcapi;
+            request.setEndpoint('https://api.ideal-postcodes.co.uk/v1/addresses?api_key=' + apiKey + '&query=' + query);
             request.setMethod('GET');
             Http http = new Http();
             HttpResponse response = http.send(request);

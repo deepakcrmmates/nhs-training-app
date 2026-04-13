@@ -9,7 +9,9 @@ public class TinyURLShortenerQueueable implements Queueable, Database.AllowsCall
 
     public void execute(QueueableContext context) {
         HttpRequest req = new HttpRequest();
-        req.setEndpoint('http://tinyurl.com/api-create.php?url=' + EncodingUtil.urlEncode(longUrl, 'UTF-8'));
+        List<NHS_API_Config__c> configs = [SELECT TinyURL_Endpoint__c FROM NHS_API_Config__c LIMIT 1];
+        String endpoint = !configs.isEmpty() && String.isNotBlank(configs[0].TinyURL_Endpoint__c) ? configs[0].TinyURL_Endpoint__c : 'http://tinyurl.com/api-create.php';
+        req.setEndpoint(endpoint + '?url=' + EncodingUtil.urlEncode(longUrl, 'UTF-8'));
         req.setMethod('GET');
         
         Http http = new Http();

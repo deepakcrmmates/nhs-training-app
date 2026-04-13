@@ -1,0 +1,143 @@
+<template>
+    <div class="api-page">
+        <div class="api-header">
+            <div class="api-header-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <div>
+                <h1>NHS API Configurations</h1>
+                <p>Manage all integration API keys and endpoints</p>
+            </div>
+        </div>
+
+        <div class="api-body">
+            <template if:true={isLoading}>
+                <div class="api-loading"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div>
+            </template>
+
+            <template if:false={isLoading}>
+                <!-- View toggle -->
+                <div class="view-toggle">
+                    <button class={listBtnClass} onclick={handleListView} title="List View">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    </button>
+                    <button class={blockBtnClass} onclick={handleBlockView} title="Block View">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </button>
+                </div>
+
+                <template if:true={hasConfigs}>
+                    <!-- LIST VIEW -->
+                    <template if:true={isListView}>
+                        <div class="api-list">
+                            <template for:each={configs} for:item="config">
+                                <div class="api-card" key={config.key} data-key={config.key} onclick={handleOpenEdit}>
+                                    <span class={config.statusClass} title={config.statusTooltip}></span>
+                                    <div class="api-card-info">
+                                        <div class="api-card-name">{config.name}</div>
+                                        <div class="api-card-obj">{config.objectName}</div>
+                                    </div>
+                                    <div class="api-card-fields">
+                                        <template for:each={config.fields} for:item="f">
+                                            <div class="api-field-preview" key={f.key}>
+                                                <span class="api-fp-label">{f.label}</span>
+                                                <span class="api-fp-value">{f.value}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <svg class="api-card-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- BLOCK VIEW -->
+                    <template if:true={isBlockView}>
+                        <div class="api-blocks">
+                            <template for:each={configs} for:item="config">
+                                <div class="api-block" key={config.key} data-key={config.key} onclick={handleOpenEdit}>
+                                    <div class="api-block-header">
+                                        <span class={config.statusClass} title={config.statusTooltip}></span>
+                                        <span class="api-block-name">{config.name}</span>
+                                    </div>
+                                    <div class="api-block-body">
+                                        <div class="api-block-obj">{config.objectName}</div>
+                                        <template for:each={config.fields} for:item="f">
+                                            <div class="api-block-field" key={f.key}>
+                                                <span class="api-bf-label">{f.label}</span>
+                                                <span class="api-bf-value">{f.value}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="api-block-footer">
+                                        <span class="api-block-edit">Edit Settings</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <template if:true={showEditModal}>
+        <div class="api-overlay" onclick={handleCloseEdit}>
+            <div class="api-modal" onclick={stopProp}>
+                <div class="api-modal-header">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A6B5E" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"></path></svg>
+                    <h3>{editTitle}</h3>
+                    <button class="api-modal-close" onclick={handleCloseEdit}>&times;</button>
+                </div>
+                <div class="api-modal-body">
+                    <template for:each={editFields} for:item="f">
+                        <div class="api-edit-field" key={f.key}>
+                            <label class="api-edit-label">{f.label}</label>
+                            <template if:true={f.isReadonly}>
+                                <div class="api-edit-readonly">{f.actualValue}</div>
+                            </template>
+                            <template if:true={f.isText}>
+                                <input type="text" class="api-edit-input" data-field={f.apiName} value={f.actualValue} onchange={handleFieldChange}>
+                            </template>
+                            <template if:true={f.isPassword}>
+                                <div class="api-edit-pw-row">
+                                    <input type="password" class="api-edit-input" data-field={f.apiName} value={f.actualValue} onchange={handleFieldChange}>
+                                    <button class="api-edit-eye" data-field={f.apiName} onclick={handleTogglePassword} title="Show/Hide">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </button>
+                                </div>
+                            </template>
+                            <template if:true={f.isNumber}>
+                                <input type="number" class="api-edit-input" data-field={f.apiName} value={f.actualValue} onchange={handleFieldChange}>
+                            </template>
+                            <template if:true={f.isPicklist}>
+                                <lightning-combobox name={f.apiName} value={f.actualValue} options={distanceMethodOptions} data-field={f.apiName} onchange={handleFieldChange} variant="label-hidden"></lightning-combobox>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                <template if:true={testResult}>
+                    <div class={testResultClass}>
+                        <span class="test-status-icon">
+                            <template if:true={testResult.status}>{testResult.status}</template>
+                        </span>
+                        <span>{testResult.message}</span>
+                    </div>
+                </template>
+
+                <div class="api-modal-footer">
+                    <button class="api-modal-cancel" onclick={handleCloseEdit}>Cancel</button>
+                    <button class="api-modal-test" onclick={handleTestApi} disabled={isTesting}>
+                        <template if:true={isTesting}>Testing...</template>
+                        <template if:false={isTesting}>Test API</template>
+                    </button>
+                    <button class="api-modal-save" onclick={handleSaveConfig} disabled={isSaving}>
+                        <template if:true={isSaving}>Saving...</template>
+                        <template if:false={isSaving}>Save Changes</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>
