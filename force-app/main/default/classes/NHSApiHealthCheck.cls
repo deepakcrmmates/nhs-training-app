@@ -17,6 +17,7 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
                 when 'Street_Data_API' { result = testStreetData(); }
                 when 'TinyURL' { result = testTinyURL(); }
                 when 'Twilio_SMS' { result = testTwilio(); }
+                when 'Airparser' { result = testAirparser(); }
                 when else {
                     result.put('status', 'unknown');
                     result.put('message', 'No test available for ' + apiName);
@@ -40,6 +41,7 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
         statuses.put('Street Data', getStatus(testStreetData()));
         statuses.put('TinyURL', getStatus(testTinyURL()));
         statuses.put('Twilio', getStatus(testTwilio()));
+        statuses.put('Airparser', getStatus(testAirparser()));
 
         // Save as compact string: Box:ok,Google Maps:ok,...
         List<String> parts = new List<String>();
@@ -217,6 +219,38 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
             if (resp.getStatusCode() == 200 && resp.getBody().contains('tinyurl')) {
                 result.put('status', 'ok');
                 result.put('message', 'API responding');
+            } else {
+                result.put('status', 'error');
+                result.put('message', 'HTTP ' + resp.getStatusCode());
+            }
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    private static Map<String, Object> testAirparser() {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            List<NHS_API_Config__c> configs = [SELECT Airparser_API_Key__c FROM NHS_API_Config__c LIMIT 1];
+            if (configs.isEmpty() || String.isBlank(configs[0].Airparser_API_Key__c)) {
+                result.put('status', 'error');
+                result.put('message', 'API key not configured');
+                return result;
+            }
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint('https://api.airparser.com/inboxes');
+            req.setMethod('GET');
+            req.setHeader('X-API-Key', configs[0].Airparser_API_Key__c);
+            req.setTimeout(10000);
+            HttpResponse resp = new Http().send(req);
+            if (resp.getStatusCode() == 200) {
+                result.put('status', 'ok');
+                result.put('message', 'API responding');
+            } else if (resp.getStatusCode() == 401) {
+                result.put('status', 'error');
+                result.put('message', 'Invalid API key');
             } else {
                 result.put('status', 'error');
                 result.put('message', 'HTTP ' + resp.getStatusCode());

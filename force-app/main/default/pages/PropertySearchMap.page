@@ -1,0 +1,196 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="true" applyBodyTag="false" docType="html-5.0">
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body, #map { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        var map, markers = [], infoWindow, searchMarker, radiusCircle;
+
+        var NHS_GREEN = '#4A6B5E';
+        var NHS_GREEN_ACTIVE = '#2D5248';
+
+        // Listen for messages from LWC parent
+        window.addEventListener('message', function(event) {
+            var data = event.data;
+            if (!data || !data.action) return;
+
+            if (data.action === 'init') {
+                loadGoogleMaps(data.apiKey);
+            } else if (data.action === 'render') {
+                renderMap(data);
+            } else if (data.action === 'highlight') {
+                highlightMarker(data.propertyId, data.prop);
+            }
+        });
+
+        function loadGoogleMaps(apiKey) {
+            var script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=' + apiKey + '&callback=onMapsReady';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+
+        function onMapsReady() {
+            // Create a default map immediately to verify tiles load
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 53.8, lng: -1.55 },
+                zoom: 10,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true,
+                styles: [
+                    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+                    { featureType: 'transit', stylers: [{ visibility: 'off' }] }
+                ]
+            });
+            infoWindow = new google.maps.InfoWindow();
+            // Notify LWC that maps is ready
+            parent.postMessage({ type: 'mapsReady' }, '*');
+        }
+
+        function renderMap(data) {
+            // Clear existing
+            markers.forEach(function(m) { m.setMap(null); });
+            markers = [];
+            if (searchMarker) searchMarker.setMap(null);
+            if (radiusCircle) radiusCircle.setMap(null);
+
+            var center = { lat: data.searchLat, lng: data.searchLng };
+            var zoom = getZoomForRadius(data.radius);
+
+            if (!map) {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: center,
+                    zoom: zoom,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+                infoWindow = new google.maps.InfoWindow();
+            }
+            map.setCenter(center);
+            map.setZoom(zoom);
+            google.maps.event.trigger(map, 'resize');
+
+            // Search center marker
+            searchMarker = new google.maps.Marker({
+                position: center,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: '#0D1E4A',
+                    fillOpacity: 1,
+                    strokeColor: '#fff',
+                    strokeWeight: 3
+                },
+                title: 'Search location',
+                zIndex: 1000
+            });
+
+            // Radius circle
+            radiusCircle = new google.maps.Circle({
+                map: map,
+                center: center,
+                radius: data.radius * 1609.344,
+                fillColor: '#4A6B5E',
+                fillOpacity: 0.08,
+                strokeColor: '#4A6B5E',
+                strokeOpacity: 0.3,
+                strokeWeight: 1
+            });
+
+            // Property markers with numbers
+            var properties = data.properties || [];
+            properties.forEach(function(prop) {
+                var num = prop.number || 0;
+                var marker = new google.maps.Marker({
+                    position: { lat: prop.lat, lng: prop.lng },
+                    map: map,
+                    icon: createNumberedIcon(num, NHS_GREEN),
+                    title: prop.street || prop.name,
+                    zIndex: 100 + (properties.length - num)
+                });
+
+                marker.propertyId = prop.id;
+                marker.propertyNumber = num;
+
+                marker.addListener('click', function() {
+                    showInfoWindow(marker, prop);
+                    parent.postMessage({ type: 'markerClick', propertyId: prop.id }, '*');
+                });
+
+                markers.push(marker);
+            });
+        }
+
+        function showInfoWindow(marker, prop) {
+            var appBadge = prop.hasApplications
+                ? '<div style="margin-top:6px;padding:3px 8px;background:#FEF3C7;border-radius:4px;font-size:11px;color:#92400E;display:inline-block;">' +
+                  prop.applicationCount + ' application' + (prop.applicationCount === 1 ? '' : 's') + '</div>'
+                : '';
+
+            var content = '<div style="font-family:Aptos,Segoe UI,sans-serif;min-width:200px;padding:4px 0;">' +
+                '<div style="font-size:14px;font-weight:700;color:#1C2B24;">' + (prop.street || prop.name) + '</div>' +
+                '<div style="font-size:12px;color:#6B7280;margin-top:2px;">' + (prop.city || '') + ' ' + (prop.postcode || '') + '</div>' +
+                '<div style="display:flex;gap:12px;margin-top:8px;font-size:12px;color:#374151;">' +
+                (prop.bedrooms ? '<span>' + prop.bedrooms + ' bed</span>' : '') +
+                (prop.typeDisplay ? '<span>' + prop.typeDisplay + '</span>' : '') +
+                (prop.epcRating ? '<span>EPC ' + prop.epcRating + '</span>' : '') +
+                '</div>' +
+                '<div style="margin-top:4px;font-size:11px;color:#6B9080;">' + prop.distance + ' miles away</div>' +
+                appBadge +
+                '</div>';
+
+            infoWindow.setContent(content);
+            infoWindow.open(map, marker);
+        }
+
+        function highlightMarker(propertyId, prop) {
+            var marker = markers.find(function(m) { return m.propertyId === propertyId; });
+            if (marker) {
+                map.panTo(marker.getPosition());
+                if (prop) {
+                    showInfoWindow(marker, prop);
+                } else {
+                    infoWindow.setContent('<div style="font-family:Aptos,sans-serif;font-size:14px;font-weight:700;">' + marker.getTitle() + '</div>');
+                    infoWindow.open(map, marker);
+                }
+            }
+        }
+
+        function createNumberedIcon(number, color) {
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">' +
+                '<path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 26 16 26s16-14 16-26C32 7.16 24.84 0 16 0z" fill="' + color + '" stroke="#fff" stroke-width="1.5"/>' +
+                '<circle cx="16" cy="15" r="10" fill="#fff"/>' +
+                '<text x="16" y="19" text-anchor="middle" font-family="Aptos,Arial,sans-serif" font-size="12" font-weight="800" fill="' + color + '">' + number + '</text>' +
+                '</svg>';
+            return {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+                scaledSize: new google.maps.Size(32, 42),
+                anchor: new google.maps.Point(16, 42)
+            };
+        }
+
+        function getZoomForRadius(radius) {
+            if (radius <= 1) return 14;
+            if (radius <= 2) return 13;
+            if (radius <= 3) return 12;
+            if (radius <= 5) return 11;
+            if (radius <= 10) return 10;
+            if (radius <= 15) return 9;
+            return 8;
+        }
+    </script>
+</body>
+</html>
+</apex:page>

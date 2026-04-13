@@ -1,0 +1,211 @@
+<template>
+    <div class="ib-page">
+        <!-- Header -->
+        <div class="ib-header">
+            <div class="ib-header-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M22 17H2a3 3 0 003 3h14a3 3 0 003-3z"/><path d="M6 7v10"/><path d="M18 7v10"/><path d="M2 7h20"/></svg>
+            </div>
+            <div>
+                <h1>Inbox</h1>
+                <p>Parsed application documents ready for review</p>
+            </div>
+            <template if:true={hasDocuments}>
+                <div class="ib-header-stats">
+                    <span class="ib-stat-badge">{documents.length} document(s)</span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="ib-loading"><span class="ib-spinner"></span> Loading inbox...</div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={errorMessage}>
+            <div class="ib-error">{errorMessage}</div>
+        </template>
+
+        <!-- ═══ VIEW: Document List ═══ -->
+        <template if:true={viewList}>
+            <div class="ib-card">
+                <div class="ib-card-body">
+                    <template if:true={hasDocuments}>
+                        <template for:each={documents} for:item="doc">
+                            <div key={doc.id} class="ib-doc-row">
+                                <div class={doc.iconClass}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                                </div>
+                                <div class="ib-doc-info">
+                                    <div class="ib-doc-name">{doc.name}</div>
+                                    <div class="ib-doc-sub">{doc.createdDisplay}</div>
+                                </div>
+                                <span class={doc.statusClass}>{doc.status}</span>
+                                <div class="ib-doc-actions">
+                                    <button class="ib-btn ib-btn-preview" data-id={doc.id} data-name={doc.name} onclick={handlePreview} disabled={isBusy} title="Preview in Airparser">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        Preview
+                                    </button>
+                                    <button class="ib-btn ib-btn-review" data-id={doc.id} onclick={handleReview} disabled={isBusy}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8"/></svg>
+                                        Review &amp; Create
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasDocuments}>
+                        <template if:false={isLoading}>
+                            <div class="ib-empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C5DCCC" stroke-width="1.5"><path d="M22 17H2a3 3 0 003 3h14a3 3 0 003-3z"/><path d="M6 7v10"/><path d="M18 7v10"/><path d="M2 7h20"/></svg>
+                                <h2>No documents in inbox</h2>
+                                <p>Documents will appear here once emails are received and parsed by Airparser</p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══ VIEW: Review — Split Screen ═══ -->
+        <template if:true={viewReview}>
+            <!-- Back button -->
+            <div class="ib-back-bar">
+                <button class="ib-btn ib-btn-back" onclick={handleBackToList}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back to Inbox
+                </button>
+                <span class="ib-back-name">{selectedDoc.name}</span>
+                <button class="ib-btn ib-btn-preview ib-btn-sm" data-id={selectedDoc.id} data-name={selectedDoc.name} onclick={handlePreview}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Preview
+                </button>
+            </div>
+
+            <!-- Split Screen -->
+            <div class="ib-split">
+                <!-- LEFT: Parsed Data -->
+                <div class="ib-split-left">
+                    <div class="ib-split-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                        Parsed Data
+                    </div>
+                    <div class="ib-split-body">
+                        <template if:true={selectedDoc.hasFields}>
+                            <template for:each={selectedDoc.fields} for:item="field">
+                                <div key={field.key} class="ib-parsed-row">
+                                    <span class="ib-parsed-key">{field.key}</span>
+                                    <span class="ib-parsed-val">{field.value}</span>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Application Form -->
+                <div class="ib-split-right">
+                    <div class="ib-split-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Create Application
+                    </div>
+                    <div class="ib-split-body">
+                        <template if:true={isLoadingForm}>
+                            <div class="ib-loading-inline"><span class="ib-spinner"></span> Applying transformation rules...</div>
+                        </template>
+                        <template if:true={hasFormData}>
+                            <!-- Vendor 1 -->
+                            <div class="ib-form-section">
+                                <h4>Vendor 1</h4>
+                                <div class="ib-form-grid">
+                                    <div class="ib-form-field"><label>First Name</label><input type="text" value={formVendor1.firstname} data-section="vendor1" data-key="firstname" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Last Name</label><input type="text" value={formVendor1.lastname} data-section="vendor1" data-key="lastname" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Email</label><input type="text" value={formVendor1.email} data-section="vendor1" data-key="email" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Mobile</label><input type="text" value={formVendor1.mobilePhone} data-section="vendor1" data-key="mobilePhone" onchange={handleFormChange}/></div>
+                                </div>
+                            </div>
+                            <!-- Vendor 2 -->
+                            <template if:true={hasVendor2}>
+                                <div class="ib-form-section">
+                                    <h4>Vendor 2</h4>
+                                    <div class="ib-form-grid">
+                                        <div class="ib-form-field"><label>First Name</label><input type="text" value={formVendor2.firstname1} data-section="vendor2" data-key="firstname1" onchange={handleFormChange}/></div>
+                                        <div class="ib-form-field"><label>Last Name</label><input type="text" value={formVendor2.lastname1} data-section="vendor2" data-key="lastname1" onchange={handleFormChange}/></div>
+                                        <div class="ib-form-field"><label>Email</label><input type="text" value={formVendor2.email1} data-section="vendor2" data-key="email1" onchange={handleFormChange}/></div>
+                                        <div class="ib-form-field"><label>Mobile</label><input type="text" value={formVendor2.mobilePhone1} data-section="vendor2" data-key="mobilePhone1" onchange={handleFormChange}/></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <!-- Property -->
+                            <div class="ib-form-section">
+                                <h4>Property</h4>
+                                <div class="ib-form-grid">
+                                    <div class="ib-form-field ib-form-full"><label>Street</label><input type="text" value={formProperty.street} data-section="property" data-key="street" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>City</label><input type="text" value={formProperty.city} data-section="property" data-key="city" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Postcode</label><input type="text" value={formProperty.pcode} data-section="property" data-key="pcode" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Bedrooms</label><input type="text" value={formProperty.NumberofBedrooms} data-section="property" data-key="NumberofBedrooms" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Age</label><input type="text" value={formProperty.AgeofProperty} data-section="property" data-key="AgeofProperty" onchange={handleFormChange}/></div>
+                                </div>
+                            </div>
+                            <!-- Agent -->
+                            <div class="ib-form-section">
+                                <h4>Agent</h4>
+                                <div class="ib-form-grid">
+                                    <div class="ib-form-field"><label>Name</label><input type="text" value={formAgent.agentName} data-section="agent" data-key="agentName" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Phone</label><input type="text" value={formAgent.agentPhone} data-section="agent" data-key="agentPhone" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Email</label><input type="text" value={formAgent.agentEmail} data-section="agent" data-key="agentEmail" onchange={handleFormChange}/></div>
+                                </div>
+                            </div>
+                            <!-- Application -->
+                            <div class="ib-form-section">
+                                <h4>Application</h4>
+                                <div class="ib-form-grid">
+                                    <div class="ib-form-field ib-form-full">
+                                        <label>Housebuilder</label>
+                                        <c-custom-lookup-lwc
+                                            object-api-name="Account"
+                                            field-api-name="Name"
+                                            other-field-api-name="Phone"
+                                            label=""
+                                            selected-icon-name="standard:account"
+                                            object-label="Housebuilder"
+                                            selected-record-id={hbMatchedId}
+                                            parent-field-api-name="RecordTypeId"
+                                            parent-record-id={houseBuilderRtId}
+                                            onvalueselected={handleHousebuilderSelected}>
+                                        </c-custom-lookup-lwc>
+                                        <template if:true={hbParsedName}>
+                                            <div class="ib-hb-hint"><span class="ib-hb-hint-label">Parsed:</span> {hbParsedName}</div>
+                                        </template>
+                                    </div>
+                                    <div class="ib-form-field"><label>Development</label><input type="text" value={formApp.development} data-section="application" data-key="development" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Plot</label><input type="text" value={formApp.plot} data-section="application" data-key="plot" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Purchase Price</label><input type="text" value={formApp.PurchasePrice} data-section="application" data-key="PurchasePrice" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Client Valuation</label><input type="text" value={formApp.ClientsEstimatedValuation} data-section="application" data-key="ClientsEstimatedValuation" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Mortgage</label><input type="text" value={formApp.OutstandingMortgage} data-section="application" data-key="OutstandingMortgage" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Region</label><input type="text" value={formApp.Region} data-section="application" data-key="Region" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Sales Advisor</label><input type="text" value={formApp.salesAdvisor} data-section="application" data-key="salesAdvisor" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field"><label>Scheme</label><input type="text" value={formApp.scheme} data-section="application" data-key="scheme" onchange={handleFormChange}/></div>
+                                    <div class="ib-form-field ib-form-full"><label>Notes</label><textarea data-section="application" data-key="notes" onchange={handleFormChange}>{formApp.notes}</textarea></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="ib-accept-footer">
+                <template if:true={createdAppId}>
+                    <span class="ib-accept-success">Application created successfully</span>
+                    <a class="ib-btn ib-btn-review" href={createdAppUrl} target="_blank">View Application</a>
+                </template>
+                <template if:false={createdAppId}>
+                    <button class="ib-btn ib-btn-accept" onclick={handleAcceptAndCreate} disabled={isBusy}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Accept &amp; Create Application
+                    </button>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

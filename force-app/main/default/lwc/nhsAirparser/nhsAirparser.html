@@ -1,0 +1,509 @@
+<template>
+    <div class="ap-page">
+        <!-- Header -->
+        <div class="ap-header">
+            <div class="ap-header-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+            </div>
+            <div>
+                <h1>Airparser Integration</h1>
+                <p>Parse PDF applications from email and import into Salesforce</p>
+            </div>
+        </div>
+
+        <!-- Config Bar -->
+        <div class="ap-config-bar">
+            <div class="ap-config-row">
+                <div class="ap-config-item">
+                    <span class="ap-config-label">API Key</span>
+                    <span class="ap-config-value">{apiKeyDisplay}</span>
+                </div>
+                <div class="ap-config-actions">
+                    <button class="ap-btn ap-btn-outline" onclick={handleTestConnection} disabled={isBusy}>Test Connection</button>
+                    <button class="ap-btn ap-btn-outline" onclick={handleShowMappings} disabled={isBusy}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                        Mapping Rules
+                    </button>
+                    <button class="ap-btn ap-btn-primary" onclick={handleListInboxes} disabled={isBusy}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 003 3h14a3 3 0 003-3z"/><path d="M6 7v10"/><path d="M18 7v10"/><path d="M2 7h20"/></svg>
+                        List Inboxes
+                    </button>
+                </div>
+            </div>
+            <template if:true={statusMessage}>
+                <div class={statusClass}>{statusMessage}</div>
+            </template>
+        </div>
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="ap-loading"><span class="ap-spinner"></span> Loading...</div>
+        </template>
+
+        <!-- Breadcrumb -->
+        <template if:true={showBreadcrumb}>
+            <div class="ap-breadcrumb">
+                <span class="ap-crumb ap-crumb-link" onclick={handleListInboxes}>Inboxes</span>
+                <template if:true={selectedInbox}>
+                    <span class="ap-crumb-sep">/</span>
+                    <span class={inboxCrumbClass} onclick={handleBackToInbox} data-id={selectedInbox.id}>{selectedInbox.name}</span>
+                </template>
+                <template if:true={selectedDoc}>
+                    <span class="ap-crumb-sep">/</span>
+                    <span class="ap-crumb ap-crumb-current">{selectedDoc.name}</span>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══ VIEW: Inboxes List ═══ -->
+        <template if:true={viewInboxes}>
+            <div class="ap-card">
+                <div class="ap-card-header">
+                    <h2>Airparser Inboxes</h2>
+                    <span class="ap-card-count">{inboxes.length} inbox(es)</span>
+                </div>
+                <div class="ap-card-body">
+                    <template if:true={hasInboxes}>
+                        <template for:each={inboxes} for:item="inbox">
+                            <div key={inbox.id} class="ap-inbox-card" data-id={inbox.id} onclick={handleInboxClick}>
+                                <div class="ap-inbox-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 003 3h14a3 3 0 003-3z"/><path d="M6 7v10"/><path d="M18 7v10"/><path d="M2 7h20"/></svg>
+                                </div>
+                                <div class="ap-inbox-info">
+                                    <div class="ap-inbox-name">{inbox.name}</div>
+                                    <div class="ap-inbox-meta">
+                                        <span class="ap-inbox-email">{inbox.email}</span>
+                                        <span class="ap-inbox-engine">{inbox.engine}</span>
+                                    </div>
+                                </div>
+                                <div class="ap-inbox-id">{inbox.id}</div>
+                                <div class="ap-inbox-arrow">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasInboxes}>
+                        <p class="ap-empty-text">No inboxes found</p>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══ VIEW: Documents List (for selected inbox) ═══ -->
+        <template if:true={viewDocuments}>
+            <div class="ap-card">
+                <div class="ap-card-header">
+                    <h2>Documents in "{selectedInbox.name}"</h2>
+                    <div class="ap-card-header-actions">
+                        <button class="ap-btn ap-btn-outline ap-btn-sm" onclick={handleGetSchema} disabled={isBusy}>View Schema</button>
+                        <span class="ap-card-count">{documents.length} document(s)</span>
+                    </div>
+                </div>
+
+                <!-- Upload Bar -->
+                <div class="ap-upload-bar">
+                    <div class="ap-upload-info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>Upload a PDF to parse</span>
+                    </div>
+                    <lightning-file-upload
+                        label=""
+                        name="airparserUpload"
+                        accept={acceptedFormats}
+                        record-id={uploadRecordId}
+                        onuploadfinished={handleUploadFinished}
+                        class="ap-file-upload">
+                    </lightning-file-upload>
+                </div>
+
+                <!-- Parsing indicator -->
+                <template if:true={isParsing}>
+                    <div class="ap-parsing-bar">
+                        <span class="ap-spinner"></span> Parsing document... this may take up to 60 seconds
+                    </div>
+                </template>
+
+                <div class="ap-card-body">
+                    <template if:true={hasDocuments}>
+                        <template for:each={documents} for:item="doc">
+                            <div key={doc.id} class="ap-doc-row">
+                                <div class={doc.iconClass}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                                </div>
+                                <div class="ap-doc-info">
+                                    <div class="ap-doc-name">{doc.name}</div>
+                                    <div class="ap-doc-sub">{doc.createdDisplay}</div>
+                                </div>
+                                <span class={doc.statusClass}>{doc.status}</span>
+                                <div class="ap-doc-actions">
+                                    <button class="ap-btn ap-btn-preview" data-id={doc.id} data-name={doc.name} onclick={handlePreviewFromList} disabled={isBusy} title="Preview">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        Preview
+                                    </button>
+                                    <button class="ap-btn ap-btn-parse" data-id={doc.id} onclick={handleParseDoc} disabled={isBusy}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8"/></svg>
+                                        Parse
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasDocuments}>
+                        <p class="ap-empty-text">No documents in this inbox. Send an email with a PDF to:<br/><strong>{selectedInbox.email}</strong></p>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Schema (inline) -->
+            <template if:true={showSchema}>
+                <div class="ap-card ap-card-separate">
+                    <div class="ap-card-header">
+                        <h2>Extraction Schema</h2>
+                        <button class="ap-btn ap-btn-outline ap-btn-sm" onclick={handleSetupSchema} disabled={isBusy}>Push NHS Schema</button>
+                    </div>
+                    <div class="ap-card-body">
+                        <template if:true={hasSchemaFields}>
+                            <table class="ap-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Field Name</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={schemaFields} for:item="field">
+                                        <tr key={field.idx} class="ap-row">
+                                            <td class="ap-td-num">{field.idx}</td>
+                                            <td class="ap-td-mono">{field.name}</td>
+                                            <td><span class="ap-type-badge">{field.dataType}</span></td>
+                                            <td>{field.description}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template if:false={hasSchemaFields}>
+                            <p class="ap-empty-text">No schema configured. Click "Push NHS Schema" to set up extraction fields.</p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- ═══ VIEW: Document Detail — Split Screen ═══ -->
+        <template if:true={viewDocDetail}>
+            <!-- Header -->
+            <div class="ap-card ap-card-no-radius">
+                <div class="ap-card-header">
+                    <h2>{selectedDoc.name}</h2>
+                    <div class="ap-card-header-actions">
+                        <template if:true={hasPreviewUrl}>
+                            <button class="ap-btn ap-btn-outline ap-btn-sm" onclick={handlePreview}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                View in Airparser
+                            </button>
+                        </template>
+                        <span class={selectedDoc.statusClass}>{selectedDoc.status}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Split Screen -->
+            <div class="ap-split">
+                <!-- LEFT: Parsed Data -->
+                <div class="ap-split-left">
+                    <div class="ap-split-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                        Airparser Output
+                    </div>
+                    <div class="ap-split-body">
+                        <template if:true={selectedDoc.hasFields}>
+                            <template for:each={selectedDoc.fields} for:item="field">
+                                <div key={field.key} class="ap-parsed-row">
+                                    <span class="ap-parsed-key">{field.key}</span>
+                                    <span class="ap-parsed-val">{field.value}</span>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Application Form -->
+                <div class="ap-split-right">
+                    <div class="ap-split-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Create Application
+                        <button class="ap-remap-btn" onclick={handleRemap} disabled={isBusy} title="Re-apply transformation rules">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                            Remap
+                        </button>
+                    </div>
+                    <div class="ap-split-body">
+                        <template if:true={isLoadingForm}>
+                            <div class="ap-loading-inline"><span class="ap-spinner"></span> Applying transformation rules...</div>
+                        </template>
+                        <template if:true={hasFormData}>
+                            <!-- Vendor 1 -->
+                            <div class="ap-form-section">
+                                <h4>Vendor 1</h4>
+                                <div class="ap-form-grid">
+                                    <div class="ap-form-field">
+                                        <label>First Name</label>
+                                        <input type="text" value={formVendor1.firstname} data-section="vendor1" data-key="firstname" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Last Name</label>
+                                        <input type="text" value={formVendor1.lastname} data-section="vendor1" data-key="lastname" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Email</label>
+                                        <input type="text" value={formVendor1.email} data-section="vendor1" data-key="email" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Mobile</label>
+                                        <input type="text" value={formVendor1.mobilePhone} data-section="vendor1" data-key="mobilePhone" onchange={handleFormChange}/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Vendor 2 -->
+                            <template if:true={hasVendor2}>
+                                <div class="ap-form-section">
+                                    <h4>Vendor 2</h4>
+                                    <div class="ap-form-grid">
+                                        <div class="ap-form-field">
+                                            <label>First Name</label>
+                                            <input type="text" value={formVendor2.firstname1} data-section="vendor2" data-key="firstname1" onchange={handleFormChange}/>
+                                        </div>
+                                        <div class="ap-form-field">
+                                            <label>Last Name</label>
+                                            <input type="text" value={formVendor2.lastname1} data-section="vendor2" data-key="lastname1" onchange={handleFormChange}/>
+                                        </div>
+                                        <div class="ap-form-field">
+                                            <label>Email</label>
+                                            <input type="text" value={formVendor2.email1} data-section="vendor2" data-key="email1" onchange={handleFormChange}/>
+                                        </div>
+                                        <div class="ap-form-field">
+                                            <label>Mobile</label>
+                                            <input type="text" value={formVendor2.mobilePhone1} data-section="vendor2" data-key="mobilePhone1" onchange={handleFormChange}/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <!-- Property -->
+                            <div class="ap-form-section">
+                                <h4>Property</h4>
+                                <div class="ap-form-grid">
+                                    <div class="ap-form-field ap-form-full">
+                                        <label>Street</label>
+                                        <input type="text" value={formProperty.street} data-section="property" data-key="street" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>City</label>
+                                        <input type="text" value={formProperty.city} data-section="property" data-key="city" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Postcode</label>
+                                        <input type="text" value={formProperty.pcode} data-section="property" data-key="pcode" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Bedrooms</label>
+                                        <input type="text" value={formProperty.NumberofBedrooms} data-section="property" data-key="NumberofBedrooms" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Age of Property</label>
+                                        <input type="text" value={formProperty.AgeofProperty} data-section="property" data-key="AgeofProperty" onchange={handleFormChange}/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Agent -->
+                            <div class="ap-form-section">
+                                <h4>Agent</h4>
+                                <div class="ap-form-grid">
+                                    <div class="ap-form-field">
+                                        <label>Agent Name</label>
+                                        <input type="text" value={formAgent.agentName} data-section="agent" data-key="agentName" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Phone</label>
+                                        <input type="text" value={formAgent.agentPhone} data-section="agent" data-key="agentPhone" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Email</label>
+                                        <input type="text" value={formAgent.agentEmail} data-section="agent" data-key="agentEmail" onchange={handleFormChange}/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Application -->
+                            <div class="ap-form-section">
+                                <h4>Application</h4>
+                                <div class="ap-form-grid">
+                                    <div class="ap-form-field ap-form-full">
+                                        <label>Housebuilder</label>
+                                        <div class="ap-hb-lookup">
+                                            <c-custom-lookup-lwc
+                                                object-api-name="Account"
+                                                field-api-name="Name"
+                                                other-field-api-name="Phone"
+                                                label=""
+                                                selected-icon-name="standard:account"
+                                                object-label="Housebuilder"
+                                                selected-record-id={hbMatchedId}
+                                                parent-field-api-name="RecordTypeId"
+                                                parent-record-id={houseBuilderRtId}
+                                                onvalueselected={handleHousebuilderSelected}>
+                                            </c-custom-lookup-lwc>
+                                            <template if:true={hbParsedName}>
+                                                <div class="ap-hb-parsed-hint">
+                                                    <span class="ap-hb-hint-label">Parsed:</span> {hbParsedName}
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Development</label>
+                                        <input type="text" value={formApp.development} data-section="application" data-key="development" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Plot</label>
+                                        <input type="text" value={formApp.plot} data-section="application" data-key="plot" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Purchase Price</label>
+                                        <input type="text" value={formApp.PurchasePrice} data-section="application" data-key="PurchasePrice" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Client Valuation</label>
+                                        <input type="text" value={formApp.ClientsEstimatedValuation} data-section="application" data-key="ClientsEstimatedValuation" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Outstanding Mortgage</label>
+                                        <input type="text" value={formApp.OutstandingMortgage} data-section="application" data-key="OutstandingMortgage" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Region</label>
+                                        <input type="text" value={formApp.Region} data-section="application" data-key="Region" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Sales Advisor</label>
+                                        <input type="text" value={formApp.salesAdvisor} data-section="application" data-key="salesAdvisor" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field">
+                                        <label>Scheme</label>
+                                        <input type="text" value={formApp.scheme} data-section="application" data-key="scheme" onchange={handleFormChange}/>
+                                    </div>
+                                    <div class="ap-form-field ap-form-full">
+                                        <label>Notes</label>
+                                        <textarea data-section="application" data-key="notes" onchange={handleFormChange}>{formApp.notes}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="ap-accept-footer">
+                <template if:true={createdAppId}>
+                    <span class="ap-accept-success">Application created successfully</span>
+                    <a class="ap-btn ap-btn-primary" href={createdAppUrl} target="_blank">View Application</a>
+                </template>
+                <template if:false={createdAppId}>
+                    <button class="ap-btn ap-btn-primary ap-btn-lg" onclick={handleAcceptAndCreate} disabled={isBusy}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Accept &amp; Create Application
+                    </button>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══ VIEW: Mapping Rules ═══ -->
+        <template if:true={viewMappings}>
+            <div class="ap-card">
+                <div class="ap-card-header">
+                    <h2>Transformation Rules</h2>
+                    <div class="ap-card-header-actions">
+                        <button class="ap-btn ap-btn-outline ap-btn-sm" onclick={handleLoadDefaults} disabled={isBusy}>Load Defaults</button>
+                        <button class="ap-btn ap-btn-primary ap-btn-sm" onclick={handleSaveMappings} disabled={isBusy}>Save Rules</button>
+                    </div>
+                </div>
+                <div class="ap-card-body">
+                    <template if:true={hasMappingRows}>
+                        <table class="ap-table">
+                            <thead>
+                                <tr>
+                                    <th class="ap-th-narrow">#</th>
+                                    <th>Airparser Field</th>
+                                    <th class="ap-th-arrow"></th>
+                                    <th>Target Section</th>
+                                    <th>Target Field</th>
+                                    <th class="ap-th-narrow">Active</th>
+                                    <th class="ap-th-narrow"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={mappingRows} for:item="row">
+                                    <tr key={row.idx} class="ap-row">
+                                        <td class="ap-td-num">{row.idx}</td>
+                                        <td>
+                                            <input type="text" class="ap-map-input" value={row.airparserField}
+                                                   data-idx={row.idx} data-field="airparserField" onchange={handleMappingChange}/>
+                                        </td>
+                                        <td class="ap-td-arrow">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B9080" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </td>
+                                        <td>
+                                            <select class="ap-map-select"
+                                                    data-idx={row.idx} data-field="targetSection" onchange={handleMappingChange}>
+                                                <option value="" selected={row.noSection}>-- Select --</option>
+                                                <option value="Vendor 1" selected={row.isVendor1}>Vendor 1</option>
+                                                <option value="Vendor 2" selected={row.isVendor2}>Vendor 2</option>
+                                                <option value="Property" selected={row.isProperty}>Property</option>
+                                                <option value="Agent" selected={row.isAgent}>Agent</option>
+                                                <option value="Application" selected={row.isApplication}>Application</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="ap-map-select"
+                                                    data-idx={row.idx} data-field="targetField" onchange={handleTargetFieldChange}>
+                                                <option value="">-- Select --</option>
+                                                <template for:each={row.filteredOptions} for:item="opt">
+                                                    <option key={opt.value} value={opt.fieldKey} selected={opt.selected}>{opt.fieldLabel}</option>
+                                                </template>
+                                            </select>
+                                        </td>
+                                        <td class="ap-td-center">
+                                            <input type="checkbox" checked={row.isActive}
+                                                   data-idx={row.idx} data-field="isActive" onchange={handleMappingToggle}/>
+                                        </td>
+                                        <td class="ap-td-center">
+                                            <button class="ap-remove-btn" data-idx={row.idx} onclick={handleRemoveMapping} title="Remove">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <div class="ap-map-footer">
+                            <button class="ap-btn ap-btn-outline ap-btn-sm" onclick={handleAddMapping}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                                Add Rule
+                            </button>
+                        </div>
+                    </template>
+                    <template if:false={hasMappingRows}>
+                        <div class="ap-empty-text">No mapping rules configured.</div>
+                        <div class="ap-empty-action">
+                            <button class="ap-btn ap-btn-primary" onclick={handleLoadDefaults} disabled={isBusy}>Load Default Mappings</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

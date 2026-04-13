@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/meta/metadata">
+    <fullName>Target_Section__c</fullName>
+    <label>Target Section</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value><fullName>Vendor 1</fullName><default>false</default><label>Vendor 1</label></value>
+            <value><fullName>Vendor 2</fullName><default>false</default><label>Vendor 2</label></value>
+            <value><fullName>Property</fullName><default>false</default><label>Property</label></value>
+            <value><fullName>Agent</fullName><default>false</default><label>Agent</label></value>
+            <value><fullName>Application</fullName><default>false</default><label>Application</label></value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

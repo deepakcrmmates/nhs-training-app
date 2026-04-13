@@ -4,7 +4,7 @@
 **Client:** New Home Solutions
 **Development Partner:** CRM Mates Ltd, London
 **Lead Salesforce Consultant:** Deepak K Rana
-**Last Updated:** 11 April 2026
+**Last Updated:** 13 April 2026
 
 ---
 
@@ -35,10 +35,10 @@ CRM Mates Ltd is the development partner responsible for the design, build, and 
 
 | Metric | Count |
 |---|---|
-| Lightning Web Components | 107+ |
-| Apex Classes (production) | 77 |
+| Lightning Web Components | 115+ |
+| Apex Classes (production) | 82 |
 | Apex Test Classes | 30+ |
-| External Integrations | 8 |
+| External Integrations | 9 |
 | Opportunity Custom Fields | 192 |
 | Record Types (Opportunity) | 13 |
 | NHS Process Stages | 9 |
@@ -69,9 +69,10 @@ New Home Solutions acts as an intermediary between house builders and property v
 | File Storage | Box (OAuth2 integration, replacing Dropbox) |
 | Address Lookup | Ideal Postcodes API |
 | Property Data | Street Data API, UK Property Data (RapidAPI) |
-| Maps | Google Maps Street View API |
+| Maps | Google Maps JavaScript API, Geocoding, Distance Matrix, Street View |
+| PDF Parsing | Airparser (LLM-powered document extraction) |
 | Email | Salesforce EmailMessage (Resend Email Relay planned) |
-| SMS | Twilio REST API |
+| SMS | Twilio Managed Package (TwilioSF v4.159) |
 | API | Apex @RestResource endpoint (OpportunityService) |
 
 ### Design Patterns
@@ -225,6 +226,34 @@ Custom property object with detailed property characteristics.
 | Tenure | `Freehold__c`, `Lease_Hold__c`, `Years_left_of_Lease__c`, `Service_Charge__c`, `Ground_Rent__c` |
 | Other | `Type_of_Heating__c`, `Building_Regs_Planning_Permission__c`, `Principle_Residence__c` |
 
+### Parsed_Application__c (Airparser Staging)
+
+Staging records for PDF-parsed applications from Airparser. Auto-number name: `PA-{0000}`.
+
+| Field Group | Fields |
+|---|---|
+| Status | `Status__c` (Picklist: New, Reviewing, Approved, Rejected, Created) |
+| Airparser | `Airparser_Doc_Id__c` (External ID), `Airparser_Inbox_Id__c`, `Parsed_Date__c`, `Raw_JSON__c` (LongTextArea) |
+| Vendor 1 | `Vendor_1_First_Name__c`, `Vendor_1_Last_Name__c`, `Vendor_1_Email__c`, `Vendor_1_Mobile__c` |
+| Vendor 2 | `Vendor_2_First_Name__c`, `Vendor_2_Last_Name__c`, `Vendor_2_Email__c`, `Vendor_2_Mobile__c` |
+| Property | `Property_Street__c`, `Property_City__c`, `Property_Postcode__c`, `Property_Type__c`, `Number_Of_Bedrooms__c` |
+| Agent | `Agent_Name__c`, `Agent_Phone__c`, `Agent_Email__c` |
+| Application | `Housebuilder_Name__c`, `Development__c`, `Plot__c`, `Purchase_Price__c`, `Client_Expectation__c`, `Scheme__c`, `Region__c`, `Notes__c` |
+| Link | `Application__c` (Lookup → Opportunity) |
+
+### Airparser_Field_Mapping__c (Transformation Rules)
+
+Configurable field mapping rules for Airparser → Application conversion. Auto-number name: `MAP-{0000}`.
+
+| Field | Type | Purpose |
+|---|---|---|
+| `Airparser_Field__c` | Text | Source field path (supports dot notation: `vendor_details.name`) |
+| `Target_Section__c` | Picklist | Target: Vendor 1, Vendor 2, Property, Agent, Application |
+| `Target_Field__c` | Text | Target field key (matches `houseBuilderApplication.saveData()` format) |
+| `Target_Field_Label__c` | Text | Human-readable label |
+| `Is_Active__c` | Checkbox | Active/inactive toggle |
+| `Sort_Order__c` | Number | Processing order |
+
 ### TwilioSF__Message__c (Managed — SMS Tracking)
 
 Managed by TwilioSF package. Key fields used by NHS CRM:
@@ -377,6 +406,41 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | `nhsFiguresReturnedList` | Valuations returned tracking | `FiguresReturnedController` |
 | `nhsValuationsReadyList` | Valuations ready for review | `ValuationsReadyController` |
 
+### Home Dashboard
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsHomeDashboard` | Custom home page with greeting, KPI cards (active apps, new this month/week, appointments, properties/agents), pipeline bar chart, upcoming appointments, recent applications table | `HomeDashboardController` |
+
+### Property Search
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsPropertySearch` | Google Maps property search by postcode + radius. Map with numbered pins, property cards with EPC/Tax/Flood icons, application history badges, snapshot filter stats | `PropertySearchController` |
+| `PropertySearchMap` (VF) | Visualforce page hosting Google Maps JavaScript API in iframe (Locker Service workaround). Communicates with LWC via postMessage | — |
+
+### List Views (Filtered Record Types)
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsAccountList` | Shared list component for Account/Contact record types. Search, sort, pagination, new record button | `AccountListController` |
+| `nhsAgentsList` | Wrapper — Estate Agent accounts | `AccountListController` |
+| `nhsHousebuildersList` | Wrapper — Housebuilder accounts | `AccountListController` |
+| `nhsVendorsList` | Wrapper — Vendor contacts | `AccountListController` |
+| `nhsExistingProperties` | NHS_Property__c list with two-line rows, EPC badges, all property fields | `AccountListController.getProperties` |
+
+### Airparser Integration
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsAirparser` | PDF parsing integration — inbox browser, document viewer, schema management, transformation rules config, Create Application from parsed data | `AirparserController` |
+
+### API Configuration
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsApiConfig` | Centralised API key management with block/list view, edit modal, test connection, health status bulbs | `NHSApiConfigController`, `NHSApiHealthCheck` |
+
 ### Address & Property Lookup
 
 | Component | Purpose | Apex Dependency |
@@ -491,6 +555,37 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | `StreetViewController` | — | Google Street View metadata |
 | `PropertyReportService` | — | UK Property Data (RapidAPI) reports |
 
+### Property Search
+
+| Class | Sharing | Purpose |
+|---|---|---|
+| `PropertySearchController` | with sharing | Google Maps geocoding, Haversine distance, property search by postcode + radius, application history counts (all-time, month, year), latest application ID per property |
+
+### Home Dashboard
+
+| Class | Sharing | Purpose |
+|---|---|---|
+| `HomeDashboardController` | with sharing | Dashboard KPIs: active applications, new this month/week, upcoming appointments, total properties/agents, pipeline by NHS Process, recent applications, upcoming events |
+
+### List Views
+
+| Class | Sharing | Purpose |
+|---|---|---|
+| `AccountListController` | with sharing | Filtered Account/Contact/Property list views with search, sort, pagination. Methods: `getAccounts`, `getContacts`, `getProperties` |
+
+### Airparser Integration
+
+| Class | Sharing | Purpose |
+|---|---|---|
+| `AirparserController` | with sharing | Full Airparser API integration: `listInboxes`, `getInboxDetails`, `getSchema`, `setupSchema` (nested object schema matching PDF structure), `fetchRawDocuments`, `testConnection`, `getMappings`, `saveMappings`, `createDefaultMappings` (45 rules), `createApplicationFromParsed` (applies transformation rules with dot-notation nested field access, name splitting, address splitting, currency parsing, housebuilder lookup) |
+
+### API Configuration & Health Check
+
+| Class | Sharing | Purpose |
+|---|---|---|
+| `NHSApiConfigController` | with sharing | Reads all Custom Settings (Box, Google Maps, NHS API, Twilio, Airparser), builds config cards with masked values, updates individual fields via dynamic SObject |
+| `NHSApiHealthCheck` | — | Schedulable health checker for 8 APIs: Box, Google Maps, Ideal Postcodes, RapidAPI, Street Data, TinyURL, Twilio, Airparser. Saves compact status to NHS_API_Config__c |
+
 ### House Builder Applications
 
 | Class | Sharing | Purpose |
@@ -534,7 +629,7 @@ All custom development integrations are managed via Custom Settings:
 |---|---|---|
 | `Box_Config__c` | Box File Storage | Client_Id, Client_Secret, Refresh_Token, Access_Token, Token_Expiry, Root_Folder_Id |
 | `Google_Maps_Config__c` | Google Maps (Geocoding + Distance Matrix) | API_Key, Daily_Limit, Requests_Today, Last_Reset_Date, Distance_Method |
-| `NHS_API_Config__c` | Ideal Postcodes, RapidAPI, Street Data, TinyURL | Ideal_Postcodes_Key, RapidAPI_Key, Street_Data_Endpoint, TinyURL_Endpoint |
+| `NHS_API_Config__c` | Ideal Postcodes, RapidAPI, Street Data, TinyURL, Airparser | Ideal_Postcodes_Key, RapidAPI_Key, Street_Data_Endpoint, TinyURL_Endpoint, Airparser_API_Key, Airparser_Inbox_Id |
 
 ### Managed Packages
 
@@ -560,7 +655,9 @@ All custom development integrations are managed via Custom Settings:
 | 10 | **Email Templates** | Salesforce Lightning | Native | NHS Email Templates folder | NHSCommunicationsController | — | **Active** (11 templates) |
 | 11 | **URL Shortener** | TinyURL | Custom Dev | `NHS_API_Config__c` | TinyURLShortenerQueueable | tiny | **Active** |
 | 12 | **Forms** | Jotform | Managed Package | Managed | — | jotform | **Installed** |
-| 13 | **File Storage (Legacy)** | Dropbox | Custom Dev + Managed | `DropBox__mdt` | DropboxFileService, DropboxOAuthController | **6 sites deactivated** | **Deactivated** |
+| 13 | **PDF Parsing** | Airparser | Custom Dev | `NHS_API_Config__c` | AirparserController | Airparser_API | **Active** |
+| 14 | **Property Search Map** | Google Maps JavaScript API | Custom Dev | `Google_Maps_Config__c` | PropertySearchController + PropertySearchMap.page | Google_Maps_API (shared) | **Active** |
+| 15 | **File Storage (Legacy)** | Dropbox | Custom Dev + Managed | `DropBox__mdt` | DropboxFileService, DropboxOAuthController | **6 sites deactivated** | **Deactivated** |
 
 ### Remote Site Settings
 
@@ -580,6 +677,7 @@ All custom development integrations are managed via Custom Settings:
 | Street Data API endpoint | Setup > Custom Settings > **NHS API Config** |
 | TinyURL endpoint | Setup > Custom Settings > **NHS API Config** |
 | Twilio SID / Messaging Service | Twilio app > **TwilioMetaData** (managed) |
+| Airparser API key / Inbox ID | Setup > Custom Settings > **NHS API Config** |
 | Email templates | Setup > Email Templates > **NHS Email Templates** folder |
 
 ### Integration Details
@@ -664,6 +762,38 @@ All custom development integrations are managed via Custom Settings:
 | Config | `NHS_API_Config__c.TinyURL_Endpoint__c` |
 | Apex | `TinyURLShortenerQueueable` |
 
+#### Airparser (PDF Application Parsing)
+
+| Detail | Value |
+|---|---|
+| API Base | `https://api.airparser.com` |
+| Auth | `X-API-Key` header from `NHS_API_Config__c.Airparser_API_Key__c` |
+| Inbox ID | `NHS_API_Config__c.Airparser_Inbox_Id__c` |
+| Schema | Nested object structure: `vendor_details`, `description_of_property`, `details_of_current_agent`, `client_availability` + 12 top-level fields |
+| Tab | `Airparser` Lightning Tab |
+| Remote Site | `Airparser_API` |
+
+**Flow:** Email with PDF → Airparser inbox → AI parses PDF → Salesforce fetches parsed data → User reviews in LWC → Clicks "Create Application" → Transformation rules map fields → `houseBuilderApplication.saveData()` creates full application (Opportunity + Property + Vendors + Agent)
+
+**Transformation Rules:** 45 default mapping rules stored in `Airparser_Field_Mapping__c`. Support dot-notation for nested fields (e.g. `vendor_details.name`). Smart transformations:
+- **Name splitting:** `"ANTHONY WHITWELL"` → First: `ANTHONY`, Last: `WHITWELL`
+- **Address splitting:** `"9 HOLDEN ROAD BRIERFIELD BB9 5DR"` → Street + City + Postcode (UK postcode regex)
+- **Currency parsing:** `"£495,000"` or `"Â£250,000"` → `495000` (removes symbols, commas, encoding artifacts)
+- **Housebuilder lookup:** Name → Account ID (House_Builder record type)
+
+**Apex:** `AirparserController` — listInboxes, getSchema, setupSchema, fetchRawDocuments, getMappings, saveMappings, createDefaultMappings, createApplicationFromParsed
+
+#### Google Maps JavaScript API (Property Search)
+
+| Detail | Value |
+|---|---|
+| Config | `Google_Maps_Config__c.API_Key__c` (shared with Geocoding/Distance Matrix) |
+| Implementation | Visualforce page (`PropertySearchMap.page`) embedded in LWC iframe. LWC ↔ VF communication via `postMessage` |
+| CSP Trusted Sites | `*.googleapis.com`, `*.gstatic.com`, `*.google.com`, `*.ggpht.com` |
+| Features | Numbered green pins (NHS branding), search center marker, radius circle overlay, info windows, pin ↔ card click sync |
+
+**Apex:** `PropertySearchController` — geocodes search postcode, queries NHS_Property__c with coordinates, Haversine distance filter, application history counts (all-time, this month, this year), per-property latest Opportunity ID
+
 #### Dropbox (Legacy — Deactivated)
 
 | Detail | Value |
@@ -678,6 +808,7 @@ All custom development integrations are managed via Custom Settings:
 | Twilio UK phone number | Regulatory submission pending |
 | Email Relay (Resend) | DNS records for newhomesolutions.co.uk + final system email |
 | Dropbox uninstall | Can remove managed package + Apex classes once confirmed |
+| Airparser schema refinement | Fine-tune parsing accuracy based on different PDF formats |
 
 ---
 
@@ -848,7 +979,18 @@ force-app/main/default/
 │   ├── nhsFinalChecksPanel/    # Final Checks inline panel
 │   ├── nhsFinalChecksPage/     # Final Checks full page
 │   ├── nhsCommunicationsHub/   # Email + call management
-│   ├── nhsDropboxBrowser/      # Dropbox file browser
+│   ├── nhsHomeDashboard/       # Home dashboard
+│   ├── nhsPropertySearch/      # Property search with Google Maps
+│   ├── nhsExistingProperties/  # Property list view
+│   ├── nhsAgentsList/          # Agents list (Estate Agents)
+│   ├── nhsHousebuildersList/   # Housebuilders list
+│   ├── nhsVendorsList/         # Vendors list
+│   ├── nhsAccountList/         # Shared list component
+│   ├── nhsAirparser/           # Airparser PDF parsing integration
+│   ├── nhsApiConfig/           # API configuration manager
+│   ├── nhsBoxBrowser/          # Box file browser (Application page)
+│   ├── nhsBoxSetup/            # Box OAuth setup
+│   ├── nhsDropboxBrowser/      # Dropbox file browser (legacy)
 │   └── ...                     # 100+ other components
 ├── objects/
 │   └── Opportunity/
@@ -919,6 +1061,15 @@ force-app/main/default/
 | 2026-04-11 | Integration cleanup | Deleted Box__mdt (empty), deleted unused NHSSalesforce Twilio config, deactivated 7 Remote Sites (6 Dropbox + 1 Twilio_API) |
 | 2026-04-11 | Appointment booking lightbox | Read-only DD/MM/YYYY — HH:MM display, calendar icon opens slot picker, books via Vendor Availability, creates Event for Agent Booking sync |
 | 2026-04-11 | Two-way booking sync | Calendar lightbox ↔ Agent Booking component auto-refresh via @api refreshData() and custom event onagentbooked |
+| 2026-04-13 | Built Property Search with Google Maps | PropertySearchController, nhsPropertySearch LWC, PropertySearchMap VF page (iframe), numbered pins, EPC/Tax/Flood icons, application history badges, snapshot filter stats, CSP Trusted Sites |
+| 2026-04-13 | Built Home Dashboard | HomeDashboardController, nhsHomeDashboard LWC — greeting, 4 KPI cards, pipeline bar chart, upcoming appointments, recent applications table, quick action buttons |
+| 2026-04-13 | Reorganised app navigation | Tabs: Home, Create Application, New Applications, Search Property, Existing Properties, Agents, Housebuilders, Vendors, Airparser, Email Templates, Box Setup, API Config |
+| 2026-04-13 | Created Agents, Housebuilders, Vendors list LWCs | nhsAccountList (shared), nhsAgentsList, nhsHousebuildersList, nhsVendorsList — filtered by record type with search, sort, pagination |
+| 2026-04-13 | Created Existing Properties LWC | nhsExistingProperties — two-line rows, EPC colour badges, all property fields, search/sort/pagination |
+| 2026-04-13 | Updated vendor creation to use Vendor record type | houseBuilderApplication.createVendors now assigns Vendors RT. Backfilled 164 existing contacts |
+| 2026-04-13 | Built Airparser integration | AirparserController, nhsAirparser LWC, Parsed_Application__c staging object, Airparser_Field_Mapping__c transformation rules, Airparser_API Remote Site, NHS_API_Config__c fields (Airparser_API_Key, Airparser_Inbox_Id) |
+| 2026-04-13 | Airparser features: inbox browser, doc viewer, schema push, transformation rules | Drill-down: List Inboxes → Click inbox → Documents → Click doc → Parsed fields. Mapping Rules: 45 default rules, dot-notation nested access, name/address splitting, currency parsing |
+| 2026-04-13 | Added Airparser to API Config page and health check | NHSApiConfigController updated with Airparser block, NHSApiHealthCheck tests Airparser API connectivity |
 
 ---
 

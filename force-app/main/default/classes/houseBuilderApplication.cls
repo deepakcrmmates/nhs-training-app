@@ -66,11 +66,14 @@ public without sharing class houseBuilderApplication {
     public static Map<String, String> createVendors(Map<String, Object> vendorData) {
         Map<String, String> res = new Map<String, String>();
         try {
+            Id vendorRT = Schema.SObjectType.Contact.getRecordTypeInfosByDeveloperName().get('Vendors').getRecordTypeId();
+
             Contact v1 = new Contact(
                 FirstName = (String)vendorData.get('firstname'),
                 LastName = (String)vendorData.get('lastname'),
                 Email = (String)vendorData.get('email'),
-                MobilePhone = (String)vendorData.get('mobilePhone')
+                MobilePhone = (String)vendorData.get('mobilePhone'),
+                RecordTypeId = vendorRT
             );
             insert v1;
             res.put('vendor1Id', v1.Id);
@@ -81,7 +84,8 @@ public without sharing class houseBuilderApplication {
                     FirstName = (String)vendorData.get('firstname1'),
                     LastName = (String)vendorData.get('lastname1'),
                     Email = (String)vendorData.get('email1'),
-                    MobilePhone = (String)vendorData.get('mobilePhone1')
+                    MobilePhone = (String)vendorData.get('mobilePhone1'),
+                    RecordTypeId = vendorRT
                 );
                 insert v2;
                 res.put('vendor2Id', v2.Id);

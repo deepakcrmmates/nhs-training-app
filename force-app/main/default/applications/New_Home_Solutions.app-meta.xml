@@ -77,21 +77,19 @@
         <type>Flexipage</type>
         <profile>Standard</profile>
     </profileActionOverrides>
-    <tabs>standard-home</tabs>
-    <tabs>Dropbox_Setup</tabs>
+    <tabs>NHS_Home</tabs>
+    <tabs>Create_Application</tabs>
+    <tabs>New_Applications</tabs>
+    <tabs>Property_Search</tabs>
+    <tabs>Existing_Properties</tabs>
+    <tabs>Agents</tabs>
+    <tabs>Housebuilders</tabs>
+    <tabs>Vendors</tabs>
+    <tabs>Inbox</tabs>
+    <tabs>Airparser</tabs>
+    <tabs>standard-EmailTemplate</tabs>
     <tabs>Box_Setup</tabs>
     <tabs>NHS_API_Config</tabs>
-    <tabs>New_Applications</tabs>
-    <tabs>Create_Application</tabs>
-    <tabs>NHS_Property__c</tabs>
-    <tabs>standard-ProcessInstanceWorkitem</tabs>
-    <tabs>standard-Account</tabs>
-    <tabs>standard-Event</tabs>
-    <tabs>standard-Contact</tabs>
-    <tabs>standard-Task</tabs>
-    <tabs>standard-EmailTemplate</tabs>
-    <tabs>standard-Opportunity</tabs>
-    <tabs>Offer__c</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>New_Home_Solutions_UtilityBar2</utilityBar>
 </CustomApplication>

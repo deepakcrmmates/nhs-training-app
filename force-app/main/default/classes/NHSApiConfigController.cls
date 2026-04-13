@@ -49,7 +49,7 @@ public with sharing class NHSApiConfigController {
         }
 
         // NHS API Config
-        List<NHS_API_Config__c> nhsConfigs = [SELECT Id, Ideal_Postcodes_Key__c, RapidAPI_Key__c, Street_Data_Endpoint__c, TinyURL_Endpoint__c FROM NHS_API_Config__c LIMIT 1];
+        List<NHS_API_Config__c> nhsConfigs = [SELECT Id, Ideal_Postcodes_Key__c, RapidAPI_Key__c, Street_Data_Endpoint__c, TinyURL_Endpoint__c, Airparser_API_Key__c, Airparser_Inbox_Id__c FROM NHS_API_Config__c LIMIT 1];
         if (!nhsConfigs.isEmpty()) {
             NHS_API_Config__c n = nhsConfigs[0];
             configs.add(buildConfig('Ideal Postcodes', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
@@ -63,6 +63,10 @@ public with sharing class NHSApiConfigController {
             }));
             configs.add(buildConfig('TinyURL', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
                 field('Endpoint', 'TinyURL_Endpoint__c', n.TinyURL_Endpoint__c, 'url')
+            }));
+            configs.add(buildConfig('Airparser', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
+                field('API Key', 'Airparser_API_Key__c', maskValue(n.Airparser_API_Key__c), 'password'),
+                field('Inbox ID', 'Airparser_Inbox_Id__c', n.Airparser_Inbox_Id__c, 'text')
             }));
         }
 
@@ -80,7 +84,8 @@ public with sharing class NHSApiConfigController {
         Map<String, String> statusKeyMap = new Map<String, String>{
             'Box' => 'Box', 'Google Maps' => 'Google Maps',
             'Ideal Postcodes' => 'Ideal Postcodes', 'RapidAPI (Property Data)' => 'RapidAPI',
-            'Street Data API' => 'Street Data', 'TinyURL' => 'TinyURL', 'Twilio SMS' => 'Twilio'
+            'Street Data API' => 'Street Data', 'TinyURL' => 'TinyURL', 'Twilio SMS' => 'Twilio',
+            'Airparser' => 'Airparser'
         };
         for (Map<String, Object> c : configs) {
             String statusKey = statusKeyMap.get((String) c.get('name'));

@@ -1,0 +1,205 @@
+<template>
+    <div class="ps-page">
+        <!-- Header -->
+        <div class="ps-header">
+            <div class="ps-header-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </div>
+            <div>
+                <h1>Property Search</h1>
+                <p>Search properties by postcode and radius</p>
+            </div>
+            <div class="ps-header-stats" if:true={hasResults}>
+                <span class="ps-stat-badge">{totalFound} properties found</span>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="ps-search-bar">
+            <div class="ps-search-row">
+                <div class="ps-search-input-wrap">
+                    <svg class="ps-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" class="ps-search-input" placeholder="Enter postcode (e.g. LS1 4AP)" value={postcode} onkeyup={handlePostcodeChange}/>
+                </div>
+                <div class="ps-radius-wrap">
+                    <select class="ps-radius-select" onchange={handleRadiusChange}>
+                        <option value="1">1 mile</option>
+                        <option value="2">2 miles</option>
+                        <option value="3">3 miles</option>
+                        <option value="5" selected>5 miles</option>
+                        <option value="10">10 miles</option>
+                        <option value="15">15 miles</option>
+                        <option value="20">20 miles</option>
+                    </select>
+                </div>
+                <button class="ps-search-btn" onclick={handleSearch} disabled={isSearching}>
+                    <template if:false={isSearching}>Search</template>
+                    <template if:true={isSearching}>
+                        <span class="ps-spinner-sm"></span> Searching...
+                    </template>
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <template if:true={errorMessage}>
+            <div class="ps-error">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                {errorMessage}
+            </div>
+        </template>
+
+        <!-- Area Snapshot (Filters) -->
+        <template if:true={hasResults}>
+            <div class="ps-snapshot">
+                <div class={snapAllClass} data-filter="all" onclick={handleFilterClick}>
+                    <span class="ps-snap-value">{totalApplications}</span>
+                    <span class="ps-snap-label">Total Applications</span>
+                </div>
+                <div class="ps-snap-divider"></div>
+                <div class={snapMonthClass} data-filter="month" onclick={handleFilterClick}>
+                    <span class="ps-snap-value">{applicationsThisMonth}</span>
+                    <span class="ps-snap-label">This Month</span>
+                </div>
+                <div class="ps-snap-divider"></div>
+                <div class={snapYearClass} data-filter="year" onclick={handleFilterClick}>
+                    <span class="ps-snap-value">{applicationsThisYear}</span>
+                    <span class="ps-snap-label">This Year</span>
+                </div>
+                <div class="ps-snap-divider"></div>
+                <div class={snapAreaClass} data-filter="area" onclick={handleFilterClick}>
+                    <span class="ps-snap-value">{totalFound}</span>
+                    <span class="ps-snap-label">Properties in Area</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- Content Area -->
+        <template if:true={hasResults}>
+            <div class="ps-content">
+                <!-- Map Panel -->
+                <div class="ps-map-panel">
+                    <iframe class="ps-map-iframe" src={mapPageUrl} frameborder="0" onload={handleMapLoad}></iframe>
+                </div>
+
+                <!-- List Panel -->
+                <div class="ps-list-panel">
+                    <div class="ps-list-header">
+                        <span class="ps-list-title">{filteredCount} Properties</span>
+                        <div class="ps-sort-wrap">
+                            <select class="ps-sort-select" onchange={handleSortChange}>
+                                <option value="distance">Nearest first</option>
+                                <option value="bedrooms">Most bedrooms</option>
+                                <option value="epc">Best EPC</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ps-list-cards">
+                        <template for:each={sortedProperties} for:item="prop">
+                            <div key={prop.id} class={prop.cardClass} data-id={prop.id} onclick={handleCardClick}>
+                                <!-- Card Header -->
+                                <div class="ps-card-top">
+                                    <span class="ps-card-number">{prop.number}</span>
+                                    <div class="ps-card-address">
+                                        <div class="ps-card-street">{prop.street}</div>
+                                        <div class="ps-card-city">{prop.city}, {prop.postcode}</div>
+                                    </div>
+                                    <div class="ps-card-distance">
+                                        <span class="ps-dist-value">{prop.distance}</span>
+                                        <span class="ps-dist-unit">mi</span>
+                                    </div>
+                                </div>
+
+                                <!-- Card Details -->
+                                <div class="ps-card-details">
+                                    <template if:true={prop.bedrooms}>
+                                        <span class="ps-detail-chip">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v11a2 2 0 002 2h14a2 2 0 002-2V7"/><path d="M3 12h18"/><path d="M7 12V7a2 2 0 012-2h6a2 2 0 012 2v5"/></svg>
+                                            {prop.bedrooms} bed
+                                        </span>
+                                    </template>
+                                    <template if:true={prop.typeDisplay}>
+                                        <span class="ps-detail-chip">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                                            {prop.typeDisplay}
+                                        </span>
+                                    </template>
+                                    <template if:true={prop.tenure}>
+                                        <span class="ps-detail-chip">{prop.tenure}</span>
+                                    </template>
+                                </div>
+
+                                <!-- Icon Row -->
+                                <div class="ps-card-icons">
+                                    <div class={prop.epcClass} title={prop.epcTooltip}>
+                                        <span class="ps-icon-label">EPC</span>
+                                        <span class="ps-icon-value">{prop.epcDisplay}</span>
+                                    </div>
+                                    <div class="ps-icon-item" title={prop.councilTaxTooltip}>
+                                        <span class="ps-icon-label">Tax</span>
+                                        <span class="ps-icon-value">{prop.councilTaxDisplay}</span>
+                                    </div>
+                                    <div class={prop.floodClass} title={prop.floodTooltip}>
+                                        <span class="ps-icon-label">Flood</span>
+                                        <span class="ps-icon-value">{prop.floodDisplay}</span>
+                                    </div>
+                                    <div class="ps-icon-item" title={prop.gasTooltip}>
+                                        <span class="ps-icon-label">Gas</span>
+                                        <span class="ps-icon-value">{prop.gasDisplay}</span>
+                                    </div>
+                                    <div class="ps-icon-item" title={prop.areaTooltip}>
+                                        <span class="ps-icon-label">Area</span>
+                                        <span class="ps-icon-value">{prop.areaDisplay}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Links Row -->
+                                <div class="ps-card-links">
+                                    <template if:true={prop.hasApplications}>
+                                        <a class="ps-link" href={prop.latestAppUrl} target="_blank" onclick={handleLinkClick}>
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                                            Recent Application ({prop.applicationCount})
+                                        </a>
+                                    </template>
+                                    <a class="ps-link" href={prop.propertyUrl} target="_blank" onclick={handleLinkClick}>
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+                                        Property
+                                    </a>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:false={hasResults}>
+            <template if:false={isSearching}>
+                <template if:false={errorMessage}>
+                    <div class="ps-empty">
+                        <div class="ps-empty-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C5DCCC" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <h2>Search for properties</h2>
+                        <p>Enter a postcode and radius to find properties in the area</p>
+                    </div>
+                </template>
+            </template>
+        </template>
+
+        <!-- No Results -->
+        <template if:true={searchComplete}>
+            <template if:false={hasResults}>
+                <div class="ps-empty">
+                    <div class="ps-empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#C5DCCC" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6"/></svg>
+                    </div>
+                    <h2>No properties found</h2>
+                    <p>Try a different postcode or increase the search radius</p>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>
