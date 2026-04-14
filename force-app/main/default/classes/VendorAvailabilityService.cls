@@ -189,29 +189,24 @@ return resultMap;
                 // Check if an existing record exists for the same date
                 if (existingRecordsMap.containsKey(availabilityDate.format())) {
                     record = existingRecordsMap.get(availabilityDate.format());
-                    
-                    // Check if the state has changed from Unavailable to Available
-                    if (record.Availability__c == 'Unavailable' && 
-                        (String) data.get('Availability__c') == 'Available') {
-                            record.Availability__c = 'Available';
-                            record.AM__c = (Boolean) data.get('AM__c');
-                            record.PM__c = (Boolean) data.get('PM__c');
+
+                    // Always update AM/PM and availability on existing records
+                    String incomingAvail = (String) data.get('Availability__c');
+                    Boolean incomingAm = (Boolean) data.get('AM__c');
+                    Boolean incomingPm = (Boolean) data.get('PM__c');
+
+                    // Check if anything changed
+                    if (record.Availability__c != incomingAvail ||
+                        record.AM__c != incomingAm ||
+                        record.PM__c != incomingPm) {
+                        record.Availability__c = incomingAvail;
+                        record.AM__c = incomingAm;
+                        record.PM__c = incomingPm;
+                        if (data.get('Notes__c') != null) {
                             record.Notes__c = (String) data.get('Notes__c');
-                            recordsToUpdate.add(record);
-                        }else{
-                            if((String) data.get('Id') != '' && (String) data.get('Id') != null){
-                                //    record.Id = (String) data.get('Id');
-                                if(record.Id == (String) data.get('Id') && record.Availability__c == 'Available' && 
-                                   (String) data.get('Availability__c') == 'Unavailable')
-                                    record.Availability__c = 'Unavailable';
-                                record.AM__c = (Boolean) data.get('AM__c');
-                                record.PM__c = (Boolean) data.get('PM__c');
-                                record.Notes__c = (String) data.get('Notes__c');
-                                recordsToUpdate.add(record);
-                            }
-                        } 
-                    // If the state is still Unavailable, do nothing
-                    // Optionally, you can add logic here if you want to handle records with "Unavailable" differently
+                        }
+                        recordsToUpdate.add(record);
+                    }
                 } else {
                     // Create new records only if they are marked as Available
                     if ((String) data.get('Availability__c') == 'Available' && 
@@ -232,6 +227,14 @@ return resultMap;
                 }
             }
             
+            // Sync hourly slots from AM/PM before DML
+            for (Vendor_Availability__c rec : recordsToInsert) {
+                syncHourlySlotsFromAmPm(rec);
+            }
+            for (Vendor_Availability__c rec : recordsToUpdate) {
+                syncHourlySlotsFromAmPm(rec);
+            }
+
             // Insert new records
             if (!recordsToInsert.isEmpty()) {
                 try {
@@ -241,7 +244,7 @@ return resultMap;
                     return result;
                 }
             }
-            
+
             // Update records with state changes
             if (!recordsToUpdate.isEmpty()) {
                 try {
@@ -263,6 +266,44 @@ return resultMap;
     }
     
     
+    // Sync hourly slot fields from AM__c / PM__c
+    // AM = Hour_08 through Hour_11 (8am to 12pm)
+    // PM = Hour_12 through Hour_16 (12pm to 5pm)
+    private static void syncHourlySlotsFromAmPm(Vendor_Availability__c rec) {
+        Boolean am = rec.AM__c == true;
+        Boolean pm = rec.PM__c == true;
+
+        // AM slots: 8am - 11am
+        rec.Hour_08__c = am;
+        rec.Hour_09__c = am;
+        rec.Hour_10__c = am;
+        rec.Hour_11__c = am;
+
+        // PM slots: 12pm - 4pm
+        rec.Hour_12__c = pm;
+        rec.Hour_13__c = pm;
+        rec.Hour_14__c = pm;
+        rec.Hour_15__c = pm;
+        rec.Hour_16__c = pm;
+
+        // Clear slots outside AM/PM range
+        rec.Hour_00__c = false;
+        rec.Hour_01__c = false;
+        rec.Hour_02__c = false;
+        rec.Hour_03__c = false;
+        rec.Hour_04__c = false;
+        rec.Hour_05__c = false;
+        rec.Hour_06__c = false;
+        rec.Hour_07__c = false;
+        rec.Hour_17__c = false;
+        rec.Hour_18__c = false;
+        rec.Hour_19__c = false;
+        rec.Hour_20__c = false;
+        rec.Hour_21__c = false;
+        rec.Hour_22__c = false;
+        rec.Hour_23__c = false;
+    }
+
     @AuraEnabled
     public static List<Vendor_Availability__c> getHourlyAvailability(Id opportunityId) {
         return [

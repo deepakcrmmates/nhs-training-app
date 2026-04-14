@@ -10,8 +10,19 @@ import getBoxFolderForOpportunity from '@salesforce/apex/BoxOAuthController.getB
 import saveBoxFolderId from '@salesforce/apex/BoxOAuthController.saveBoxFolderId';
 
 export default class NhsBoxBrowser extends LightningElement {
-    @api propertyAddress;
+    _propertyAddress = '';
+    @api
+    get propertyAddress() { return this._propertyAddress; }
+    set propertyAddress(value) {
+        const prev = this._propertyAddress;
+        this._propertyAddress = value;
+        // Reload when propertyAddress is set for the first time (wire data arrived)
+        if (value && !prev && this._connected) {
+            this.loadFolder();
+        }
+    }
     @api recordId;
+    _connected = false;
     @track isLoading = true;
     @track folderExists = false;
     @track rootFolderId = '';
@@ -38,6 +49,7 @@ export default class NhsBoxBrowser extends LightningElement {
     @track isBrowsing = false;
 
     connectedCallback() {
+        this._connected = true;
         this.loadFolder();
     }
 
@@ -148,7 +160,10 @@ export default class NhsBoxBrowser extends LightningElement {
         ];
 
         try {
-            // Get root folder ID
+            // Ensure access token in separate transaction (callout + DML)
+            await ensureAccessToken();
+
+            // Get root folder ID (no callout — just reads config)
             const status = await getConnectionStatus();
             const rootId = status.rootFolderId || '0';
 

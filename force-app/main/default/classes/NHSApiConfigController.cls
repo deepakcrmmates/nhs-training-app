@@ -68,6 +68,9 @@ public with sharing class NHSApiConfigController {
                 field('API Key', 'Airparser_API_Key__c', maskValue(n.Airparser_API_Key__c), 'password'),
                 field('Inbox ID', 'Airparser_Inbox_Id__c', n.Airparser_Inbox_Id__c, 'text')
             }));
+            configs.add(buildConfig('Postcodes.io', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
+                field('Endpoint', 'Postcodes_IO_Endpoint__c', 'https://api.postcodes.io', 'readonly')
+            }));
         }
 
         // Twilio (managed — read only display)
@@ -85,7 +88,8 @@ public with sharing class NHSApiConfigController {
             'Box' => 'Box', 'Google Maps' => 'Google Maps',
             'Ideal Postcodes' => 'Ideal Postcodes', 'RapidAPI (Property Data)' => 'RapidAPI',
             'Street Data API' => 'Street Data', 'TinyURL' => 'TinyURL', 'Twilio SMS' => 'Twilio',
-            'Airparser' => 'Airparser'
+            'Airparser' => 'Airparser',
+            'Postcodes.io' => 'Postcodes.io'
         };
         for (Map<String, Object> c : configs) {
             String statusKey = statusKeyMap.get((String) c.get('name'));

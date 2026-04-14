@@ -7,7 +7,7 @@
     --font-mono: 'SF Mono', SFMono-Regular, Consolas, Menlo, monospace;
 }
 
-.api-page { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+.api-page { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
 
 .api-header {
     display: flex; align-items: center; gap: 16px;
@@ -43,12 +43,13 @@
 
 /* Block view */
 .api-blocks {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 16px; padding: 20px 24px;
 }
 .api-block {
     border: 1px solid var(--nhs-border); border-radius: 10px; overflow: hidden;
     cursor: pointer; transition: all 0.15s; background: #fff;
+    display: flex; flex-direction: column;
 }
 .api-block:hover { box-shadow: 0 4px 16px rgba(45,82,72,0.12); transform: translateY(-2px); }
 .api-block-header {
@@ -56,7 +57,7 @@
     padding: 14px 16px; display: flex; align-items: center; gap: 8px;
 }
 .api-block-name { font-size: 14px; font-weight: 700; color: #fff; }
-.api-block-body { padding: 14px 16px; }
+.api-block-body { padding: 14px 16px; flex: 1; }
 .api-block-obj { font-size: 10px; color: var(--nhs-text-muted); font-family: var(--font-mono); margin-bottom: 10px; }
 .api-block-field {
     display: flex; justify-content: space-between; align-items: center;
@@ -70,10 +71,12 @@
 }
 .api-block-footer {
     padding: 10px 16px; border-top: 1px solid #e5e7eb; text-align: center; background: #fafbfc;
+    margin-top: auto;
 }
 .api-block-edit {
-    font-size: 12px; font-weight: 600; color: var(--nhs-dk);
+    font-size: 12px; font-weight: 700; color: var(--nhs-dk);
     text-transform: uppercase; letter-spacing: 0.04em;
+    display: inline-flex; align-items: center; gap: 6px;
 }
 
 /* Card list */

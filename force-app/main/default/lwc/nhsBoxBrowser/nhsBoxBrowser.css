@@ -13,17 +13,18 @@
     overflow: hidden; margin-bottom: 20px;
 }
 .db-banner {
-    background: linear-gradient(135deg, var(--nhs-dk) 0%, var(--nhs-mid) 100%);
-    padding: 11px 20px; display: flex; align-items: center; gap: 10px;
+    background: var(--nhs-pale);
+    border-bottom: 2px solid var(--nhs-dk);
+    padding: 12px 20px; display: flex; align-items: center; gap: 10px;
 }
 .db-banner h2 {
-    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
-    color: #FFFFFF; letter-spacing: 0.08em; text-transform: uppercase; margin: 0;
+    font-family: var(--font-sans); font-size: 11px; font-weight: 700;
+    color: var(--nhs-dk); letter-spacing: 0.07em; text-transform: uppercase; margin: 0;
 }
-.db-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.45); }
+.db-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--nhs-dk); }
 .db-header-btn, .db-refresh {
-    width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1); border-radius: 4px; color: #fff;
+    width: 28px; height: 28px; border: 1px solid var(--nhs-border);
+    background: var(--nhs-white); border-radius: 4px; color: var(--nhs-dk);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background 0.15s;
 }

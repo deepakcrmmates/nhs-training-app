@@ -18,6 +18,7 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
                 when 'TinyURL' { result = testTinyURL(); }
                 when 'Twilio_SMS' { result = testTwilio(); }
                 when 'Airparser' { result = testAirparser(); }
+                when 'Postcodes_io' { result = testPostcodesIO(); }
                 when else {
                     result.put('status', 'unknown');
                     result.put('message', 'No test available for ' + apiName);
@@ -42,6 +43,7 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
         statuses.put('TinyURL', getStatus(testTinyURL()));
         statuses.put('Twilio', getStatus(testTwilio()));
         statuses.put('Airparser', getStatus(testAirparser()));
+        statuses.put('Postcodes.io', getStatus(testPostcodesIO()));
 
         // Save as compact string: Box:ok,Google Maps:ok,...
         List<String> parts = new List<String>();
@@ -219,6 +221,28 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
             if (resp.getStatusCode() == 200 && resp.getBody().contains('tinyurl')) {
                 result.put('status', 'ok');
                 result.put('message', 'API responding');
+            } else {
+                result.put('status', 'error');
+                result.put('message', 'HTTP ' + resp.getStatusCode());
+            }
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    private static Map<String, Object> testPostcodesIO() {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint('https://api.postcodes.io/postcodes/SW1A1AA');
+            req.setMethod('GET');
+            req.setTimeout(10000);
+            HttpResponse resp = new Http().send(req);
+            if (resp.getStatusCode() == 200) {
+                result.put('status', 'ok');
+                result.put('message', 'API responding (free, no key required)');
             } else {
                 result.put('status', 'error');
                 result.put('message', 'HTTP ' + resp.getStatusCode());

@@ -1,0 +1,919 @@
+<template>
+
+  <!-- ========== 1. PAGE HEADER ========== -->
+  <div class="page-hdr">
+    <div class="page-hdr-top">
+      <div>
+        <h1 class="prop-title">{propertyAddress}</h1>
+        <div class="prop-meta">
+          <span class="meta-tag">Application: {formData.vendor1Name}</span>
+          <span class="meta-tag">{formData.houseBuilderName}</span>
+          <span class="meta-tag">Plot {formData.plot} &middot; {formData.development}</span>
+        </div>
+      </div>
+      <div class="page-hdr-badges">
+        <span class="ref-badge">REF: #{recordId}</span>
+        <span class="status-badge">{formData.nhsProcess}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 2. PIPELINE ========== -->
+  <div class="pipeline">
+    <template for:each={pipelineSteps} for:item="step">
+      <div key={step.value} class={step.stepClass} data-stage={step.value} onclick={handleStageClick}>
+        <div class={step.dotClass}>{step.dotLabel}</div>
+        <span class="pipe-label">{step.label}</span>
+      </div>
+    </template>
+  </div>
+
+  <!-- ========== 3. PAGE BODY ========== -->
+  <div class="page-body">
+
+    <!-- ===== MAIN COLUMN ===== -->
+    <div class="main-col">
+
+      <!-- ---- A. Property Details Card ---- -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="card-title-dot"></span>Property Details</h2>
+          <div class="card-actions">
+            <button class="action-btn" onclick={handleCallVendor} title="Call Vendor">
+              <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
+              <span>Call</span>
+            </button>
+            <button class="action-btn" onclick={handleEmailVendor} title="Email Vendor">
+              <lightning-icon icon-name="utility:email" size="x-small"></lightning-icon>
+              <span>Email</span>
+            </button>
+            <div class="qn-wrap">
+              <button class="action-btn" onclick={handleToggleQuickNote} title="Quick Note">
+                <lightning-icon icon-name="utility:note" size="x-small"></lightning-icon>
+                <span>Notes</span>
+              </button>
+              <template if:true={showQuickNote}>
+                <div class="qn-popup">
+                  <div class="qn-header">
+                    <span class="qn-title">Quick Note</span>
+                    <button class="qn-close" onclick={handleToggleQuickNote}>&times;</button>
+                  </div>
+                  <textarea class="qn-textarea" placeholder="Type a quick note..." onchange={handleQuickNoteChange}>{quickNoteText}</textarea>
+                  <div class="qn-footer">
+                    <button class="btn-primary btn-sm" onclick={handleSaveQuickNote} disabled={isQuickNoteSaving}>
+                      <template if:true={isQuickNoteSaving}>Saving...</template>
+                      <template if:false={isQuickNoteSaving}>Save Note</template>
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <a class="action-btn" href={googleMapsUrl} target="_blank" title="Get Directions">
+              <lightning-icon icon-name="utility:location" size="x-small"></lightning-icon>
+              <span>Get Directions</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <!-- Property Address Box (green) -->
+          <div class="prop-address-box">
+            <div class="section-label" style="color: var(--nhs-dk);">Property Address</div>
+            <div class="prop-grid-5">
+              <div class="field">
+                <label class="field-label">Address</label>
+                <lightning-input
+                  variant="label-hidden"
+                  label="Address"
+                  value={formData.propertyAddress}
+                  data-field="propertyAddress"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">House Builder</label>
+                <c-custom-lookup-lwc
+                  object-api-name="Account"
+                  icon-name="standard:account"
+                  selected-record-id={formData.houseBuilderId}
+                  placeholder="Search housebuilder..."
+                  onlookup={handleHousebuilderLookup}>
+                </c-custom-lookup-lwc>
+              </div>
+              <div class="field">
+                <label class="field-label">Development</label>
+                <lightning-input
+                  variant="label-hidden"
+                  label="Development"
+                  value={formData.development}
+                  data-field="development"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">Plot</label>
+                <lightning-input
+                  variant="label-hidden"
+                  label="Plot"
+                  value={formData.plot}
+                  data-field="plot"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">Scheme</label>
+                <select class="slds-select" data-field="scheme" onchange={handleFieldChange}>
+                  <option value="">-- Select --</option>
+                  <option value="Part Exchange" selected={isSchemePartExchange}>Part Exchange</option>
+                  <option value="Assisted Sale" selected={isSchemeAssistedSale}>Assisted Sale</option>
+                  <option value="New Home" selected={isSchemeNewHome}>New Home</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vendor Info Box (blue) -->
+          <div class="vendor-info-box">
+            <div class="section-label" style="color: #1A4F7A;">Vendor Information</div>
+            <div class="vendor-grid-4">
+              <div class="field">
+                <label class="field-label">Vendor Name</label>
+                <lightning-input
+                  variant="label-hidden"
+                  label="Vendor Name"
+                  value={formData.vendor1Name}
+                  data-field="vendor1Name"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">Mobile</label>
+                <lightning-input
+                  type="tel"
+                  variant="label-hidden"
+                  label="Mobile"
+                  value={formData.vendorMobile}
+                  data-field="vendorMobile"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">Phone</label>
+                <lightning-input
+                  type="tel"
+                  variant="label-hidden"
+                  label="Phone"
+                  value={formData.vendorPhone}
+                  data-field="vendorPhone"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+              <div class="field">
+                <label class="field-label">Email</label>
+                <lightning-input
+                  type="email"
+                  variant="label-hidden"
+                  label="Email"
+                  value={formData.vendorEmail}
+                  data-field="vendorEmail"
+                  onchange={handleFieldChange}>
+                </lightning-input>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics Row -->
+          <div class="metrics-row">
+            <div class="metric metric-highlight">
+              <div class="metric-label">Vendor Expectations</div>
+              <div class="metric-value">{vendorExpectationsDisplay}</div>
+              <div class="metric-sub">Asking price</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Received Date</div>
+              <div class="metric-value metric-value-sm">{receivedDateDisplay}</div>
+              <div class="metric-sub">Application received</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">ALCD</div>
+              <div class="metric-value metric-value-sm">{etaCompEndDisplay}</div>
+              <div class="metric-sub">Target completion</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ---- B. Stage-Specific Cards ---- -->
+
+      <!-- Vendor Availability -->
+      <template if:true={showVendorAvailability}>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="card-title-dot"></span>Vendor Availability</h2>
+            <div class="va-toolbar">
+              <span class="va-bulk-label">Mark:</span>
+              <button class="va-bulk-btn va-bulk-all" onclick={handleVaBulkAll}>All Day</button>
+              <button class="va-bulk-btn va-bulk-am" onclick={handleVaBulkAm}>AM (9–12)</button>
+              <button class="va-bulk-btn va-bulk-pm" onclick={handleVaBulkPm}>PM (12–5)</button>
+              <button class="va-bulk-btn va-bulk-clear" onclick={handleVaBulkClear}>✕ Clear</button>
+            </div>
+          </div>
+
+          <!-- Vendor info strip -->
+          <div class="va-vendor-strip">
+            <div class="va-vendor-name">{formData.vendor1Name}</div>
+            <div class="va-vendor-contact">{formData.vendorMobile}</div>
+            <div class="va-vendor-contact">{formData.vendorEmail}</div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="va-nav">
+            <button class="va-nav-btn" onclick={handleVaPrev}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              Prev
+            </button>
+            <span class="va-range">{vaRangeLabel}</span>
+            <button class="va-nav-btn" onclick={handleVaNext}>
+              Next
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <button class="va-nav-btn va-nav-today" onclick={handleVaToday}>Today</button>
+          </div>
+
+          <!-- Calendar -->
+          <div class="va-calendar">
+            <table class="va-table">
+              <thead>
+                <tr>
+                  <th class="va-th-time">Period</th>
+                  <template for:each={vaDays} for:item="day">
+                    <th key={day.key} class={day.thClass}>
+                      <template if:true={day.showWeekendToggle}>
+                        <label class="va-weekend-toggle" data-di={day.idx} onclick={handleWeekendToggle}>
+                          <input type="checkbox" checked={day.weekendEnabled}/>
+                        </label>
+                      </template>
+                      <div class="va-day-name">{day.dayName}</div>
+                      <div class="va-day-num">{day.dayNum}</div>
+                      <template if:false={day.isDisabled}>
+                        <button class={day.allBtnClass} data-di={day.idx} onclick={handleVaDayAll}>All</button>
+                      </template>
+                      <template if:true={day.isPast}>
+                        <div class="va-past-label">Past</div>
+                      </template>
+                    </th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- AM Row -->
+                <tr>
+                  <td class="va-td-label va-td-am">
+                    <div class="va-period-name">AM</div>
+                    <div class="va-period-desc">Before 9 am – 12 pm</div>
+                  </td>
+                  <template for:each={vaDays} for:item="day">
+                    <td key={day.key} class={day.amCellClass} data-di={day.idx} data-period="am" onclick={handleVaCellClick}>
+                      <template if:true={day.amActive}>
+                        <span class="va-check">✓</span>
+                      </template>
+                    </td>
+                  </template>
+                </tr>
+                <!-- PM Row -->
+                <tr>
+                  <td class="va-td-label va-td-pm">
+                    <div class="va-period-name">PM</div>
+                    <div class="va-period-desc">12 pm – 5 pm</div>
+                  </td>
+                  <template for:each={vaDays} for:item="day">
+                    <td key={day.key} class={day.pmCellClass} data-di={day.idx} data-period="pm" onclick={handleVaCellClick}>
+                      <template if:true={day.pmActive}>
+                        <span class="va-check">✓</span>
+                      </template>
+                    </td>
+                  </template>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Save -->
+          <div class="va-footer">
+            <button class="btn-primary" onclick={handleVaSave} disabled={isVaSaving}>Save Availability</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Book Agents -->
+      <template if:true={showBookAgents}>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="card-title-dot"></span>Book Agents</h2>
+          </div>
+          <div class="card-body">
+            <c-nhs-agent-booking
+              record-id={recordId}
+              onbooked={handleAgentBooked}>
+            </c-nhs-agent-booking>
+          </div>
+        </div>
+      </template>
+
+      <!-- Figures to Chase -->
+      <template if:true={showFiguresToChase}>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="card-title-dot"></span>Figures to Chase</h2>
+          </div>
+          <div class="card-body">
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Status</th>
+                  <th>Last Chased</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template for:each={figuresToChase} for:item="row">
+                  <tr key={row.id}>
+                    <td>{row.agentName}</td>
+                    <td>
+                      <span class={row.statusClass}>{row.status}</span>
+                    </td>
+                    <td>{row.lastChased}</td>
+                    <td>
+                      <button class="btn-chase" data-id={row.id} onclick={handleChaseAgent}>Chase</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+
+      <!-- ---- C. Agent Details Card (Collapsible) ---- -->
+      <div class="card">
+        <div class="card-header" style="cursor: pointer;" onclick={toggleAgentCard}>
+          <h2 class="card-title">
+            <span class="card-title-dot"></span>
+            Agent Details / Valuation Figures / Recommendations
+          </h2>
+          <div class="card-header-right">
+            <span class="collapse-toggle">{agentCardToggleIcon}</span>
+            <button class="btn-assign-agent" onclick={handleAssignAgentStop}>
+              + Assign Agent
+            </button>
+          </div>
+        </div>
+
+        <template if:true={agentCardExpanded}>
+          <div class="card-body">
+
+            <!-- 3-Agent Grid -->
+            <div class="agent-3-grid">
+
+              <!-- Agent 1 -->
+              <div class="agent-col agent-col-1">
+                <div class="agent-header agent-header-1">
+                  <span class="agent-num">Agent 1</span>
+                  <span class="agent-name">{formData.agent1Name}</span>
+                </div>
+                <div class="agent-body">
+                  <div class="agent-contact">
+                    <a href={agent1EmailHref} class="agent-link">
+                      <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                      {formData.agent1Email}
+                    </a>
+                    <span class="agent-phone">
+                      <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                      {formData.agent1Phone}
+                    </span>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Appointment</h4>
+                    <div class="field-row">
+                      <label class="dv-toggle">
+                        <input type="checkbox" checked={formData.agent1DesktopVal} data-agent="agent1" onchange={handleDesktopValToggle}/>
+                        <span class="dv-label">Desktop Valuation</span>
+                      </label>
+                    </div>
+                    <template if:false={formData.agent1DesktopVal}>
+                      <div class="field-row">
+                        <label class="field-label">Appointment</label>
+                        <div class="appt-readonly">{agent1ApptDisplay}</div>
+                      </div>
+                    </template>
+                    <template if:true={formData.agent1DesktopVal}>
+                      <div class="dv-badge">Desktop Valuation — No visit required</div>
+                    </template>
+                    <div class="field-row">
+                      <label class="field-label">Agent Emailed</label>
+                      <select class="slds-select" data-field="agent1Emailed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent1EmailedNo}>No</option>
+                        <option value="Yes" selected={isAgent1EmailedYes}>Yes</option>
+                      </select>
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label">Verbally Confirmed</label>
+                      <select class="slds-select" data-field="agent1VerballyConfirmed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent1ConfirmedNo}>No</option>
+                        <option value="Yes" selected={isAgent1ConfirmedYes}>Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Valuation Figures</h4>
+                    <div class="val-row">
+                      <span class="val-label">Initial Asking</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1InitialPrice} data-field="agent1InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Target Sale</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1TargetSale} data-field="agent1TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Bottom Line</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1BottomLine} data-field="agent1BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Agent 2 -->
+              <div class="agent-col agent-col-2">
+                <div class="agent-header agent-header-2">
+                  <span class="agent-num">Agent 2</span>
+                  <span class="agent-name">{formData.agent2Name}</span>
+                </div>
+                <div class="agent-body">
+                  <div class="agent-contact">
+                    <a href={agent2EmailHref} class="agent-link">
+                      <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                      {formData.agent2Email}
+                    </a>
+                    <span class="agent-phone">
+                      <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                      {formData.agent2Phone}
+                    </span>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Appointment</h4>
+                    <div class="field-row">
+                      <label class="dv-toggle">
+                        <input type="checkbox" checked={formData.agent2DesktopVal} data-agent="agent2" onchange={handleDesktopValToggle}/>
+                        <span class="dv-label">Desktop Valuation</span>
+                      </label>
+                    </div>
+                    <template if:false={formData.agent2DesktopVal}>
+                      <div class="field-row">
+                        <label class="field-label">Appointment</label>
+                        <div class="appt-readonly">{agent2ApptDisplay}</div>
+                      </div>
+                    </template>
+                    <template if:true={formData.agent2DesktopVal}>
+                      <div class="dv-badge">Desktop Valuation — No visit required</div>
+                    </template>
+                    <div class="field-row">
+                      <label class="field-label">Agent Emailed</label>
+                      <select class="slds-select" data-field="agent2Emailed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent2EmailedNo}>No</option>
+                        <option value="Yes" selected={isAgent2EmailedYes}>Yes</option>
+                      </select>
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label">Verbally Confirmed</label>
+                      <select class="slds-select" data-field="agent2VerballyConfirmed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent2ConfirmedNo}>No</option>
+                        <option value="Yes" selected={isAgent2ConfirmedYes}>Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Valuation Figures</h4>
+                    <div class="val-row">
+                      <span class="val-label">Initial Asking</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2InitialPrice} data-field="agent2InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Target Sale</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2TargetSale} data-field="agent2TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Bottom Line</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2BottomLine} data-field="agent2BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Agent 3 -->
+              <div class="agent-col agent-col-3">
+                <div class="agent-header agent-header-3">
+                  <span class="agent-num">Agent 3</span>
+                  <span class="agent-name">{formData.agent3Name}</span>
+                </div>
+                <div class="agent-body">
+                  <div class="agent-contact">
+                    <a href={agent3EmailHref} class="agent-link">
+                      <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                      {formData.agent3Email}
+                    </a>
+                    <span class="agent-phone">
+                      <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                      {formData.agent3Phone}
+                    </span>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Appointment</h4>
+                    <div class="field-row">
+                      <label class="dv-toggle">
+                        <input type="checkbox" checked={formData.agent3DesktopVal} data-agent="agent3" onchange={handleDesktopValToggle}/>
+                        <span class="dv-label">Desktop Valuation</span>
+                      </label>
+                    </div>
+                    <template if:false={formData.agent3DesktopVal}>
+                      <div class="field-row">
+                        <label class="field-label">Appointment</label>
+                        <div class="appt-readonly">{agent3ApptDisplay}</div>
+                      </div>
+                    </template>
+                    <template if:true={formData.agent3DesktopVal}>
+                      <div class="dv-badge">Desktop Valuation — No visit required</div>
+                    </template>
+                    <div class="field-row">
+                      <label class="field-label">Agent Emailed</label>
+                      <select class="slds-select" data-field="agent3Emailed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent3EmailedNo}>No</option>
+                        <option value="Yes" selected={isAgent3EmailedYes}>Yes</option>
+                      </select>
+                    </div>
+                    <div class="field-row">
+                      <label class="field-label">Verbally Confirmed</label>
+                      <select class="slds-select" data-field="agent3VerballyConfirmed" onchange={handleFieldChange}>
+                        <option value="No" selected={isAgent3ConfirmedNo}>No</option>
+                        <option value="Yes" selected={isAgent3ConfirmedYes}>Yes</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="agent-section">
+                    <h4>Valuation Figures</h4>
+                    <div class="val-row">
+                      <span class="val-label">Initial Asking</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3InitialPrice} data-field="agent3InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Target Sale</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3TargetSale} data-field="agent3TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                    <div class="val-row">
+                      <span class="val-label">Bottom Line</span>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3BottomLine} data-field="agent3BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- NHS Recommended Section -->
+            <div class="nhs-rec-wrap">
+              <div class="nhs-rec-title">New Home Solutions Recommended</div>
+              <div class="nhs-rec-row">
+                <div class="nhs-rec-item">
+                  <div class="nhs-rec-label">Market</div>
+                  <div class="nhs-rec-input">
+                    <span class="nhs-rec-pound">£</span>
+                    <input type="text" class="nhs-rec-field" value={formData.recommendedMarket} data-field="recommendedMarket" onchange={handleFieldChange} placeholder="0.00"/>
+                  </div>
+                </div>
+                <div class="nhs-rec-item">
+                  <div class="nhs-rec-label">Target</div>
+                  <div class="nhs-rec-input">
+                    <span class="nhs-rec-pound">£</span>
+                    <input type="text" class="nhs-rec-field" value={formData.recommendedTarget} data-field="recommendedTarget" onchange={handleFieldChange} placeholder="0.00"/>
+                  </div>
+                </div>
+                <div class="nhs-rec-item nhs-rec-amber">
+                  <div class="nhs-rec-label">Forced</div>
+                  <div class="nhs-rec-input">
+                    <span class="nhs-rec-pound nhs-rec-pound-amber">£</span>
+                    <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={formData.recommendedForced} data-field="recommendedForced" onchange={handleFieldChange} placeholder="0.00"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </template>
+      </div>
+
+      <!-- ---- D. Box File Storage ---- -->
+      <c-nhs-box-browser record-id={recordId} property-address={formData.propertyAddress}></c-nhs-box-browser>
+
+      <!-- ---- E. Vendor Notes Card ---- -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="card-title-dot"></span>Vendor Notes</h2>
+        </div>
+        <div class="card-body">
+          <textarea class="vn-textarea" placeholder="Type a new note..." onchange={handleNoteChange}>{newNote}</textarea>
+          <div class="vn-actions">
+            <button class="btn-primary btn-sm" onclick={handleAddNote}>Add Note</button>
+          </div>
+          <div class="vn-divider"></div>
+          <template if:true={hasVendorNotes}>
+            <template for:each={pagedNotes} for:item="note">
+              <div key={note.id} class="vn-note">
+                <div class="vn-note-header">
+                  <span class="vn-note-author">{note.author}</span>
+                  <span class="vn-note-date">{note.dateDisplay}</span>
+                </div>
+                <p class="vn-note-body">{note.body}</p>
+              </div>
+            </template>
+            <div class="vn-paging">
+              <div class="vn-paging-left">
+                <button class="vn-nav-btn" onclick={handleNotesPrev} disabled={isNotesPrevDisabled}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <span class="vn-paging-label">{notesCountLabel}</span>
+                <button class="vn-nav-btn" onclick={handleNotesNext} disabled={isNotesNextDisabled}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+              <div class="vn-paging-btns">
+                <span class="vn-paging-text">Show:</span>
+                <button class={vn5Class} data-size="5" onclick={handleNotesPageSize}>5</button>
+                <button class={vn10Class} data-size="10" onclick={handleNotesPageSize}>10</button>
+                <button class={vn25Class} data-size="25" onclick={handleNotesPageSize}>25</button>
+              </div>
+            </div>
+          </template>
+          <template if:false={hasVendorNotes}>
+            <div class="vn-empty">
+              <div class="vn-empty-icon">💬</div>
+              No notes yet. Add the first note above.
+            </div>
+          </template>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== SIDE COLUMN ===== -->
+    <div class="side-col">
+
+      <!-- Quick Summary Card -->
+      <div class="card card-summary">
+        <div class="card-header">
+          <h2 class="card-title"><span class="card-title-dot"></span>Quick Summary</h2>
+        </div>
+        <div class="card-body" style="padding: 14px 18px;">
+          <div class="info-row">
+            <span class="info-key">Status</span>
+            <span class="info-val"><span class="status-badge">{formData.nhsProcess}</span></span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Application Type</span>
+            <span class="info-val">Application</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Scheme</span>
+            <span class="info-val">{formData.scheme}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Vendor Expectations</span>
+            <span class="info-val sage">{vendorExpectationsDisplay}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">ALCD</span>
+            <span class="info-val">{etaCompEndDisplay}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Received</span>
+            <span class="info-val">{receivedDateDisplay}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">House Builder</span>
+            <span class="info-val">{formData.houseBuilderName}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Development</span>
+            <span class="info-val">{formData.development}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Plot</span>
+            <span class="info-val">{formData.plot}</span>
+          </div>
+          <div class="info-divider"></div>
+          <div class="info-row">
+            <span class="info-key">Property Address</span>
+            <span class="info-val">{formData.propertyAddress}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Vendor Name</span>
+            <span class="info-val">{formData.vendor1Name}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Vendor Mobile</span>
+            <span class="info-val">{formData.vendorMobile}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Vendor Phone</span>
+            <span class="info-val">{formData.vendorPhone}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Vendor Email</span>
+            <span class="info-val">{formData.vendorEmail}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Application Notes Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="card-title-dot"></span>Application Notes</h2>
+        </div>
+        <div class="card-body">
+          <lightning-textarea
+            label="Application Notes"
+            variant="label-hidden"
+            value={formData.applicationNotes}
+            data-field="applicationNotes"
+            placeholder="Internal notes about this application..."
+            onchange={handleFieldChange}>
+          </lightning-textarea>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========== 4. BOTTOM BAR (fixed) ========== -->
+  <div class="bottom-bar">
+    <div class="bottom-left">
+      <button class="btn-bottom btn-comms" onclick={handleOpenCommsHub}>
+        <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
+        Comms Hub
+      </button>
+      <button class="btn-bottom btn-pdf" onclick={handleGeneratePdf}>
+        <lightning-icon icon-name="utility:pdf_ext" size="x-small"></lightning-icon>
+        Generate PDF
+      </button>
+      <button class="btn-bottom btn-refresh" onclick={handleRefresh}>
+        <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
+        Refresh
+      </button>
+    </div>
+    <div class="bottom-right">
+      <button class="btn-bottom btn-cancel" onclick={handleCancel}>Cancel</button>
+      <template if:false={isSaving}>
+        <template if:false={saveSuccess}>
+          <button class="btn-bottom btn-save" onclick={handleSave}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Application
+          </button>
+        </template>
+        <template if:true={saveSuccess}>
+          <button class="btn-bottom btn-saved" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Saved
+          </button>
+        </template>
+      </template>
+      <template if:true={isSaving}>
+        <button class="btn-bottom btn-saving" disabled>
+          <span class="save-spinner"></span>
+          Saving...
+        </button>
+      </template>
+    </div>
+  </div>
+
+  <!-- ========== 5. COMMS HUB OVERLAY ========== -->
+  <template if:true={showCommsHub}>
+    <div class="overlay-backdrop" onclick={handleCloseCommsHub}></div>
+    <div class="overlay-panel">
+      <c-nhs-communications-hub
+        record-id={recordId}
+        onclose={handleCloseCommsHub}>
+      </c-nhs-communications-hub>
+    </div>
+  </template>
+
+  <!-- ========== ASSIGN AGENT MODAL ========== -->
+  <template if:true={showAssignAgent}>
+    <div class="af-overlay" onclick={handleCloseAssignAgent}>
+      <div class="af-modal" onclick={handleAssignModalClick}>
+        <div class="af-header">
+          <h3>Assign Agent</h3>
+          <div class="af-steps">
+            <div class={step1Class}><span class="af-step-num">1</span><span class="af-step-text">Search</span></div>
+            <span class="af-step-line"></span>
+            <div class={step2Class}><span class="af-step-num">2</span><span class="af-step-text">Select Agents</span></div>
+            <span class="af-step-line"></span>
+            <div class={step3Class}><span class="af-step-num">3</span><span class="af-step-text">Confirm</span></div>
+          </div>
+          <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
+        </div>
+
+        <!-- Step 1: Search -->
+        <template if:true={isStep1}>
+          <div class="af-body">
+            <div class="af-prop-card">
+              <div class="af-prop-label">Property Address</div>
+              <div class="af-prop-addr">{formData.propertyAddress}</div>
+            </div>
+            <div class="af-field">
+              <label class="af-field-label">Search Radius</label>
+              <lightning-combobox name="radius" value={assignRadius} options={radiusOptions} onchange={handleRadiusChange} variant="label-hidden"></lightning-combobox>
+            </div>
+            <div class="af-actions">
+              <button class="af-btn-cancel" onclick={handleCloseAssignAgent}>Cancel</button>
+              <button class="af-btn-next" onclick={handleSearchAgents}>Search Agents</button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Step 2: Agent List -->
+        <template if:true={isStep2}>
+          <template if:true={assignAgentInfo}>
+            <div class="af-info">{assignAgentInfo}</div>
+          </template>
+          <template if:true={isLoadingAgents}>
+            <div class="af-loading"><lightning-spinner alternative-text="Searching" size="medium"></lightning-spinner></div>
+          </template>
+          <template if:false={isLoadingAgents}>
+            <template if:true={hasNearbyAgents}>
+              <div class="af-list">
+                <template for:each={nearbyAgents} for:item="agent">
+                  <div class={agent.rowClass} key={agent.id}>
+                    <div class="af-agent-info">
+                      <div class="af-agent-name">{agent.name}</div>
+                      <div class="af-agent-meta">
+                        <span class="af-distance">{agent.distanceLabel}</span>
+                        <span>{agent.postcode}</span>
+                      </div>
+                      <div class="af-agent-contact">
+                        <template if:true={agent.phone}><span>T: {agent.phone}</span></template>
+                        <template if:true={agent.mobile}><span>M: {agent.mobile}</span></template>
+                        <template if:true={agent.email}><span>{agent.email}</span></template>
+                      </div>
+                    </div>
+                    <div class="af-agent-actions">
+                      <template if:true={agent.isAssigned}>
+                        <span class="af-assigned-badge">{agent.assignedLabel}</span>
+                        <button class="af-unassign-btn" data-id={agent.id} onclick={handleUnassignAgent}>✕</button>
+                      </template>
+                      <template if:false={agent.isAssigned}>
+                        <button class="af-assign-btn af-btn-a2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
+                        <button class="af-assign-btn af-btn-a3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template if:false={hasNearbyAgents}>
+              <div class="af-empty">No agents found within {assignRadius} miles.</div>
+            </template>
+            <div class="af-actions">
+              <button class="af-btn-cancel" onclick={handleBackToStep1}>Back</button>
+              <template if:true={assignedAgent2Name}><span class="af-sel-badge af-sel-2">Agent 2: {assignedAgent2Name}</span></template>
+              <template if:true={assignedAgent3Name}><span class="af-sel-badge af-sel-3">Agent 3: {assignedAgent3Name}</span></template>
+            </div>
+          </template>
+        </template>
+
+        <!-- Step 3: Confirm -->
+        <template if:true={isStep3}>
+          <div class="af-body af-confirm">
+            <div class="af-confirm-icon">✓</div>
+            <h3>Agents Assigned</h3>
+            <div class="af-confirm-detail">
+              <div class="af-confirm-row"><span class="af-label-2">Agent 2</span><span>{assignedAgent2Name}</span></div>
+              <div class="af-confirm-row"><span class="af-label-3">Agent 3</span><span>{assignedAgent3Name}</span></div>
+            </div>
+            <div class="af-actions">
+              <button class="af-btn-next" onclick={handleConfirmAssignment}>Done</button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+</template>
