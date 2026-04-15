@@ -313,6 +313,49 @@ public with sharing class BoxOAuthController {
     }
 
     @AuraEnabled
+    public static Map<String, Object> uploadFileFromContentDoc(String folderId, String contentDocumentId) {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            // Read the file content from Salesforce
+            ContentVersion cv = [
+                SELECT Title, FileExtension, VersionData
+                FROM ContentVersion
+                WHERE ContentDocumentId = :contentDocumentId AND IsLatest = true
+                LIMIT 1
+            ];
+
+            String fileName = cv.Title + (String.isNotBlank(cv.FileExtension) ? '.' + cv.FileExtension : '');
+            String base64Content = EncodingUtil.base64Encode(cv.VersionData);
+
+            // Upload to Box
+            String accessToken = refreshAccessToken();
+            if (accessToken == null) {
+                result.put('status', 'error');
+                result.put('message', 'Not connected to Box.');
+                return result;
+            }
+
+            String fileId = BoxFileService.uploadFile(folderId, fileName, base64Content, accessToken);
+
+            if (fileId != null) {
+                result.put('status', 'success');
+                result.put('fileId', fileId);
+                result.put('message', 'File "' + fileName + '" uploaded to Box.');
+            } else {
+                result.put('status', 'error');
+                result.put('message', 'Failed to upload file.');
+            }
+
+            // Clean up — delete the ContentDocument from Salesforce (it's now in Box)
+            delete [SELECT Id FROM ContentDocument WHERE Id = :contentDocumentId];
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    @AuraEnabled
     public static String getDownloadUrl(String fileId) {
         try {
             String accessToken = refreshAccessToken();

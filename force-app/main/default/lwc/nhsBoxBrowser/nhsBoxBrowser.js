@@ -138,7 +138,7 @@ export default class NhsBoxBrowser extends LightningElement {
         this.isLoading = false;
     }
 
-    handleRefresh() {
+    @api handleRefresh() {
         if (this.browseMode && this.breadcrumbs.length > 0) {
             const current = this.breadcrumbs[this.breadcrumbs.length - 1];
             this.navigateToFolder(current.id, current.name, true);

@@ -9,6 +9,16 @@ import updateVendorContact from '@salesforce/apex/customLookupController.updateV
 import generatePDF from '@salesforce/apex/PdfGeneratorController.generatePDF';
 import findNearestAgents from '@salesforce/apex/AgentFinderController.findNearestAgents';
 import assignAgent from '@salesforce/apex/AgentFinderController.assignAgent';
+import getAvailableSlots from '@salesforce/apex/AgentFinderController.getAvailableSlots';
+import getEmailTemplates from '@salesforce/apex/NHSCommunicationsController.getEmailTemplates';
+import getRenderedTemplate from '@salesforce/apex/NHSCommunicationsController.getRenderedTemplate';
+import sendEmail from '@salesforce/apex/NHSCommunicationsController.sendEmail';
+import ensureAccessToken from '@salesforce/apex/BoxOAuthController.ensureAccessToken';
+import browseFolderById from '@salesforce/apex/BoxOAuthController.browseFolderById';
+import uploadFile from '@salesforce/apex/BoxOAuthController.uploadFile';
+import getBoxFolderForOpportunity from '@salesforce/apex/BoxOAuthController.getBoxFolderForOpportunity';
+import uploadFileFromContentDoc from '@salesforce/apex/BoxOAuthController.uploadFileFromContentDoc';
+import bookAppointment from '@salesforce/apex/AgentFinderController.bookAppointment';
 import getNotes from '@salesforce/apex/VendorNoteController.getNotes';
 import saveNote from '@salesforce/apex/VendorNoteController.saveNote';
 import getHourlyAvailability from '@salesforce/apex/VendorAvailabilityService.getHourlyAvailability';
@@ -77,6 +87,9 @@ import AGENT_2_DESKTOP_VAL_FIELD from '@salesforce/schema/Opportunity.Agent_2_De
 import AGENT_3_DESKTOP_VAL_FIELD from '@salesforce/schema/Opportunity.Agent_3_Desktop_Valuation__c';
 
 // NHS Recommended
+import LAST_AGENT_1_EMAILED_FIELD from '@salesforce/schema/Opportunity.Last_Agent_1_Emailed_On__c';
+import LAST_AGENT_2_EMAILED_FIELD from '@salesforce/schema/Opportunity.Last_Agent_2_Emailed_On__c';
+import LAST_AGENT_3_EMAILED_FIELD from '@salesforce/schema/Opportunity.Last_Agent_3_Emailed_On__c';
 import RECOMMENDED_MARKET_FIELD from '@salesforce/schema/Opportunity.Current_Asking_Price__c';
 import RECOMMENDED_TARGET_FIELD from '@salesforce/schema/Opportunity.Target_Sale__c';
 import RECOMMENDED_FORCED_FIELD from '@salesforce/schema/Opportunity.Forced_Sale__c';
@@ -90,7 +103,8 @@ const FIELDS = [
     AGENT_2_FIELD, AGENT_2_NAME_FIELD, AGENT_2_PHONE_FIELD, AGENT_2_EMAIL_FIELD, AGENT_2_APPT_FIELD, AGENT_2_EMAILED_FIELD, AGENT_2_VERBALLY_CONFIRMED_FIELD, AGENT_2_INITIAL_PRICE_FIELD, AGENT_2_TARGET_SALE_FIELD, AGENT_2_BOTTOM_LINE_FIELD,
     AGENT_3_FIELD, AGENT_3_NAME_FIELD, AGENT_3_PHONE_FIELD, AGENT_3_EMAIL_FIELD, AGENT_3_APPT_FIELD, AGENT_3_EMAILED_FIELD, AGENT_3_VERBALLY_CONFIRMED_FIELD, AGENT_3_INITIAL_PRICE_FIELD, AGENT_3_TARGET_SALE_FIELD, AGENT_3_BOTTOM_LINE_FIELD,
     RECOMMENDED_MARKET_FIELD, RECOMMENDED_TARGET_FIELD, RECOMMENDED_FORCED_FIELD,
-    AGENT_1_DESKTOP_VAL_FIELD, AGENT_2_DESKTOP_VAL_FIELD, AGENT_3_DESKTOP_VAL_FIELD
+    AGENT_1_DESKTOP_VAL_FIELD, AGENT_2_DESKTOP_VAL_FIELD, AGENT_3_DESKTOP_VAL_FIELD,
+    LAST_AGENT_1_EMAILED_FIELD, LAST_AGENT_2_EMAILED_FIELD, LAST_AGENT_3_EMAILED_FIELD
 ];
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -249,6 +263,11 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 ? (f.Agent_3_Desktop_Valuation__c.value || false)
                 : (this.formData.agent3DesktopVal || false),
 
+            // Last Emailed
+            lastAgent1Emailed: f.Last_Agent_1_Emailed_On__c?.value || null,
+            lastAgent2Emailed: f.Last_Agent_2_Emailed_On__c?.value || null,
+            lastAgent3Emailed: f.Last_Agent_3_Emailed_On__c?.value || null,
+
             // NHS Recommended
             recommendedMarket: this.currencyVal(f.Current_Asking_Price__c?.value),
             recommendedTarget: this.currencyVal(f.Target_Sale__c?.value),
@@ -277,6 +296,10 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ── Stage Visibility Getters ───────────────────────────────────────────────
+    get showFinalChecks() { return this.formData.nhsProcess === 'Final Checks'; }
+    get notFinalChecks() { return this.formData.nhsProcess !== 'Final Checks'; }
+    get propCardClass() { return 'card' + (this.showFinalChecks ? ' card-readonly' : ''); }
+
     get showVendorAvailability() {
         return this.formData.nhsProcess === 'Vendor Availability';
     }
@@ -349,6 +372,28 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get agent1ApptDisplay() { return this.formatApptDateTime(this.formData.agent1Appt); }
     get agent2ApptDisplay() { return this.formatApptDateTime(this.formData.agent2Appt); }
     get agent3ApptDisplay() { return this.formatApptDateTime(this.formData.agent3Appt); }
+
+    get nhsRecWrapClass() {
+        return 'nhs-rec-wrap' + (this.formData.nhsProcess === 'Valuations Ready' ? ' nhs-rec-highlight' : '');
+    }
+
+    formatEmailedDate(val) {
+        if (!val) return 'Not emailed';
+        try {
+            const d = new Date(val);
+            const day = d.getDate();
+            const mon = MONTHS[d.getMonth()];
+            const year = d.getFullYear();
+            const h = d.getHours();
+            const m = String(d.getMinutes()).padStart(2, '0');
+            const ampm = h >= 12 ? 'pm' : 'am';
+            const hour = h % 12 || 12;
+            return day + ' ' + mon + ' ' + year + ' ' + hour + ':' + m + ' ' + ampm;
+        } catch (e) { return val; }
+    }
+    get agent1EmailedDisplay() { return this.formatEmailedDate(this.formData.lastAgent1Emailed); }
+    get agent2EmailedDisplay() { return this.formatEmailedDate(this.formData.lastAgent2Emailed); }
+    get agent3EmailedDisplay() { return this.formatEmailedDate(this.formData.lastAgent3Emailed); }
 
     get isSchemePartExchange() { return this.formData.scheme === 'Part Exchange'; }
     get isSchemeAssistedSale() { return this.formData.scheme === 'Assisted Sale'; }
@@ -911,6 +956,540 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // ── EMAIL AGENT (from Book Agents)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @track showEmailAgent = false;
+    @track emailAgentNum = null;
+    @track emailAgentTo = '';
+    @track emailSubject = '';
+    @track emailBody = '';
+    @track emailTemplateId = null;
+    @track isLoadingEmail = false;
+    @track isSendingEmail = false;
+
+    // Template IDs: 4a = Agent 1, 4b = Agent 2, 4c = Agent 3
+    static AGENT_TEMPLATE_IDS = {
+        1: '00XKG00000121b42AA', // 04a - Agent 1 Valuation Confirmation
+        2: '00XKG00000121bI2AQ', // 04b - Agent 2 Valuation Confirmation
+        3: '00XKG00000121bJ2AQ'  // 04c - Agent 3 Valuation Confirmation
+    };
+
+    async handleEmailAgent(event) {
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        const agentEmail = this.formData['agent' + agentNum + 'Email'] || '';
+
+        this.emailAgentNum = agentNum;
+        this.emailAgentTo = agentEmail;
+        this.emailSubject = '';
+        this.emailBody = '';
+        this.emailTemplateId = NhsApplicationDetailV2.AGENT_TEMPLATE_IDS[agentNum] || null;
+        this.showEmailAgent = true;
+        this.isLoadingEmail = true;
+
+        try {
+            if (this.emailTemplateId) {
+                const rendered = await getRenderedTemplate({ templateId: this.emailTemplateId, opportunityId: this.recordId });
+                this.emailSubject = rendered.subject || '';
+                this.emailBody = rendered.body || '';
+            }
+        } catch (e) {
+            // Template render failed — user can compose manually
+        }
+        this.isLoadingEmail = false;
+    }
+
+    handleAppNotesChange(event) {
+        this.formData = { ...this.formData, notes: event.target.value };
+    }
+
+    handleEmailSubjectChange(event) { this.emailSubject = event.target.value; }
+    handleCloseEmailAgent() { this.showEmailAgent = false; }
+
+    async handleSendAgentEmail() {
+        if (!this.emailAgentTo || !this.emailSubject) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'Email address and subject are required', variant: 'error' }));
+            return;
+        }
+        this.isSendingEmail = true;
+        try {
+            const result = await sendEmail({
+                opportunityId: this.recordId,
+                toAddress: this.emailAgentTo,
+                subject: this.emailSubject,
+                body: this.emailBody,
+                ccAddress: '',
+                templateId: this.emailTemplateId
+            });
+            if (result.status === 'success') {
+                // Stamp the "Last Agent X Emailed On" field
+                const emailedField = 'Last_Agent_' + this.emailAgentNum + '_Emailed_On__c';
+                const fields = {};
+                fields['Id'] = this.recordId;
+                fields[emailedField] = new Date().toISOString();
+                try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+
+                this.showEmailAgent = false;
+                this.dispatchEvent(new ShowToastEvent({ title: 'Email Sent', message: 'Email sent to Agent ' + this.emailAgentNum, variant: 'success' }));
+                refreshApex(this.wiredRecordResult);
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed to send', variant: 'error' }));
+        }
+        this.isSendingEmail = false;
+    }
+
+    get emailAgentTitle() { return 'Email Agent ' + (this.emailAgentNum || ''); }
+    get emailAgentName() { return this.emailAgentNum ? (this.formData['agent' + this.emailAgentNum + 'Name'] || '') : ''; }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ── WILL REPORT UPLOAD (Valuations Ready stage)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @track wrUploading = false;
+    @track wrUploadSuccess = false;
+    get isValuationsReady() { return this.formData.nhsProcess === 'Valuations Ready'; }
+
+    async handleWrUploadFinished(event) {
+        const uploadedFiles = event.detail.files;
+        if (!uploadedFiles || uploadedFiles.length === 0) return;
+
+        this.wrUploading = true;
+        this.wrUploadSuccess = false;
+
+        try {
+            // Ensure Box access token
+            await ensureAccessToken();
+
+            // Find the Will Report folder inside the property's Box folder
+            let willFolderId = null;
+            if (this.recordId) {
+                const oppData = await getBoxFolderForOpportunity({ opportunityId: this.recordId });
+                if (oppData.boxFolderId) {
+                    // Browse property folder to find Will Report subfolder
+                    const propResult = await browseFolderById({ folderId: oppData.boxFolderId });
+                    if (propResult.status === 'success') {
+                        const willFolder = (propResult.entries || []).find(e => e.type === 'folder' && e.name === 'Will Report');
+                        if (willFolder) willFolderId = willFolder.id;
+                    }
+                }
+            }
+
+            if (!willFolderId) {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: 'Will Report folder not found in Box. Please create the NHS folder structure first.', variant: 'error' }));
+                this.wrUploading = false;
+                return;
+            }
+
+            // Upload each file to Box Will Report folder
+            for (const file of uploadedFiles) {
+                await uploadFileFromContentDoc({
+                    folderId: willFolderId,
+                    contentDocumentId: file.documentId
+                });
+            }
+
+            this.wrUploadSuccess = true;
+            this.dispatchEvent(new ShowToastEvent({ title: 'Uploaded', message: 'Will Report uploaded to Box', variant: 'success' }));
+
+            // Refresh Box file browser
+            const boxBrowser = this.template.querySelector('c-nhs-box-browser');
+            if (boxBrowser && boxBrowser.handleRefresh) {
+                boxBrowser.handleRefresh();
+            }
+
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => { this.wrUploadSuccess = false; }, 4000);
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Upload failed', variant: 'error' }));
+        }
+        this.wrUploading = false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ── FIGURES TO CHASE (Stage 4)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    get ftcSummary() {
+        let booked = 0;
+        [1, 2, 3].forEach(n => { if (this.formData['agent' + n + 'Appt']) booked++; });
+        return booked + ' of 3 agents booked';
+    }
+
+    get ftcRows() {
+        const agents = [
+            { key: 'ftc-1', num: 1, name: this.formData.agent1Name || 'Agent 1', dotClass: 'ba-dot ba-dot-1', appt: this.formData.agent1Appt },
+            { key: 'ftc-2', num: 2, name: this.formData.agent2Name || 'Agent 2', dotClass: 'ba-dot ba-dot-2', appt: this.formData.agent2Appt },
+            { key: 'ftc-3', num: 3, name: this.formData.agent3Name || 'Agent 3', dotClass: 'ba-dot ba-dot-3', appt: this.formData.agent3Appt }
+        ];
+
+        const now = new Date();
+
+        return agents.map((a, i) => {
+            const isDV = !!this.formData['agent' + a.num + 'DesktopVal'];
+            let dateDisplay = '—';
+            let timeDisplay = '—';
+            let apptPast = false;
+
+            if (isDV) {
+                dateDisplay = 'Desktop Valuation';
+                timeDisplay = 'N/A';
+                apptPast = true; // Desktop = no visit needed, treat as done
+            } else if (a.appt) {
+                const d = new Date(a.appt);
+                dateDisplay = d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+                const h = d.getHours();
+                const m = String(d.getMinutes()).padStart(2, '0');
+                const ampm = h >= 12 ? 'pm' : 'am';
+                const hour = h % 12 || 12;
+                timeDisplay = hour + ':' + m + ' ' + ampm;
+                apptPast = d.getTime() < now.getTime();
+            }
+
+            const initial = parseFloat(this.formData['agent' + a.num + 'InitialPrice']) || 0;
+            const target = parseFloat(this.formData['agent' + a.num + 'TargetSale']) || 0;
+            const bottom = parseFloat(this.formData['agent' + a.num + 'BottomLine']) || 0;
+            const hasAllFigures = initial > 0 && target > 0 && bottom > 0;
+            const figuresAvailable = apptPast && hasAllFigures;
+
+            return {
+                ...a, dateDisplay, timeDisplay, isDV,
+                rowClass: 'ftc-row' + (i % 2 === 0 ? '' : ' ftc-row-alt'),
+                figuresAvailable,
+                statusLabel: figuresAvailable ? '✓ Figures Available' : '⏳ Figures Waiting',
+                statusClass: figuresAvailable ? 'ftc-status-available' : 'ftc-status-badge'
+            };
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ── BOOK AGENTS (Stage 3)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    @track baBookings = {}; // { 1: { subKey, dateLabel, slotLabel, time }, 2: ..., 3: ... }
+    @track baCalExpanded = true;
+    @track baCalOffset = 0;
+    @track baAmendingAgent = null;
+    @track baAvailSlots = []; // from Apex
+
+    static BA_SLOT_LABELS = [
+        'Before 9 am', '9 am – 10 am', '10 am – 11 am', '11 am – 12 pm',
+        '12 pm – 1 pm', '1 pm – 2 pm', '2 pm – 3 pm', '3 pm – 4 pm', '4 pm – 5 pm'
+    ];
+    static BA_SLOT_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+    get ba1Booked() { return !!this.baBookings[1]; }
+    get ba2Booked() { return !!this.baBookings[2]; }
+    get ba3Booked() { return !!this.baBookings[3]; }
+    get ba1DateDisplay() { return this.baBookings[1]?.dateLabel || ''; }
+    get ba1TimeDisplay() { return this.baBookings[1] ? this.baBookings[1].time + ' (' + this.baBookings[1].slotLabel + ')' : ''; }
+    get ba2DateDisplay() { return this.baBookings[2]?.dateLabel || ''; }
+    get ba2TimeDisplay() { return this.baBookings[2] ? this.baBookings[2].time + ' (' + this.baBookings[2].slotLabel + ')' : ''; }
+    get ba3DateDisplay() { return this.baBookings[3]?.dateLabel || ''; }
+    get ba3TimeDisplay() { return this.baBookings[3] ? this.baBookings[3].time + ' (' + this.baBookings[3].slotLabel + ')' : ''; }
+    get bookingCountLabel() {
+        const count = Object.keys(this.baBookings).length;
+        return count + ' of 3 booked';
+    }
+    get baCalToggleIcon() { return this.baCalExpanded ? '▾' : '▸'; }
+
+    get baCalRangeLabel() {
+        const monday = this.getBaMonday();
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        return monday.getDate() + ' ' + MONTHS[monday.getMonth()] + ' ' + monday.getFullYear() +
+            ' – ' + sunday.getDate() + ' ' + MONTHS[sunday.getMonth()] + ' ' + sunday.getFullYear();
+    }
+
+    getBaMonday() {
+        const d = new Date();
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1) + (this.baCalOffset * 7);
+        d.setDate(diff); d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    async loadBaSlots() {
+        try {
+            const rawSlots = await getAvailableSlots({ opportunityId: this.recordId });
+            // Normalize date to string format YYYY-MM-DD for comparison
+            this.baAvailSlots = (rawSlots || []).map(s => ({
+                ...s,
+                date: s.date ? String(s.date) : ''
+            }));
+            // Pre-populate bookings from existing appointment data
+            [1, 2, 3].forEach(n => {
+                const appt = this.formData['agent' + n + 'Appt'];
+                if (appt) {
+                    const d = new Date(appt);
+                    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                    const dateLabel = dayNames[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+                    const h = d.getHours();
+                    const m = String(d.getMinutes()).padStart(2, '0');
+                    const si = h >= 8 ? h - 8 : 0;
+                    const slotLabel = si < NhsApplicationDetailV2.BA_SLOT_LABELS.length ? NhsApplicationDetailV2.BA_SLOT_LABELS[si] : '';
+                    this.baBookings = { ...this.baBookings, [n]: {
+                        subKey: '', dateLabel, slotLabel, time: String(h).padStart(2, '0') + ':' + m
+                    }};
+                }
+            });
+        } catch (e) { /* silent */ }
+    }
+
+    get baCalDays() {
+        const monday = this.getBaMonday();
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(monday); d.setDate(monday.getDate() + i);
+            const isToday = d.getTime() === today.getTime();
+            const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+            days.push({
+                key: 'bd-' + i, idx: i, date: d, dayName: NhsApplicationDetailV2.VA_DAY_NAMES[d.getDay()],
+                dayNum: d.getDate(), isToday, isWeekend,
+                thClass: 'ba-cal-table-th' + (isToday ? ' va-th-today' : '') + (isWeekend ? ' va-th-weekend' : ''),
+                dateStr: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+            });
+        }
+        return days;
+    }
+
+    get baCalRows() {
+        const days = this.baCalDays;
+        const now = new Date();
+        return NhsApplicationDetailV2.BA_SLOT_LABELS.map((label, si) => {
+            const isAm = si <= 3;
+            const hour = NhsApplicationDetailV2.BA_SLOT_HOURS[si];
+            const cells = days.map((day, di) => {
+                // Check if this slot is available from vendor availability data
+                const dateStr = day.dateStr;
+                const slotRec = this.baAvailSlots.find(s => s.date === dateStr);
+                const vendorAvail = slotRec && ((isAm && slotRec.am) || (!isAm && slotRec.pm));
+
+                // Check if the entire hour slot is in the past
+                const slotEnd = new Date(day.date);
+                slotEnd.setHours(hour + 1, 0, 0, 0);
+                const isPast = slotEnd.getTime() <= now.getTime();
+
+                const available = vendorAvail && !isPast;
+
+                const subSlots = ['00', '15', '30', '45'].map(m => {
+                    const time = String(hour).padStart(2, '0') + ':' + m;
+                    const subKey = di + '-' + si + '-' + time;
+                    const dayLabel = day.dayName + ' ' + day.dayNum + ' ' + MONTHS[day.date.getMonth()];
+
+                    // Check if any agent is booked here
+                    const bookedAgents = [];
+                    [1, 2, 3].forEach(n => {
+                        if (this.baBookings[n] && this.baBookings[n].subKey === subKey) bookedAgents.push(n);
+                    });
+                    const hasAgents = bookedAgents.length > 0;
+
+                    return {
+                        key: 'sub-' + di + '-' + si + '-' + m,
+                        subKey, time, dayLabel, hasAgents,
+                        chipClass: 'ba-chip' + (isAm ? ' ba-chip-am' : ' ba-chip-pm') + (hasAgents ? ' ba-chip-booked' : ''),
+                        agentDots: bookedAgents.map(n => ({ key: 'dot-' + n, dotClass: 'ba-dot ba-dot-' + n }))
+                    };
+                });
+
+                return {
+                    key: 'cell-' + di + '-' + si, available,
+                    tdClass: available ? (isAm ? 'ba-td-avail-am' : 'ba-td-avail-pm') : 'ba-td-unavail',
+                    subSlots
+                };
+            });
+
+            return {
+                key: 'row-' + si, label,
+                tdLabelClass: isAm ? 'ba-td-am' : 'ba-td-pm',
+                cells
+            };
+        });
+    }
+
+    handleBaToggleCal() { this.baCalExpanded = !this.baCalExpanded; }
+    handleBaCalNavStop(event) { event.stopPropagation(); }
+    handleBaCalPrev() { this.baCalOffset--; }
+    handleBaCalNext() { this.baCalOffset++; }
+    handleBaCalToday() { this.baCalOffset = 0; }
+
+    // Agent picker popover state
+    @track showBaPicker = false;
+    @track baPickerDayLabel = '';
+    @track baPickerSlotLabel = '';
+    @track baPickerTime = '';
+    @track baPickerSubKey = '';
+    @track baPickerSlotRec = null;
+    @track baPickerStyle = '';
+
+    get baPicker1BookedHere() { return this.baBookings[1]?.subKey === this.baPickerSubKey; }
+    get baPicker2BookedHere() { return this.baBookings[2]?.subKey === this.baPickerSubKey; }
+    get baPicker3BookedHere() { return this.baBookings[3]?.subKey === this.baPickerSubKey; }
+    get baPicker1BookedElsewhere() { return !this.formData.agent1DesktopVal && !!this.baBookings[1] && this.baBookings[1].subKey !== this.baPickerSubKey; }
+    get baPicker2BookedElsewhere() { return !this.formData.agent2DesktopVal && !!this.baBookings[2] && this.baBookings[2].subKey !== this.baPickerSubKey; }
+    get baPicker3BookedElsewhere() { return !this.formData.agent3DesktopVal && !!this.baBookings[3] && this.baBookings[3].subKey !== this.baPickerSubKey; }
+    get baPicker1IsDV() { return !!this.formData.agent1DesktopVal; }
+    get baPicker2IsDV() { return !!this.formData.agent2DesktopVal; }
+    get baPicker3IsDV() { return !!this.formData.agent3DesktopVal; }
+
+    handleBaAmend(event) {
+        const agentNum = event.currentTarget.dataset.agent;
+        this.baAmendingAgent = agentNum;
+        this.baCalExpanded = true;
+    }
+
+    // Cancel booking — two-step confirmation with reason
+    @track baCancelAgent = null; // which agent is being cancelled (1, 2, 3)
+    @track baCancelStep = 0; // 0=none, 1=first confirm, 2=reason
+    @track baCancelReason = '';
+
+    handleBaCancel(event) {
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        this.baCancelAgent = agentNum;
+        this.baCancelStep = 1;
+        this.baCancelReason = '';
+    }
+
+    handleBaCancelKeep() {
+        this.baCancelAgent = null;
+        this.baCancelStep = 0;
+    }
+
+    handleBaCancelProceed() {
+        this.baCancelStep = 2;
+    }
+
+    handleBaCancelReasonChange(event) {
+        this.baCancelReason = event.target.value;
+    }
+
+    async handleBaCancelConfirm() {
+        const agentNum = this.baCancelAgent;
+        if (!agentNum) return;
+        const slot = 'agent' + agentNum;
+        const agentName = this.formData[slot + 'Name'] || 'Agent ' + agentNum;
+        const reason = this.baCancelReason.trim();
+
+        try {
+            // Capture slot info BEFORE deleting
+            const booking = this.baBookings[agentNum];
+            const slotInfo = booking ? booking.dateLabel + ' ' + booking.time : 'N/A';
+
+            // Clear the appointment
+            await bookAppointment({
+                opportunityId: this.recordId,
+                agentSlot: slot,
+                availabilityId: null,
+                selectedTime: null
+            });
+
+            const newBookings = { ...this.baBookings };
+            delete newBookings[agentNum];
+            this.baBookings = newBookings;
+
+            // Clear appointment from formData immediately for instant UI update
+            this.formData = { ...this.formData, ['agent' + agentNum + 'Appt']: null };
+
+            const noteText = 'BOOKING CANCELLED — ' + agentName + '\nSlot: ' + slotInfo + '\nReason: ' + (reason || 'No reason provided');
+            await saveNote({ noteText: noteText, opportunityId: this.recordId });
+            this.loadVendorNotes();
+
+            this.baCancelAgent = null;
+            this.baCancelStep = 0;
+            this.baCancelReason = '';
+
+            this.dispatchEvent(new ShowToastEvent({ title: 'Booking Cancelled', message: agentName + ' booking cancelled', variant: 'info' }));
+            refreshApex(this.wiredRecordResult);
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed', variant: 'error' }));
+        }
+    }
+
+    get showBaCancel1() { return this.baCancelStep >= 1 && this.baCancelAgent === 1; }
+    get showBaCancel2() { return this.baCancelStep >= 1 && this.baCancelAgent === 2; }
+    get showBaCancel3() { return this.baCancelStep >= 1 && this.baCancelAgent === 3; }
+    get isBaCancelStep1() { return this.baCancelStep === 1; }
+    get isBaCancelStep2() { return this.baCancelStep === 2; }
+    get baCancelAgentName() {
+        if (!this.baCancelAgent) return '';
+        return this.formData['agent' + this.baCancelAgent + 'Name'] || 'Agent ' + this.baCancelAgent;
+    }
+
+    handleBaSlotClick(event) {
+        event.stopPropagation();
+        const subKey = event.currentTarget.dataset.subKey;
+        const dayLabel = event.currentTarget.dataset.dayLabel;
+        const slotLabel = event.currentTarget.dataset.slotLabel;
+        const time = event.currentTarget.dataset.time;
+
+        // Find the slot record
+        const days = this.baCalDays;
+        const diStr = subKey.split('-')[0];
+        const day = days[parseInt(diStr, 10)];
+        if (!day) return;
+        const slotRec = this.baAvailSlots.find(s => s.date === day.dateStr);
+        if (!slotRec) return;
+
+        // Position the popover near the clicked chip
+        const rect = event.currentTarget.getBoundingClientRect();
+        let top = rect.bottom + 8;
+        let left = rect.left;
+        if (top + 220 > window.innerHeight) top = rect.top - 220;
+        if (left + 260 > window.innerWidth) left = window.innerWidth - 265;
+
+        this.baPickerSubKey = subKey;
+        this.baPickerDayLabel = dayLabel;
+        this.baPickerSlotLabel = slotLabel;
+        this.baPickerTime = time;
+        this.baPickerSlotRec = slotRec;
+        this.baPickerStyle = 'top:' + top + 'px;left:' + left + 'px;';
+        this.showBaPicker = true;
+    }
+
+    handleBaClosePicker() { this.showBaPicker = false; }
+    handleBaPickerStop(event) { event.stopPropagation(); }
+
+    async handleBaPickerBook(event) {
+        event.stopPropagation();
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        if (!this.baPickerSlotRec) return;
+
+        try {
+            const result = await bookAppointment({
+                opportunityId: this.recordId,
+                agentSlot: 'agent' + agentNum,
+                availabilityId: this.baPickerSlotRec.id,
+                selectedTime: this.baPickerTime
+            });
+
+            if (result.status === 'success') {
+                this.baBookings = { ...this.baBookings, [agentNum]: {
+                    subKey: this.baPickerSubKey,
+                    dateLabel: this.baPickerDayLabel,
+                    slotLabel: this.baPickerSlotLabel,
+                    time: this.baPickerTime
+                }};
+                this.baAmendingAgent = null;
+                this.dispatchEvent(new ShowToastEvent({ title: 'Booked', message: 'Agent ' + agentNum + ' booked at ' + this.baPickerTime + ' on ' + this.baPickerDayLabel, variant: 'success' }));
+                refreshApex(this.wiredRecordResult);
+
+                // Keep picker open so user can book more agents at same slot
+                // Auto-collapse calendar if all 3 booked
+                if (Object.keys(this.baBookings).length === 3) {
+                    this.showBaPicker = false;
+                    this.baCalExpanded = false;
+                }
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed', variant: 'error' }));
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // ── VENDOR NOTES
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1018,6 +1597,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
 
     connectedCallback() {
         this.loadVaData();
+        this.loadBaSlots();
         this.loadVendorNotes();
     }
 

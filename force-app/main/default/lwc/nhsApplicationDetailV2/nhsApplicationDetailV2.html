@@ -35,9 +35,11 @@
     <div class="main-col">
 
       <!-- ---- A. Property Details Card ---- -->
-      <div class="card">
+      <template if:true={notFinalChecks}>
+      <div class={propCardClass}>
         <div class="card-header">
           <h2 class="card-title"><span class="card-title-dot"></span>Property Details</h2>
+          <template if:true={notFinalChecks}>
           <div class="card-actions">
             <button class="action-btn" onclick={handleCallVendor} title="Call Vendor">
               <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
@@ -73,6 +75,7 @@
               <span>Get Directions</span>
             </a>
           </div>
+          </template><!-- /notFinalChecks actions -->
         </div>
 
         <div class="card-body">
@@ -204,6 +207,7 @@
 
         </div>
       </div>
+      </template><!-- /notFinalChecks Property Details -->
 
       <!-- ---- B. Stage-Specific Cards ---- -->
 
@@ -312,13 +316,380 @@
         <div class="card">
           <div class="card-header">
             <h2 class="card-title"><span class="card-title-dot"></span>Book Agents</h2>
+            <span class="ba-count">{bookingCountLabel}</span>
           </div>
-          <div class="card-body">
-            <c-nhs-agent-booking
-              record-id={recordId}
-              onbooked={handleAgentBooked}>
-            </c-nhs-agent-booking>
+
+          <!-- 3 Agent Status Cards -->
+          <div class="ba-status-grid">
+            <!-- Agent 1 -->
+            <div class="ba-status ba-status-1">
+              <div class="ba-status-top">
+                <div class="ba-agent-id">
+                  <span class="ba-num ba-num-1">1</span>
+                  <div>
+                    <div class="ba-agent-label">Agent 1</div>
+                    <div class="ba-agent-name">{formData.agent1Name}</div>
+                  </div>
+                </div>
+                <template if:true={formData.agent1DesktopVal}>
+                  <span class="ba-dv-badge">Desktop</span>
+                </template>
+                <template if:false={formData.agent1DesktopVal}>
+                  <template if:true={ba1Booked}>
+                    <span class="ba-booked-badge ba-badge-1">✓ Booked</span>
+                  </template>
+                </template>
+              </div>
+              <template if:true={formData.agent1DesktopVal}>
+                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+              </template>
+              <template if:false={formData.agent1DesktopVal}>
+              <div class="ba-appt-box ba-appt-1">
+                <template if:true={ba1Booked}>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba1DateDisplay}</div></div></div>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba1TimeDisplay}</div></div></div>
+                </template>
+                <template if:false={ba1Booked}>
+                  <div class="ba-appt-empty">No appointment booked yet.</div>
+                </template>
+              </div>
+              <template if:true={ba1Booked}>
+                <div class="ba-action-btns">
+                  <button class="ba-amend-btn" data-agent="1" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                  <button class="ba-cancel-btn" data-agent="1" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                </div>
+                <button class="ba-email-btn ba-email-1" data-agent="1" onclick={handleEmailAgent}>✉️ Email Agent 1</button>
+                <template if:true={showBaCancel1}>
+                  <div class="ba-cancel-confirm">
+                    <template if:true={isBaCancelStep1}>
+                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 1?</div>
+                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                      </div>
+                    </template>
+                    <template if:true={isBaCancelStep2}>
+                      <div class="ba-cc-title">📝 Cancellation Reason</div>
+                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </template>
+              </template><!-- /notDesktopVal agent1 -->
+            </div>
+
+            <!-- Agent 2 -->
+            <div class="ba-status ba-status-2">
+              <div class="ba-status-top">
+                <div class="ba-agent-id">
+                  <span class="ba-num ba-num-2">2</span>
+                  <div>
+                    <div class="ba-agent-label">Agent 2</div>
+                    <div class="ba-agent-name">{formData.agent2Name}</div>
+                  </div>
+                </div>
+                <template if:true={formData.agent2DesktopVal}>
+                  <span class="ba-dv-badge">Desktop</span>
+                </template>
+                <template if:false={formData.agent2DesktopVal}>
+                  <template if:true={ba2Booked}>
+                    <span class="ba-booked-badge ba-badge-2">✓ Booked</span>
+                  </template>
+                </template>
+              </div>
+              <template if:true={formData.agent2DesktopVal}>
+                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+              </template>
+              <template if:false={formData.agent2DesktopVal}>
+              <div class="ba-appt-box ba-appt-2">
+                <template if:true={ba2Booked}>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba2DateDisplay}</div></div></div>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba2TimeDisplay}</div></div></div>
+                </template>
+                <template if:false={ba2Booked}>
+                  <div class="ba-appt-empty">No appointment booked yet.</div>
+                </template>
+              </div>
+              <template if:true={ba2Booked}>
+                <div class="ba-action-btns">
+                  <button class="ba-amend-btn" data-agent="2" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                  <button class="ba-cancel-btn" data-agent="2" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                </div>
+                <button class="ba-email-btn ba-email-2" data-agent="2" onclick={handleEmailAgent}>✉️ Email Agent 2</button>
+                <template if:true={showBaCancel2}>
+                  <div class="ba-cancel-confirm">
+                    <template if:true={isBaCancelStep1}>
+                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 2?</div>
+                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                      </div>
+                    </template>
+                    <template if:true={isBaCancelStep2}>
+                      <div class="ba-cc-title">📝 Cancellation Reason</div>
+                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </template>
+              </template><!-- /notDesktopVal agent2 -->
+            </div>
+
+            <!-- Agent 3 -->
+            <div class="ba-status ba-status-3">
+              <div class="ba-status-top">
+                <div class="ba-agent-id">
+                  <span class="ba-num ba-num-3">3</span>
+                  <div>
+                    <div class="ba-agent-label">Agent 3</div>
+                    <div class="ba-agent-name">{formData.agent3Name}</div>
+                  </div>
+                </div>
+                <template if:true={formData.agent3DesktopVal}>
+                  <span class="ba-dv-badge">Desktop</span>
+                </template>
+                <template if:false={formData.agent3DesktopVal}>
+                  <template if:true={ba3Booked}>
+                    <span class="ba-booked-badge ba-badge-3">✓ Booked</span>
+                  </template>
+                </template>
+              </div>
+              <template if:true={formData.agent3DesktopVal}>
+                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+              </template>
+              <template if:false={formData.agent3DesktopVal}>
+              <div class="ba-appt-box ba-appt-3">
+                <template if:true={ba3Booked}>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba3DateDisplay}</div></div></div>
+                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba3TimeDisplay}</div></div></div>
+                </template>
+                <template if:false={ba3Booked}>
+                  <div class="ba-appt-empty">No appointment booked yet.</div>
+                </template>
+              </div>
+              <template if:true={ba3Booked}>
+                <div class="ba-action-btns">
+                  <button class="ba-amend-btn" data-agent="3" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                  <button class="ba-cancel-btn" data-agent="3" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                </div>
+                <button class="ba-email-btn ba-email-3" data-agent="3" onclick={handleEmailAgent}>✉️ Email Agent 3</button>
+                <template if:true={showBaCancel3}>
+                  <div class="ba-cancel-confirm">
+                    <template if:true={isBaCancelStep1}>
+                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 3?</div>
+                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                      </div>
+                    </template>
+                    <template if:true={isBaCancelStep2}>
+                      <div class="ba-cc-title">📝 Cancellation Reason</div>
+                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                      <div class="ba-cc-btns">
+                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </template>
+              </template><!-- /notDesktopVal agent3 -->
+            </div>
           </div>
+
+          <!-- Availability Calendar Toggle -->
+          <div class="ba-cal-toggle" onclick={handleBaToggleCal}>
+            <span class="ba-cal-arrow">{baCalToggleIcon}</span>
+            <span class="ba-cal-title">Availability Calendar</span>
+            <span class="ba-cal-range">{baCalRangeLabel}</span>
+            <template if:true={baAmendingAgent}>
+              <span class="ba-cal-hint">Select a new slot for Agent {baAmendingAgent} below</span>
+            </template>
+            <div class="ba-cal-nav" onclick={handleBaCalNavStop}>
+              <button class="va-nav-btn" onclick={handleBaCalPrev}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                Prev
+              </button>
+              <button class="va-nav-btn" onclick={handleBaCalToday}>Today</button>
+              <button class="va-nav-btn" onclick={handleBaCalNext}>
+                Next
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Calendar Grid -->
+          <template if:true={baCalExpanded}>
+            <div class="ba-cal-wrap">
+              <table class="ba-cal-table">
+                <thead>
+                  <tr>
+                    <th class="ba-cal-th-time">Time Slot</th>
+                    <template for:each={baCalDays} for:item="day">
+                      <th key={day.key} class={day.thClass}>
+                        <div class="va-day-name">{day.dayName}</div>
+                        <div class="va-day-num">{day.dayNum}</div>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template for:each={baCalRows} for:item="row">
+                    <tr key={row.key}>
+                      <td class={row.tdLabelClass}>{row.label}</td>
+                      <template for:each={row.cells} for:item="cell">
+                        <td key={cell.key} class={cell.tdClass}>
+                          <template if:true={cell.available}>
+                            <div class="ba-slot-grid">
+                              <template for:each={cell.subSlots} for:item="sub">
+                                <div key={sub.key} class={sub.chipClass} data-sub-key={sub.subKey} data-day-label={sub.dayLabel} data-slot-label={row.label} data-time={sub.time} onclick={handleBaSlotClick}>
+                                  {sub.time}
+                                  <template if:true={sub.hasAgents}>
+                                    <div class="ba-chip-dots">
+                                      <template for:each={sub.agentDots} for:item="dot">
+                                        <span key={dot.key} class={dot.dotClass}></span>
+                                      </template>
+                                    </div>
+                                  </template>
+                                </div>
+                              </template>
+                            </div>
+                          </template>
+                          <template if:false={cell.available}>
+                            <div class="ba-slot-empty">—</div>
+                          </template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <!-- Agent Picker Popover -->
+          <template if:true={showBaPicker}>
+            <div class="ba-picker-overlay" onclick={handleBaClosePicker}>
+              <div class="ba-picker" onclick={handleBaPickerStop} style={baPickerStyle}>
+                <div class="ba-picker-header">
+                  <div class="ba-picker-title">{baPickerDayLabel}</div>
+                  <div class="ba-picker-sub">{baPickerSlotLabel} · {baPickerTime}</div>
+                </div>
+                <div class="ba-picker-agents">
+                  <div class="ba-picker-row">
+                    <span class="ba-dot ba-dot-1"></span>
+                    <span class="ba-picker-name">{formData.agent1Name}</span>
+                    <template if:true={baPicker1IsDV}>
+                      <span class="ba-picker-dv">Desktop</span>
+                    </template>
+                    <template if:false={baPicker1IsDV}>
+                      <template if:true={baPicker1BookedHere}>
+                        <span class="ba-picker-booked">✓ Booked</span>
+                      </template>
+                      <template if:true={baPicker1BookedElsewhere}>
+                        <button class="ba-picker-amend ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Amend</button>
+                      </template>
+                      <template if:false={baPicker1BookedHere}>
+                        <template if:false={baPicker1BookedElsewhere}>
+                          <button class="ba-picker-book ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Book</button>
+                        </template>
+                      </template>
+                    </template>
+                  </div>
+                  <div class="ba-picker-row">
+                    <span class="ba-dot ba-dot-2"></span>
+                    <span class="ba-picker-name">{formData.agent2Name}</span>
+                    <template if:true={baPicker2IsDV}>
+                      <span class="ba-picker-dv">Desktop</span>
+                    </template>
+                    <template if:false={baPicker2IsDV}>
+                      <template if:true={baPicker2BookedHere}>
+                        <span class="ba-picker-booked">✓ Booked</span>
+                      </template>
+                      <template if:true={baPicker2BookedElsewhere}>
+                        <button class="ba-picker-amend ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Amend</button>
+                      </template>
+                      <template if:false={baPicker2BookedHere}>
+                        <template if:false={baPicker2BookedElsewhere}>
+                          <button class="ba-picker-book ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Book</button>
+                        </template>
+                      </template>
+                    </template>
+                  </div>
+                  <div class="ba-picker-row">
+                    <span class="ba-dot ba-dot-3"></span>
+                    <span class="ba-picker-name">{formData.agent3Name}</span>
+                    <template if:true={baPicker3IsDV}>
+                      <span class="ba-picker-dv">Desktop</span>
+                    </template>
+                    <template if:false={baPicker3IsDV}>
+                      <template if:true={baPicker3BookedHere}>
+                        <span class="ba-picker-booked">✓ Booked</span>
+                      </template>
+                      <template if:true={baPicker3BookedElsewhere}>
+                        <button class="ba-picker-amend ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Amend</button>
+                      </template>
+                      <template if:false={baPicker3BookedHere}>
+                        <template if:false={baPicker3BookedElsewhere}>
+                          <button class="ba-picker-book ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Book</button>
+                        </template>
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Email Agent Compose Modal -->
+          <template if:true={showEmailAgent}>
+            <div class="ba-email-overlay" onclick={handleCloseEmailAgent}>
+              <div class="ba-email-modal" onclick={handleBaPickerStop}>
+                <div class="ba-email-header">
+                  <h3>{emailAgentTitle}</h3>
+                  <span class="ba-email-agent-name">{emailAgentName}</span>
+                  <button class="af-close" onclick={handleCloseEmailAgent}>&times;</button>
+                </div>
+                <template if:true={isLoadingEmail}>
+                  <div class="ba-email-loading"><span class="save-spinner"></span> Loading template...</div>
+                </template>
+                <template if:false={isLoadingEmail}>
+                  <div class="ba-email-fields">
+                    <div class="ba-email-field-row">
+                      <span class="ba-email-label">To</span>
+                      <input type="text" class="ba-email-input" value={emailAgentTo}/>
+                    </div>
+                    <div class="ba-email-field-row">
+                      <span class="ba-email-label">Subject</span>
+                      <input type="text" class="ba-email-input" value={emailSubject} onchange={handleEmailSubjectChange}/>
+                    </div>
+                    <div class="ba-email-preview">
+                      <lightning-formatted-rich-text value={emailBody}></lightning-formatted-rich-text>
+                    </div>
+                  </div>
+                  <div class="ba-email-footer">
+                    <button class="ba-cc-keep" onclick={handleCloseEmailAgent}>Discard</button>
+                    <button class="ba-email-send" onclick={handleSendAgentEmail} disabled={isSendingEmail}>
+                      <template if:true={isSendingEmail}>Sending...</template>
+                      <template if:false={isSendingEmail}>Send ✉️</template>
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
         </div>
       </template>
 
@@ -327,37 +698,64 @@
         <div class="card">
           <div class="card-header">
             <h2 class="card-title"><span class="card-title-dot"></span>Figures to Chase</h2>
+            <span class="ba-count">{ftcSummary}</span>
           </div>
-          <div class="card-body">
-            <table class="status-table">
-              <thead>
-                <tr>
-                  <th>Agent</th>
-                  <th>Status</th>
-                  <th>Last Chased</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template for:each={figuresToChase} for:item="row">
-                  <tr key={row.id}>
-                    <td>{row.agentName}</td>
-                    <td>
-                      <span class={row.statusClass}>{row.status}</span>
-                    </td>
-                    <td>{row.lastChased}</td>
-                    <td>
-                      <button class="btn-chase" data-id={row.id} onclick={handleChaseAgent}>Chase</button>
-                    </td>
+          <div class="card-body" style="padding: 16px;">
+            <div class="ftc-wrap">
+              <div class="ftc-title">📋 Outstanding Figures</div>
+              <table class="ftc-table">
+                <thead>
+                  <tr>
+                    <th class="ftc-th">Agent</th>
+                    <th class="ftc-th">Date</th>
+                    <th class="ftc-th">Time</th>
+                    <th class="ftc-th">Status</th>
                   </tr>
-                </template>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <template for:each={ftcRows} for:item="row">
+                    <tr key={row.key} class={row.rowClass}>
+                      <td class="ftc-td">
+                        <div class="ftc-agent">
+                          <span class={row.dotClass}></span>
+                          <span class="ftc-agent-name">{row.name}</span>
+                        </div>
+                      </td>
+                      <td class="ftc-td">
+                        <template if:true={row.isDV}>
+                          <span class="ftc-dv-badge">Desktop Valuation</span>
+                        </template>
+                        <template if:false={row.isDV}>
+                          {row.dateDisplay}
+                        </template>
+                      </td>
+                      <td class="ftc-td">
+                        <template if:true={row.isDV}>
+                          <span class="ftc-dv-na">No visit</span>
+                        </template>
+                        <template if:false={row.isDV}>
+                          {row.timeDisplay}
+                        </template>
+                      </td>
+                      <td class="ftc-td">
+                        <span class={row.statusClass}>{row.statusLabel}</span>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </template>
 
+      <!-- ---- FINAL CHECKS (Stage 7) ---- -->
+      <template if:true={showFinalChecks}>
+        <c-nhs-final-checks-page record-id={recordId}></c-nhs-final-checks-page>
+      </template>
+
       <!-- ---- C. Agent Details Card (Collapsible) ---- -->
+      <template if:true={notFinalChecks}>
       <div class="card">
         <div class="card-header" style="cursor: pointer;" onclick={toggleAgentCard}>
           <h2 class="card-title">
@@ -414,11 +812,8 @@
                       <div class="dv-badge">Desktop Valuation — No visit required</div>
                     </template>
                     <div class="field-row">
-                      <label class="field-label">Agent Emailed</label>
-                      <select class="slds-select" data-field="agent1Emailed" onchange={handleFieldChange}>
-                        <option value="No" selected={isAgent1EmailedNo}>No</option>
-                        <option value="Yes" selected={isAgent1EmailedYes}>Yes</option>
-                      </select>
+                      <label class="field-label">Agent Last Emailed on</label>
+                      <div class="appt-readonly">{agent1EmailedDisplay}</div>
                     </div>
                     <div class="field-row">
                       <label class="field-label">Verbally Confirmed</label>
@@ -483,11 +878,8 @@
                       <div class="dv-badge">Desktop Valuation — No visit required</div>
                     </template>
                     <div class="field-row">
-                      <label class="field-label">Agent Emailed</label>
-                      <select class="slds-select" data-field="agent2Emailed" onchange={handleFieldChange}>
-                        <option value="No" selected={isAgent2EmailedNo}>No</option>
-                        <option value="Yes" selected={isAgent2EmailedYes}>Yes</option>
-                      </select>
+                      <label class="field-label">Agent Last Emailed on</label>
+                      <div class="appt-readonly">{agent2EmailedDisplay}</div>
                     </div>
                     <div class="field-row">
                       <label class="field-label">Verbally Confirmed</label>
@@ -552,11 +944,8 @@
                       <div class="dv-badge">Desktop Valuation — No visit required</div>
                     </template>
                     <div class="field-row">
-                      <label class="field-label">Agent Emailed</label>
-                      <select class="slds-select" data-field="agent3Emailed" onchange={handleFieldChange}>
-                        <option value="No" selected={isAgent3EmailedNo}>No</option>
-                        <option value="Yes" selected={isAgent3EmailedYes}>Yes</option>
-                      </select>
+                      <label class="field-label">Agent Last Emailed on</label>
+                      <div class="appt-readonly">{agent3EmailedDisplay}</div>
                     </div>
                     <div class="field-row">
                       <label class="field-label">Verbally Confirmed</label>
@@ -588,8 +977,8 @@
             </div>
 
             <!-- NHS Recommended Section -->
-            <div class="nhs-rec-wrap">
-              <div class="nhs-rec-title">New Home Solutions Recommended</div>
+            <div class={nhsRecWrapClass}>
+              <div class="nhs-rec-title">New Home Solutions Recommendations</div>
               <div class="nhs-rec-row">
                 <div class="nhs-rec-item">
                   <div class="nhs-rec-label">Market</div>
@@ -614,6 +1003,40 @@
                 </div>
               </div>
             </div>
+
+            <!-- Will Report Upload — only on Valuations Ready -->
+            <template if:true={isValuationsReady}>
+              <div class="wr-upload-wrap">
+                <div class="wr-upload-header">
+                  <span class="wr-upload-icon">📄</span>
+                  <div>
+                    <div class="wr-upload-title">Upload Will Report</div>
+                    <div class="wr-upload-sub">Upload the valuation report to the Will Report folder in Box</div>
+                  </div>
+                </div>
+                <div class="wr-upload-body">
+                  <template if:true={wrUploading}>
+                    <div class="wr-upload-progress">
+                      <span class="save-spinner"></span> Uploading to Box...
+                    </div>
+                  </template>
+                  <template if:true={wrUploadSuccess}>
+                    <div class="wr-upload-success">✓ Report uploaded successfully</div>
+                  </template>
+                  <template if:false={wrUploading}>
+                    <template if:false={wrUploadSuccess}>
+                      <lightning-file-upload
+                        label="Drop file or click to upload"
+                        name="willReportUpload"
+                        record-id={recordId}
+                        onuploadfinished={handleWrUploadFinished}
+                        class="wr-file-input">
+                      </lightning-file-upload>
+                    </template>
+                  </template>
+                </div>
+              </div>
+            </template>
 
           </div>
         </template>
@@ -669,6 +1092,7 @@
           </template>
         </div>
       </div>
+      </template><!-- /notFinalChecks -->
 
     </div>
 
@@ -746,15 +1170,8 @@
         <div class="card-header">
           <h2 class="card-title"><span class="card-title-dot"></span>Application Notes</h2>
         </div>
-        <div class="card-body">
-          <lightning-textarea
-            label="Application Notes"
-            variant="label-hidden"
-            value={formData.applicationNotes}
-            data-field="applicationNotes"
-            placeholder="Internal notes about this application..."
-            onchange={handleFieldChange}>
-          </lightning-textarea>
+        <div class="card-body" style="padding: 14px;">
+          <textarea class="app-notes-textarea" placeholder="Application notes..." onchange={handleAppNotesChange}>{formData.notes}</textarea>
         </div>
       </div>
 
@@ -779,6 +1196,7 @@
       </button>
     </div>
     <div class="bottom-right">
+      <template if:true={notFinalChecks}>
       <button class="btn-bottom btn-cancel" onclick={handleCancel}>Cancel</button>
       <template if:false={isSaving}>
         <template if:false={saveSuccess}>
@@ -800,6 +1218,7 @@
           Saving...
         </button>
       </template>
+      </template><!-- /notFinalChecks for save buttons -->
     </div>
   </div>
 
