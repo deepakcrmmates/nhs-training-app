@@ -4,7 +4,7 @@
 **Client:** New Home Solutions
 **Development Partner:** CRM Mates Ltd, London
 **Lead Salesforce Consultant:** Deepak K Rana
-**Last Updated:** 13 April 2026
+**Last Updated:** 15 April 2026
 
 ---
 
@@ -35,7 +35,7 @@ CRM Mates Ltd is the development partner responsible for the design, build, and 
 
 | Metric | Count |
 |---|---|
-| Lightning Web Components | 115+ |
+| Lightning Web Components | 116+ |
 | Apex Classes (production) | 82 |
 | Apex Test Classes | 30+ |
 | External Integrations | 9 |
@@ -405,6 +405,20 @@ All 13 record types have the full set of 9 `NHS_Process__c` picklist values assi
 | `nhsFiguresToChaseList` | Outstanding figures requiring follow-up | `FiguresToChaseController` |
 | `nhsFiguresReturnedList` | Valuations returned tracking | `FiguresReturnedController` |
 | `nhsValuationsReadyList` | Valuations ready for review | `ValuationsReadyController` |
+
+### Application Detail V2 (Record Page)
+
+| Component | Purpose | Apex Dependency |
+|---|---|---|
+| `nhsApplicationDetailV2` | Full application record page with pipeline view, property details, agent booking, valuations, final checks, vendor notes, Box storage | Multiple controllers |
+
+**Stage-specific behaviour:**
+- Stage 1 (Application): Property Details + Agent Details
+- Stage 2 (Vendor Availability): AM/PM calendar with weekend toggles
+- Stage 3 (Book Agents): 3 agent status cards + 15-min slot calendar + agent picker + Email Agent
+- Stage 4 (Figures to Chase): Outstanding figures table with dynamic status
+- Stage 5 (Valuations Ready): NHS Recommendations highlighted + Will Report upload
+- Stage 7 (Final Checks): Read-only, only Final Checks checklist shown
 
 ### Home Dashboard
 
@@ -1070,6 +1084,22 @@ force-app/main/default/
 | 2026-04-13 | Built Airparser integration | AirparserController, nhsAirparser LWC, Parsed_Application__c staging object, Airparser_Field_Mapping__c transformation rules, Airparser_API Remote Site, NHS_API_Config__c fields (Airparser_API_Key, Airparser_Inbox_Id) |
 | 2026-04-13 | Airparser features: inbox browser, doc viewer, schema push, transformation rules | Drill-down: List Inboxes → Click inbox → Documents → Click doc → Parsed fields. Mapping Rules: 45 default rules, dot-notation nested access, name/address splitting, currency parsing |
 | 2026-04-13 | Added Airparser to API Config page and health check | NHSApiConfigController updated with Airparser block, NHSApiHealthCheck tests Airparser API connectivity |
+| 2026-04-14 | Built Application Detail V2 (nhsApplicationDetailV2) | New Lightning Record Page with pipeline view (yellow current, green done, white future), two-column layout (main + 300px sticky sidebar), collapsible agent details, stage-specific card visibility |
+| 2026-04-14 | V2 Property Details card | Green address box (5-column: Address, HouseBuilder lookup, Development, Plot, Scheme), blue vendor info box (4-column: Name, Mobile, Phone, Email), 3 metric cards (Vendor Expectations, Received Date, ALCD), action buttons (Call, Email, Notes with quick note popup, Get Directions via Google Maps) |
+| 2026-04-14 | V2 Agent Details section | 3 color-coded columns (green/blue/lavender), colored headers, read-only appointments, Desktop Valuation toggle with "No visit required" badge, valuation figures as horizontal rows (£ prefix + input), NHS Recommendations section with underline inputs, Agent Last Emailed On read-only datetime display |
+| 2026-04-14 | V2 Vendor Availability (AM/PM model) | 2-row calendar (AM/PM instead of hourly), bulk marks (All Day/AM/PM/Clear), per-day All toggle, weekend enable checkbox (persistent via data detection), past days disabled in sage, hourly slots synced from AM/PM on save via VendorAvailabilityService.syncHourlySlotsFromAmPm |
+| 2026-04-14 | V2 Book Agents (inline) | 3 agent status cards with booking display, collapsible availability calendar with 15-min sub-slots (2x2 grid), agent picker popover (Book/Amend/Desktop states), Desktop Valuation blocks booking, future-only slots, cancel booking with double confirmation + reason saved to Vendor Notes |
+| 2026-04-14 | V2 Email Agent | ✉️ Email Agent 1/2/3 buttons on Book Agents status cards, compose modal with HTML preview (lightning-formatted-rich-text), pre-populated templates (04a/04b/04c), stamps Last_Agent_X_Emailed_On__c on send |
+| 2026-04-14 | V2 Figures to Chase | Amber Outstanding Figures table (Agent, Date, Time, Status), Desktop Valuation support (no visit needed, shows "Desktop Valuation" badge), dynamic status: ⏳ Figures Waiting vs ✓ Figures Available (appointment past + all 3 valuations > 0) |
+| 2026-04-14 | V2 Valuations Ready stage | NHS Recommendations highlighted in light red with pulse animation, Will Report upload to Box (uploads to Will Report subfolder, auto-refreshes Box browser) |
+| 2026-04-14 | V2 Final Checks stage | Shows nhsFinalChecksPage checklist, hides Property Details/Agent Details/Box/Vendor Notes/Save buttons, entire application read-only |
+| 2026-04-14 | V2 Vendor Notes | Connected to VendorNoteController, add/display/paginate (5/10/25 per page with prev/next), quick note popup from Property Details header, booking cancellation notes with slot date/time |
+| 2026-04-14 | V2 Bottom bar | Comms Hub, Generate PDF, Refresh (always visible), Cancel + Save Application with save animation (Saving.../✓ Saved), hidden on Final Checks |
+| 2026-04-14 | V2 Quick Summary sidebar | Sticky with internal scroll, status badge, all application fields + vendor contact details, info divider |
+| 2026-04-14 | New fields: Last Agent Emailed On | Last_Agent_1_Emailed_On__c, Last_Agent_2_Emailed_On__c, Last_Agent_3_Emailed_On__c (DateTime) on Opportunity |
+| 2026-04-14 | Box Browser updates | Reactive propertyAddress loading (setter), ensureAccessToken before folder creation (DML fix), handleRefresh exposed as @api, sage header styling matching V2 cards |
+| 2026-04-14 | uploadFileFromContentDoc Apex method | BoxOAuthController — reads ContentVersion, uploads to Box folder, cleans up ContentDocument |
+| 2026-04-14 | VendorAvailabilityService.syncHourlySlotsFromAmPm | Private helper: AM=true sets Hour_08-11, PM=true sets Hour_12-16, clears all other slots |
 
 ---
 
