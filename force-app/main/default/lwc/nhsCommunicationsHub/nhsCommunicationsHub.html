@@ -1,379 +1,526 @@
 <template>
     <template if:true={isLoading}>
-        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <div class="ch-loading">
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        </div>
     </template>
 
     <template if:false={isLoading}>
-
-        <!-- PAGE HEADER -->
-        <header class="page-header">
-            <div class="logo-mark">
-                <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="14" cy="20" r="11" fill="none" stroke="#1A4FCC" stroke-width="3.5"></circle>
-                    <circle cx="26" cy="20" r="11" fill="none" stroke="#1A4FCC" stroke-width="3.5" opacity="0.55"></circle>
-                    <circle cx="14" cy="20" r="4" fill="#1A4FCC"></circle>
-                    <circle cx="26" cy="20" r="4" fill="#1A4FCC" opacity="0.55"></circle>
-                </svg>
+        <!-- ═══ HEADER ═══ -->
+        <header class="ch-header">
+            <div class="ch-header-top">
+                <h2 class="ch-title">Comms Hub</h2>
+                <button class="ch-close" onclick={handleClose}>&times;</button>
             </div>
-            <div>
-                <h1 class="page-title">Communications Hub</h1>
-                <p class="page-subtitle">{opportunityName} &middot; {propertyAddress}</p>
+            <div class="ch-header-context">
+                <div class="ch-ctx-item">
+                    <span class="ch-ctx-label">Property</span>
+                    <span class="ch-ctx-value">{ctxPropertyAddress}</span>
+                </div>
+                <div class="ch-ctx-divider"></div>
+                <div class="ch-ctx-item">
+                    <span class="ch-ctx-label">Vendor</span>
+                    <span class="ch-ctx-value">{ctxVendorName}</span>
+                </div>
+                <div class="ch-ctx-divider"></div>
+                <div class="ch-ctx-item">
+                    <span class="ch-ctx-label">Housebuilder</span>
+                    <span class="ch-ctx-value">{ctxHouseBuilderName}</span>
+                </div>
             </div>
-            <span class="record-chip">{totalInteractions} Total Interactions</span>
         </header>
 
-        <!-- MAIN LAYOUT: Timeline left, Compose panel right -->
-        <div class="comms-layout">
+        <!-- ═══ TAB BAR ═══ -->
+        <nav class="ch-tab-bar">
+            <div class={emailTabClass} data-tab="email" onclick={handleTabClick}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                Email
+            </div>
+            <div class={callsTabClass} data-tab="calls" onclick={handleTabClick}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                Calls
+            </div>
+            <div class={smsTabClass} data-tab="sms" onclick={handleTabClick}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                SMS
+            </div>
+            <div class={whatsappTabClass} data-tab="whatsapp" onclick={handleTabClick}>
+                <span class="wa-dot"></span>
+                WhatsApp
+            </div>
+        </nav>
 
-            <!-- LEFT: COMMS CARD -->
-            <div class={commsCardClass}>
-
-                <!-- Banner -->
-                <div class="section-banner">
-                    <div class="banner-left">
-                        <div class="banner-dot"></div>
-                        <h2>All Communications</h2>
-                    </div>
-                    <span class="banner-total">Emails &middot; Calls</span>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--                         EMAIL TAB                          -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <template if:true={isEmailTab}>
+            <!-- Email toolbar -->
+            <div class="em-toolbar">
+                <div class="em-filters">
+                    <button class={inboxBtnClass} data-filter="inbox" onclick={handleEmailFilterClick}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                        Inbox
+                    </button>
+                    <button class={sentBtnClass} data-filter="sent" onclick={handleEmailFilterClick}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        Sent
+                    </button>
                 </div>
-
-                <!-- Stats Strip -->
-                <div class="stats-strip stats-strip-2">
-                    <div class="stat-cell" data-channel="email" onclick={handleStatClick}>
-                        <div class="stat-icon stat-icon-email">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-count stat-count-email">{emailCount}</div>
-                            <div class="stat-label">Emails</div>
-                        </div>
-                    </div>
-                    <div class="stat-cell" data-channel="call" onclick={handleStatClick}>
-                        <div class="stat-icon stat-icon-call">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-count stat-count-call">{callCount}</div>
-                            <div class="stat-label">Calls</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Toolbar -->
-                <div class="toolbar">
-                    <span class="toolbar-label">Log:</span>
-                    <button class="btn-channel btn-email" onclick={handleComposeEmail}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                        Email
-                    </button>
-                    <button class="btn-channel btn-sms" onclick={handleComposeSms}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        SMS
-                    </button>
-                    <button class="btn-channel btn-call" onclick={handleLogCall}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                        Log Call
-                    </button>
-                    <div class="toolbar-spacer"></div>
-                    <button class="btn-channel btn-refresh" onclick={handleRefreshComms}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        Refresh
-                    </button>
-                    <div class="search-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
-                        </svg>
-                        <input type="text" placeholder="Search communications..." value={searchQuery} oninput={handleSearchInput}>
-                    </div>
-                </div>
-
-                <!-- Filter Tabs -->
-                <div class="filter-tabs">
-                    <template for:each={filterTabs} for:item="tab">
-                        <div key={tab.id} class={tab.cssClass} data-channel={tab.id} onclick={handleTabClick}>
-                            <template if:true={tab.showIcon}>
-                                <template if:true={tab.isEmail}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                </template>
-                                <template if:true={tab.isCall}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                </template>
-                                <template if:true={tab.isMissed}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                </template>
-                            </template>
-                            {tab.label} <span class={tab.badgeClass}>{tab.count}</span>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Timeline -->
-                <div class="timeline">
-                    <template for:each={groupedEntries} for:item="group">
-                        <template if:true={group.visible}>
-                            <div key={group.dateKey} class="date-divider">
-                                <span>{group.dateLabel}</span>
-                            </div>
-                            <template for:each={group.entries} for:item="entry">
-                                <template if:true={entry.visible}>
-                                    <div key={entry.id} class={entry.entryCssClass} data-id={entry.id} onclick={handleEntryClick}>
-                                        <div class={entry.channelIconClass}>
-                                            <template if:true={entry.isEmailChannel}>
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                            </template>
-                                            <template if:true={entry.isCallChannel}>
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                            </template>
-                                            <template if:true={entry.isMissedChannel}>
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
-                                            </template>
-                                        </div>
-                                        <div class={entry.avatarClass}>{entry.initials}</div>
-                                        <div class="entry-body">
-                                            <div class="entry-top">
-                                                <span class="entry-name">{entry.displayName}</span>
-                                                <span class={entry.directionClass}>{entry.directionLabel}</span>
-                                            </div>
-                                            <div class="entry-subject">{entry.subject}</div>
-                                            <div class="entry-preview">{entry.preview}</div>
-                                        </div>
-                                        <div class="entry-meta">
-                                            <span class="entry-time">{entry.timeDisplay}</span>
-                                            <span class={entry.statusPillClass}>{entry.statusLabel}</span>
-                                            <template if:true={entry.isUnread}>
-                                                <div class={entry.unreadDotClass}></div>
-                                            </template>
-                                            <template if:true={entry.hasDuration}>
-                                                <div class="duration-tag">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                    {entry.duration}
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
-                            </template>
-                        </template>
-                    </template>
-
-                    <template if:true={showEmptyState}>
-                        <div class="empty-state">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            <p>No communications found for this filter.</p>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Compose Bar -->
-                <div class="compose-bar">
-                    <span>Quick compose:</span>
-                    <button class="compose-btn cb-email" onclick={handleComposeEmail}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        Email
-                    </button>
-                    <button class="compose-btn cb-sms" onclick={handleComposeSms}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                        SMS
-                    </button>
-                    <button class="compose-btn cb-call" onclick={handleLogCall}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                        Log Call
-                    </button>
-                    <div class="spacer"></div>
-                    <button class="view-all-btn" onclick={handleViewAll}>View full activity log &rarr;</button>
-                </div>
-
+                <button class="em-compose-btn" onclick={handleComposeEmail}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    Compose
+                </button>
             </div>
 
-            <!-- RIGHT: COMPOSE SIDE PANEL -->
-            <template if:true={showComposePanel}>
-                <div class="side-panel">
-                    <!-- Panel Header -->
-                    <div class="panel-header">
-                        <h3 class="panel-title">{composeTitle}</h3>
-                        <button class="panel-close" onclick={handleCloseCompose}>&times;</button>
+            <!-- COMPOSE EMAIL (full width) -->
+            <template if:true={showComposeEmail}>
+                <div class="em-compose-full">
+                    <div class="em-compose-header">
+                        <h3>Compose Email</h3>
+                        <button class="em-compose-close" onclick={handleCloseCompose}>&times;</button>
                     </div>
+                    <div class="em-compose-body">
+                        <template if:false={showTemplateLibrary}>
 
-                    <!-- Panel Body -->
-                    <div class="panel-body">
+                            <template if:true={isLoadingTemplate}>
+                                <div class="tpl-loading">
+                                    <lightning-spinner alternative-text="Loading template" size="small"></lightning-spinner>
+                                    <span>Loading template...</span>
+                                </div>
+                            </template>
 
-                        <!-- TEMPLATE LIBRARY (overlay inside panel) -->
+                            <div class="em-compose-grid">
+                                <div class="em-compose-fields">
+                                    <div class="form-field">
+                                        <label class="form-label">To</label>
+                                        <div class="form-input-group">
+                                            <input type="text" class="form-input form-input-with-btn" value={composeTo} onchange={handleComposeToChange} placeholder="recipient@email.com">
+                                            <button class="ab-open-btn" onclick={handleOpenAddressBook} title="Address Book">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-field form-half">
+                                            <label class="form-label">CC</label>
+                                            <input type="text" class="form-input" value={composeCc} onchange={handleComposeCcChange} placeholder="cc@email.com (optional)">
+                                        </div>
+                                        <div class="form-field form-half">
+                                            <label class="form-label">BCC</label>
+                                            <input type="text" class="form-input" value={composeBcc} onchange={handleComposeBccChange} placeholder="bcc@email.com (optional)">
+                                        </div>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label">Subject</label>
+                                        <input type="text" class="form-input" value={composeSubject} onchange={handleComposeSubjectChange} placeholder="Email subject">
+                                    </div>
+                                    <div class="form-field em-body-field">
+                                        <label class="form-label">Body</label>
+                                        <lightning-input-rich-text value={composeBody} onchange={handleComposeBodyChange} placeholder="Type your message..."></lightning-input-rich-text>
+                                    </div>
+                                    <div class="form-field">
+                                        <label class="form-label">Attachments</label>
+                                        <lightning-file-upload label="" name="attachments" accept={acceptedFormats} record-id={recordId} onuploadfinished={handleUploadFinished} multiple></lightning-file-upload>
+                                        <template if:true={attachmentFiles.length}>
+                                            <div class="attachment-list">
+                                                <template for:each={attachmentFiles} for:item="file">
+                                                    <div class="attachment-item" key={file.documentId}>
+                                                        <span class="attachment-name">{file.name}</span>
+                                                        <button class="attachment-remove" data-id={file.documentId} onclick={handleRemoveAttachment}>&times;</button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Template Library -->
                         <template if:true={showTemplateLibrary}>
                             <div class="tpl-library">
                                 <div class="tpl-library-header">
-                                    <button class="tpl-back-btn" onclick={handleCloseTemplateLibrary}>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                                        Back
-                                    </button>
+                                    <button class="tpl-back-btn" onclick={handleCloseTemplateLibrary}>&larr; Back</button>
                                     <span class="tpl-library-title">Template Library</span>
                                     <span class="tpl-library-count">{templateLibraryCount}</span>
                                 </div>
                                 <div class="tpl-search-wrap">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path>
-                                    </svg>
                                     <input type="text" placeholder="Search templates..." value={templateSearchQuery} oninput={handleTemplateSearchInput}>
                                 </div>
                                 <div class="tpl-list">
                                     <template for:each={filteredTemplates} for:item="tpl">
                                         <div key={tpl.id} class="tpl-card" data-id={tpl.id} data-name={tpl.name} onclick={handleSelectTemplate}>
-                                            <div class="tpl-card-icon">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                            </div>
-                                            <div class="tpl-card-body">
-                                                <div class="tpl-card-name">{tpl.name}</div>
-                                                <div class="tpl-card-subject">{tpl.subject}</div>
-                                            </div>
-                                            <div class="tpl-card-arrow">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                            </div>
+                                            <div class="tpl-card-name">{tpl.name}</div>
+                                            <div class="tpl-card-subject">{tpl.subject}</div>
                                         </div>
                                     </template>
                                 </div>
                             </div>
                         </template>
-
-                        <!-- EMAIL FORM (hidden when library is open) -->
-                        <template if:false={showTemplateLibrary}>
-                        <template if:true={isComposeEmail}>
-                            <!-- Template selector -->
-                            <div class="tpl-selector">
-                                <template if:true={hasTemplateSelected}>
-                                    <div class="tpl-selected-badge">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                        <span class="tpl-selected-name">{selectedTemplateName}</span>
-                                        <button class="tpl-clear-btn" onclick={handleClearTemplate}>&times;</button>
-                                    </div>
-                                    <button class="tpl-change-btn" onclick={handleOpenTemplateLibrary}>Change</button>
-                                </template>
-                                <template if:false={hasTemplateSelected}>
-                                    <button class="tpl-browse-btn" onclick={handleOpenTemplateLibrary}>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                                        Browse Template Library
-                                    </button>
-                                    <span class="tpl-or">or compose freeform below</span>
-                                </template>
-                            </div>
-
-                            <template if:true={isLoadingTemplate}>
-                                <div class="template-loading">
-                                    <lightning-spinner alternative-text="Loading template" size="small"></lightning-spinner>
-                                    <span>Loading template...</span>
-                                </div>
-                            </template>
-                            <div class="form-field">
-                                <label class="form-label">To</label>
-                                <input type="email" class="form-input" value={composeTo} onchange={handleComposeToChange} placeholder="recipient@email.com">
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">CC</label>
-                                <input type="email" class="form-input" value={composeCc} onchange={handleComposeCcChange} placeholder="cc@email.com (optional)">
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Subject</label>
-                                <input type="text" class="form-input" value={composeSubject} onchange={handleComposeSubjectChange} placeholder="Email subject">
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Body</label>
-                                <lightning-input-rich-text value={composeBody} onchange={handleComposeBodyChange} placeholder="Type your message..."></lightning-input-rich-text>
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Attachments</label>
-                                <lightning-file-upload
-                                    label=""
-                                    name="attachments"
-                                    accept={acceptedFormats}
-                                    record-id={recordId}
-                                    onuploadfinished={handleUploadFinished}
-                                    multiple>
-                                </lightning-file-upload>
-                                <template if:true={attachmentFiles.length}>
-                                    <div class="attachment-list">
-                                        <template for:each={attachmentFiles} for:item="file">
-                                            <div class="attachment-item" key={file.documentId}>
-                                                <span class="attachment-name">{file.name}</span>
-                                                <button class="attachment-remove" data-id={file.documentId} onclick={handleRemoveAttachment} title="Remove">&times;</button>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-
-                        <!-- SMS FORM -->
-                        <template if:true={isComposeSms}>
-                            <div class="form-field">
-                                <label class="form-label">To (Mobile)</label>
-                                <input type="tel" class="form-input" value={smsTo} onchange={handleSmsToChange} placeholder="+44...">
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Message</label>
-                                <textarea class="form-textarea" onchange={handleSmsBodyChange} placeholder="Type your SMS message..." rows="5" maxlength="1600">{smsBody}</textarea>
-                            </div>
-                            <div class="sms-char-count">
-                                <span>{smsCharCount} / 1600 characters</span>
-                            </div>
-                        </template>
-
-                        <!-- CALL FORM -->
-                        <template if:true={isComposeCall}>
-                            <div class="form-field">
-                                <label class="form-label">Contact</label>
-                                <input type="text" class="form-input" value={vendor1Name} disabled>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-field form-half">
-                                    <label class="form-label">Call Type</label>
-                                    <lightning-combobox name="callType" value={composeCallType} options={callTypeOptions} onchange={handleCallTypeChange} variant="label-hidden" class="custom-combobox"></lightning-combobox>
-                                </div>
-                                <div class="form-field form-half">
-                                    <label class="form-label">Status</label>
-                                    <lightning-combobox name="callStatus" value={composeCallStatus} options={callStatusOptions} onchange={handleCallStatusChange} variant="label-hidden" class="custom-combobox"></lightning-combobox>
-                                </div>
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Subject</label>
-                                <input type="text" class="form-input" value={composeSubject} onchange={handleComposeSubjectChange} placeholder="Call subject">
-                            </div>
-                            <div class="form-field">
-                                <label class="form-label">Notes</label>
-                                <textarea class="form-textarea" onchange={handleComposeBodyChange} placeholder="Call notes..." rows="5">{composeBody}</textarea>
-                            </div>
-                        </template>
-                        </template>
                     </div>
-
-                    <!-- Panel Footer -->
-                    <div class="panel-footer">
-                        <button class="btn-panel-cancel" onclick={handleCloseCompose}>Cancel</button>
-                        <template if:true={isComposeEmail}>
-                            <button class="btn-panel-send" onclick={handleSendEmail} disabled={isSending}>
+                    <div class="em-compose-footer">
+                        <div class="em-footer-left">
+                            <template if:true={hasTemplateSelected}>
+                                <div class="tpl-selected-badge">
+                                    <span class="tpl-selected-name">{selectedTemplateName}</span>
+                                    <button class="tpl-clear-btn" onclick={handleClearTemplate}>&times;</button>
+                                </div>
+                                <button class="tpl-change-btn" onclick={handleOpenTemplateLibrary}>Change</button>
+                            </template>
+                            <template if:false={hasTemplateSelected}>
+                                <button class="tpl-browse-btn" onclick={handleOpenTemplateLibrary}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                    Browse Template Library
+                                </button>
+                            </template>
+                        </div>
+                        <div class="em-footer-right">
+                            <button class="btn-cancel" onclick={handleCloseCompose}>Cancel</button>
+                            <button class="btn-send" onclick={handleSendEmail} disabled={isSending}>
                                 <template if:true={isSending}>Sending...</template>
                                 <template if:false={isSending}>Send Email</template>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Address Book Overlay -->
+                    <template if:true={showAddressBook}>
+                        <div class="ab-overlay">
+                            <div class="ab-panel">
+                                <div class="ab-header">
+                                    <h4>Address Book</h4>
+                                    <button class="ab-close" onclick={handleCloseAddressBook}>&times;</button>
+                                </div>
+                                <div class="ab-search">
+                                    <input type="text" class="form-input" placeholder="Search contacts..." value={addressBookSearch} oninput={handleAddressBookSearch}>
+                                </div>
+                                <div class="ab-list">
+                                    <template if:true={hasAddressBookContacts}>
+                                        <template for:each={filteredAddressBook} for:item="contact">
+                                            <div key={contact.key} class="ab-entry">
+                                                <div class={contact.avatarClass}>{contact.initials}</div>
+                                                <div class="ab-entry-info">
+                                                    <div class="ab-entry-name">{contact.name}</div>
+                                                    <div class="ab-entry-detail">
+                                                        <span class="ab-entry-role">{contact.role}</span>
+                                                        <span class="ab-entry-email">{contact.email}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ab-entry-actions">
+                                                    <button class="ab-add-btn ab-add-to" data-email={contact.email} onclick={handleSelectContact}>To</button>
+                                                    <button class="ab-add-btn ab-add-cc" data-email={contact.email} onclick={handleSelectContactCc}>CC</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template if:false={hasAddressBookContacts}>
+                                        <div class="ab-empty">No contacts found.</div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- EMAIL LIST + DETAIL (split view, hidden during compose) -->
+            <template if:false={showComposeEmail}>
+                <div class="em-split">
+                    <!-- Left: email list -->
+                    <div class="em-list">
+                        <template if:true={hasEmails}>
+                            <template for:each={emailList} for:item="email">
+                                <div key={email.id} class={email.rowClass} data-id={email.id} onclick={handleEmailSelect}>
+                                    <div class="em-row-top">
+                                        <span class="em-row-dir">{email.dirLabel}</span>
+                                        <span class="em-row-addr">{email.address}</span>
+                                        <span class="em-row-date">{email.dateFormatted}</span>
+                                    </div>
+                                    <div class="em-row-subject">{email.subject}</div>
+                                    <div class="em-row-preview">{email.preview}</div>
+                                </div>
+                            </template>
                         </template>
-                        <template if:true={isComposeSms}>
-                            <button class="btn-panel-send btn-panel-sms" onclick={handleSendSms} disabled={isSending}>
-                                <template if:true={isSending}>Sending...</template>
-                                <template if:false={isSending}>Send SMS</template>
-                            </button>
+                        <template if:false={hasEmails}>
+                            <div class="em-empty">No emails found.</div>
                         </template>
-                        <template if:true={isComposeCall}>
-                            <button class="btn-panel-send btn-panel-call" onclick={handleSaveCall} disabled={isSending}>
-                                <template if:true={isSending}>Saving...</template>
-                                <template if:false={isSending}>Log Call</template>
-                            </button>
+                    </div>
+
+                    <!-- Right: email detail -->
+                    <div class="em-detail">
+                        <template if:true={hasSelectedEmail}>
+                            <div class="em-detail-view">
+                                <h3 class="em-detail-subject">{selectedEmail.subject}</h3>
+                                <div class="em-detail-sender">
+                                    <div class="em-sender-avatar">{selectedEmail.initials}</div>
+                                    <div class="em-sender-info">
+                                        <div class="em-sender-name">{selectedEmail.senderName}</div>
+                                        <div class="em-sender-email">{selectedEmail.senderEmail}</div>
+                                    </div>
+                                    <div class="em-detail-meta">
+                                        <div class="em-detail-date">{selectedEmail.dateFormatted}</div>
+                                        <span class={selectedEmail.statusClass}>{selectedEmail.status}</span>
+                                    </div>
+                                </div>
+                                <div class="em-detail-body">
+                                    <lightning-formatted-rich-text value={selectedEmail.body}></lightning-formatted-rich-text>
+                                </div>
+                                <div class="em-detail-actions">
+                                    <button class="em-action-btn" onclick={handleReply}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                                        Reply
+                                    </button>
+                                    <button class="em-action-btn" onclick={handleForward}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"></polyline><path d="M4 18v-2a4 4 0 0 1 4-4h12"></path></svg>
+                                        Forward
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={hasSelectedEmail}>
+                            <div class="em-no-selection">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                                <p>Select an email to view</p>
+                            </div>
                         </template>
                     </div>
                 </div>
             </template>
+        </template>
 
-        </div>
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--                         CALLS TAB                          -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <template if:true={isCallsTab}>
+            <div class="cl-toolbar">
+                <div class="cl-filters">
+                    <button class={callFilterAllClass} data-filter="all" onclick={handleCallFilterClick}>All</button>
+                    <button class={callFilterInClass} data-filter="incoming" onclick={handleCallFilterClick}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Incoming
+                    </button>
+                    <button class={callFilterOutClass} data-filter="outgoing" onclick={handleCallFilterClick}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 3 12 8 7"></polyline><line x1="3" y1="12" x2="15" y2="12"></line></svg>
+                        Outgoing
+                    </button>
+                    <button class={callFilterMissedClass} data-filter="missed" onclick={handleCallFilterClick}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Missed
+                    </button>
+                </div>
+                <div class="cl-toolbar-right">
+                    <button class="cl-log-btn" onclick={handleOpenLogCall}>Log Call</button>
+                    <a href={callNowHref} class="cl-callnow-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        Call Now
+                    </a>
+                </div>
+            </div>
+
+            <!-- Log Call Form -->
+            <template if:true={showLogCall}>
+                <div class="cl-logform">
+                    <div class="cl-logform-header">
+                        <h4>Log Call</h4>
+                        <button class="cl-logform-close" onclick={handleCloseLogCall}>&times;</button>
+                    </div>
+                    <div class="cl-logform-body">
+                        <div class="form-field">
+                            <label class="form-label">Contact</label>
+                            <input type="text" class="form-input" value={ctxVendorName} disabled>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field form-half">
+                                <label class="form-label">Call Type</label>
+                                <lightning-combobox name="callType" value={composeCallType} options={callTypeOptions} onchange={handleCallTypeChange} variant="label-hidden"></lightning-combobox>
+                            </div>
+                            <div class="form-field form-half">
+                                <label class="form-label">Status</label>
+                                <lightning-combobox name="callStatus" value={composeCallStatus} options={callStatusOptions} onchange={handleCallStatusChange} variant="label-hidden"></lightning-combobox>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-input" value={callSubject} onchange={handleCallSubjectChange} placeholder="Call subject">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-textarea" onchange={handleCallNotesChange} placeholder="Call notes..." rows="4">{callNotes}</textarea>
+                        </div>
+                    </div>
+                    <div class="cl-logform-footer">
+                        <button class="btn-cancel" onclick={handleCloseLogCall}>Cancel</button>
+                        <button class="btn-send btn-call" onclick={handleSaveCall} disabled={isSending}>
+                            <template if:true={isSending}>Saving...</template>
+                            <template if:false={isSending}>Log Call</template>
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Call List -->
+            <div class="cl-list">
+                <template if:true={hasCalls}>
+                    <template for:each={callList} for:item="call">
+                        <div key={call.id} class="cl-entry">
+                            <div class={call.avatarClass}>
+                                <template if:true={call.isIncoming}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                </template>
+                                <template if:true={call.isOutgoing}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 3 12 8 7"></polyline><line x1="3" y1="12" x2="15" y2="12"></line></svg>
+                                </template>
+                                <template if:true={call.isMissed}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </template>
+                            </div>
+                            <div class="cl-entry-body">
+                                <div class="cl-entry-top">
+                                    <span class="cl-entry-name">{call.contactName}</span>
+                                    <span class={call.dirClass}>{call.dirLabel}</span>
+                                    <span class="cl-entry-phone">&middot; {call.phone}</span>
+                                </div>
+                                <template if:true={call.hasDuration}>
+                                    <div class="cl-entry-meta">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        {call.duration}
+                                        <template if:true={call.hasNotes}>
+                                            <span class="cl-entry-sep">&middot;</span> {call.preview}
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={call.hasDuration}>
+                                    <template if:true={call.hasNotes}>
+                                        <div class="cl-entry-meta">{call.preview}</div>
+                                    </template>
+                                </template>
+                            </div>
+                            <div class="cl-entry-right">
+                                <span class="cl-entry-date">{call.dateFormatted}</span>
+                                <a href={callNowHref} class="cl-entry-call-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasCalls}>
+                    <div class="cl-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        <p>No calls found.</p>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--                          SMS TAB                           -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <template if:true={isSmsTab}>
+            <div class="sms-layout">
+                <!-- Left sidebar: conversation list -->
+                <div class="sms-sidebar">
+                    <div class="sms-sidebar-header">
+                        <span class="sms-sidebar-title">SMS &middot; {ctxVendorName}</span>
+                        <button class="sms-new-btn" onclick={handleNewSms}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            New SMS
+                        </button>
+                    </div>
+                    <template if:true={hasSmsMessages}>
+                        <div class="sms-conv-item sms-conv-active">
+                            <div class="sms-conv-name">{ctxVendorName}</div>
+                            <div class="sms-conv-date">{smsLastDate}</div>
+                            <div class="sms-conv-preview">{smsLastPreview}</div>
+                        </div>
+                    </template>
+                    <template if:false={hasSmsMessages}>
+                        <div class="sms-conv-empty">No conversations yet.</div>
+                    </template>
+                </div>
+
+                <!-- Right: chat view -->
+                <div class="sms-chat">
+                    <div class="sms-chat-messages">
+                        <template for:each={smsConversation} for:item="item">
+                            <template if:true={item.isDate}>
+                                <div key={item.key} class="chat-date-divider">
+                                    <span>{item.label}</span>
+                                </div>
+                            </template>
+                            <template if:true={item.isMessage}>
+                                <div key={item.key} class={item.bubbleClass}>
+                                    <div class="chat-bubble-text">{item.body}</div>
+                                    <div class="chat-bubble-time">
+                                        {item.fullDateTime}
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template if:false={hasSmsMessages}>
+                            <div class="chat-empty">
+                                <p>No SMS messages yet. Send the first message below.</p>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="sms-chat-input">
+                        <input type="text" class="chat-input" value={smsBody} oninput={handleSmsBodyChange} placeholder="Type a message...">
+                        <button class="chat-send-btn" onclick={handleSendSms} disabled={isSending}>Send</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!--                       WHATSAPP TAB                         -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <template if:true={isWhatsappTab}>
+            <div class="wa-layout">
+                <!-- Contact header -->
+                <div class="wa-contact-header">
+                    <div class="wa-contact-avatar">{vendorInitials}</div>
+                    <div class="wa-contact-info">
+                        <div class="wa-contact-name">{ctxVendorName}</div>
+                        <div class="wa-contact-phone">{ctxVendorMobile} &middot; <span class="wa-online">online</span></div>
+                    </div>
+                </div>
+
+                <!-- Chat messages -->
+                <div class="wa-chat-messages">
+                    <template for:each={waConversation} for:item="item">
+                        <template if:true={item.isDate}>
+                            <div key={item.key} class="chat-date-divider wa-date-divider">
+                                <span>{item.label}</span>
+                            </div>
+                        </template>
+                        <template if:true={item.isMessage}>
+                            <div key={item.key} class={item.bubbleClass}>
+                                <div class="chat-bubble-text">{item.body}</div>
+                                <div class="chat-bubble-time wa-bubble-time">
+                                    {item.timeFormatted}
+                                    <template if:true={item.isOutbound}>
+                                        <span class="wa-ticks">&check;&check;</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasWaMessages}>
+                        <div class="chat-empty">
+                            <p>No WhatsApp messages yet. Send the first message below.</p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Input bar -->
+                <div class="wa-chat-input">
+                    <input type="text" class="chat-input wa-input" value={waBody} oninput={handleWaBodyChange} placeholder="Type a message">
+                    <button class="wa-send-btn" onclick={handleSendWhatsApp} disabled={isSending}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </div>
+            </div>
+        </template>
+
     </template>
 </template>

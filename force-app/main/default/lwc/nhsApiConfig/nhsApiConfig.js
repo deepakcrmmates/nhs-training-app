@@ -28,8 +28,9 @@ export default class NhsApiConfig extends LightningElement {
 
     get distanceMethodOptions() {
         return [
-            { label: 'Distance Matrix (Driving)', value: 'Distance Matrix' },
-            { label: 'Geocoding (Aerial)', value: 'Geocoding' }
+            { label: 'Google Maps — Distance Matrix (Driving)', value: 'Distance Matrix' },
+            { label: 'Google Maps — Geocoding (Aerial)', value: 'Geocoding' },
+            { label: 'Postcodes.io — Free (Aerial)', value: 'Postcodes.io' }
         ];
     }
 

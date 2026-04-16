@@ -194,6 +194,10 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Archived</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Figures returned</fullName>
             <default>false</default>
         </values>
@@ -202,7 +206,19 @@
             <default>false</default>
         </values>
         <values>
+            <fullName>Final Checks</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Valuations Ready</fullName>
+            <default>false</default>
+        </values>
+        <values>
             <fullName>Vendor Availability</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Vendor Discussions</fullName>
             <default>false</default>
         </values>
     </picklistValues>

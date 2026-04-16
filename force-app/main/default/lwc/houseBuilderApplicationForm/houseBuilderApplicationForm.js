@@ -16,6 +16,8 @@ import saveData from '@salesforce/apex/houseBuilderApplication.saveData';
 import getfs from '@salesforce/apex/AddressFinderController.getFieldSet';
 import getPdfUrl from '@salesforce/apex/HouseBuilderPdfController.getPdfUrl';
 import generatePdfBlob from '@salesforce/apex/HouseBuilderPdfController.generatePdfBlob';
+import setupFoldersAndGeneratePdf from '@salesforce/apex/HouseBuilderPdfController.setupFoldersAndGeneratePdf';
+import generatePdfToNhsFolder from '@salesforce/apex/HouseBuilderPdfController.generatePdfToNhsFolder';
 import { refreshApex } from '@salesforce/apex';
 
 export default class HouseBuilderApplicationForm extends LightningElement {
@@ -522,20 +524,22 @@ export default class HouseBuilderApplicationForm extends LightningElement {
                     this.disable = true;
                     this.isReadOnly = true;
                     this.applicationId = result.y;
+                    // Step 1: Create Box folder structure (async Queueable)
                     setTimeout(() => {
-                        try {
-                            generatePdfBlob({ recordId: this.applicationId })
-                                .then(results1 => {
-                                    console.log('OUTPUT : file uploaded to Dropbox successfully...');
-                                    return refreshApex(this.applicationPdfUrl);
-                                })
-                                .catch(error => {
-                                    console.error('Error uploading file to Dropbox:', error);
-                                });
-                        } catch (error) {
-                            console.error('Unexpected error:', error);
-                        }
-                    }, 6000); // 5000ms = 5 seconds
+                        setupFoldersAndGeneratePdf({ recordId: this.applicationId })
+                            .then(() => console.log('Box folder structure queued'))
+                            .catch(e => console.error('Box folder error:', e));
+                    }, 2000);
+
+                    // Step 2: Generate PDF and upload to Box (needs delay for folders to be created)
+                    setTimeout(() => {
+                        generatePdfToNhsFolder({ recordId: this.applicationId })
+                            .then(() => {
+                                console.log('PDF generated and uploaded to NHS Box folder');
+                                return refreshApex(this.applicationPdfUrl);
+                            })
+                            .catch(e => console.error('PDF generation error:', e));
+                    }, 10000);
 
 
                 }

@@ -1,0 +1,181 @@
+<template>
+    <div class="vd-toolbar">
+        <div class="vd-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor, builder..." oninput={handleSearch}>
+        </div>
+        <div class="view-toggles">
+            <button class={listBtnClass} onclick={handleListView} title="List View">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button class={kanbanBtnClass} onclick={handleKanbanView} title="Kanban View">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="10" rx="1"/></svg>
+            </button>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="vd-info">{totalCount} applications in Vendor Discussions</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="vd-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <template if:false={hasApps}>
+            <div class="vd-empty">
+                <svg width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                <p>No applications in Vendor Discussions</p>
+            </div>
+        </template>
+
+        <template if:true={hasApps}>
+
+            <!-- ══ LIST VIEW ══ -->
+            <template if:true={isList}>
+                <div class="vd-table-wrap">
+                    <table class="vd-table">
+                        <thead>
+                            <tr>
+                                <th class="vd-th vd-th-priority">Priority</th>
+                                <th class="vd-th">Application</th>
+                                <th class="vd-th">Vendor</th>
+                                <th class="vd-th">Contact</th>
+                                <th class="vd-th">House Builder</th>
+                                <th class="vd-th">Owner</th>
+                                <th class="vd-th vd-th-note"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={allApps} for:item="app">
+                                <tr key={app.id} class={app.rowClass} data-id={app.id} onclick={handleRowClick}>
+                                    <td class="vd-td vd-td-priority">
+                                        <div class="priority-wrapper" onclick={handlePriorityClick}>
+                                            <div class={app.priorityDotClass}></div>
+                                            <lightning-combobox
+                                                label="Priority"
+                                                variant="label-hidden"
+                                                value={app.priority}
+                                                options={priorityOptions}
+                                                data-id={app.id}
+                                                onchange={handlePriorityChange}
+                                                class="priority-combo">
+                                            </lightning-combobox>
+                                        </div>
+                                    </td>
+                                    <td class="vd-td">
+                                        <div class="app-name">{app.name}</div>
+                                        <div class="app-sub">{app.development} &bull; Plot {app.plot}</div>
+                                    </td>
+                                    <td class="vd-td"><span class="vendor-name">{app.vendorName}</span></td>
+                                    <td class="vd-td">
+                                        <div class="contact-info">
+                                            <template if:true={app.vendorEmail}>
+                                                <div class="contact-line">
+                                                    <svg width="12" height="12" fill="none" stroke="#64748b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                                    <span>{app.vendorEmail}</span>
+                                                </div>
+                                            </template>
+                                            <template if:true={app.vendorMobile}>
+                                                <div class="contact-line">
+                                                    <svg width="12" height="12" fill="none" stroke="#64748b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                                                    <span>{app.vendorMobile}</span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </td>
+                                    <td class="vd-td"><span class="builder-badge">{app.houseBuilder}</span></td>
+                                    <td class="vd-td">{app.ownerName}</td>
+                                    <td class="vd-td vd-td-note">
+                                        <button class="note-btn" data-id={app.id} data-name={app.name} onclick={handleNoteClick} title="Quick Note">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <!-- ══ KANBAN VIEW ══ -->
+            <template if:true={isKanban}>
+                <div class="kb-board">
+                    <template for:each={kanbanColumns} for:item="col">
+                        <div key={col.key}
+                             class="kb-column"
+                             data-priority={col.key}
+                             ondragover={handleDragOver}
+                             ondragenter={handleDragEnter}
+                             ondragleave={handleDragLeave}
+                             ondrop={handleDrop}>
+                            <div class="kb-col-header" style={col.headerStyle}>
+                                <div class="kb-col-dot" style={col.dotStyle}></div>
+                                <span class="kb-col-label">{col.label}</span>
+                                <span class="kb-col-count">{col.count}</span>
+                            </div>
+                            <div class="kb-col-body">
+                                <template for:each={col.cards} for:item="card">
+                                    <div key={card.id}
+                                         class="kb-card"
+                                         data-id={card.id}
+                                         draggable="true"
+                                         ondragstart={handleDragStart}
+                                         ondragend={handleDragEnd}
+                                         onclick={handleCardClick}>
+                                        <div class="kb-card-name">{card.name}</div>
+                                        <div class="kb-card-sub">{card.development} &bull; Plot {card.plot}</div>
+                                        <div class="kb-card-meta">
+                                            <div class="kb-card-vendor">
+                                                <svg width="10" height="10" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                {card.vendorName}
+                                            </div>
+                                            <span class="kb-card-builder">{card.houseBuilder}</span>
+                                        </div>
+                                        <div class="kb-card-actions">
+                                            <button class="note-btn-kb" data-id={card.id} data-name={card.name} onclick={handleNoteClick} title="Quick Note">
+                                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                <span>Note</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template if:true={col.isEmpty}>
+                                    <div class="kb-empty">
+                                        <p>Drop cards here</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+        </template>
+    </template>
+
+    <!-- Quick Note Modal -->
+    <template if:true={showNoteModal}>
+        <div class="note-overlay" onclick={handleNoteOverlayClick}>
+            <div class="note-modal" onclick={handleNoteModalClick}>
+                <div class="note-modal-header">
+                    <svg width="16" height="16" fill="none" stroke="#075f50" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <h3>Quick Note</h3>
+                    <button class="note-close-btn" onclick={handleNoteClose}>&times;</button>
+                </div>
+                <div class="note-modal-app">{noteAppName}</div>
+                <lightning-textarea class="note-textarea" placeholder="Type your note here..." onchange={handleNoteInput} variant="label-hidden" label="Note"></lightning-textarea>
+                <div class="note-modal-actions">
+                    <button class="note-cancel-btn" onclick={handleNoteClose}>Cancel</button>
+                    <button class="note-save-btn" onclick={handleNoteSave} disabled={noteSaving}>
+                        <template if:true={noteSaving}>Saving...</template>
+                        <template if:false={noteSaving}>Save Note</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={toastVisible}>
+        <div class={toastClass}>{toastMsg}</div>
+    </template>
+</template>

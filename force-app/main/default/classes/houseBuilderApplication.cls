@@ -208,9 +208,26 @@ public without sharing class houseBuilderApplication {
 
             Opportunity opp = new Opportunity();
             opp.Property__c = propertyId;
-            NHS_Property__c prop = [SELECT Name FROM NHS_Property__c WHERE Id = :propertyId];
+            NHS_Property__c prop = [SELECT Name, Number_Of_Bedrooms__c, Detached__c, Semi_Detached__c, End_Terrace__c, Mid_Terrace__c, Apartment__c, Maisonette__c, Maisonette_Studio__c, Bungalow__c, Other__c FROM NHS_Property__c WHERE Id = :propertyId];
             opp.Name = prop.Name;
             opp.Application_Name__c = opp.Name;
+
+            // Build Property Description from property type checkboxes + bedrooms
+            List<String> types = new List<String>();
+            if (prop.Detached__c) types.add('Detached');
+            if (prop.Semi_Detached__c) types.add('Semi-Detached');
+            if (prop.End_Terrace__c) types.add('End Terrace');
+            if (prop.Mid_Terrace__c) types.add('Mid Terrace');
+            if (prop.Apartment__c) types.add('Apartment');
+            if (prop.Maisonette__c) types.add('Maisonette');
+            if (prop.Maisonette_Studio__c) types.add('Studio');
+            if (prop.Bungalow__c) types.add('Bungalow');
+            if (prop.Other__c) types.add('Other');
+            String propDesc = String.join(types, ' / ');
+            if (prop.Number_Of_Bedrooms__c != null) {
+                propDesc += (String.isNotBlank(propDesc) ? ' ' : '') + String.valueOf(prop.Number_Of_Bedrooms__c.intValue()) + ' Bed';
+            }
+            opp.Property_Description__c = propDesc;
             
             opp.Vendor_1__c = vendor1Id;
             opp.Vendor_2__c = vendor2Id;

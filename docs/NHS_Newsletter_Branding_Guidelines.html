@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Home Solutions &mdash; Newsletter Branding Guidelines</title>
+  <style>
+    @font-face {
+      font-family: 'Aptos';
+      src: local('Aptos'), local('Aptos Display');
+    }
+    /* Futura LT Light — Wix-hosted web font (same as newhomesolutions.co.uk) */
+    @font-face {
+      font-family: 'futura-lt-w01-light';
+      src: url('https://static.parastorage.com/services/santa-resources/dist/viewer/user-site-fonts/fonts/Futura-LT-Light/v1/FuturaLTW01-Light.woff2') format('woff2'),
+           url('https://static.parastorage.com/services/santa-resources/dist/viewer/user-site-fonts/fonts/Futura-LT-Light/v1/FuturaLTW01-Light.woff') format('woff');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    /* Local fallback if Wix CDN is unavailable */
+    @font-face {
+      font-family: 'Futura LT Light';
+      src: local('Futura LT Light'), local('FuturaLT-Light'), local('Futura Light'), local('Futura LT W01 Light');
+      font-weight: 300;
+      font-style: normal;
+    }
+
+    :root {
+      /* ── Primary Palette ── */
+      --sage-dark:     #4A6B5E;
+      --sage:          #6B9080;
+      --sage-mid:      #A4C3B2;
+      --sage-light:    #CCE3D8;
+      --sage-tint:     #EAF4EF;
+      --sage-bg:       #C9D5CB;
+
+      /* ── Secondary / Accent ── */
+      --navy:          #0D1E4A;
+      --navy-link:     #1A4FCC;
+      --navy-rec-bg:   #DCE8FF;
+      --navy-rec-bdr:  #C5D5F9;
+
+      /* ── Neutrals ── */
+      --white:         #FFFFFF;
+      --off-white:     #F5F7F5;
+      --border:        #C5DCCC;
+      --border-light:  #CCE3D8;
+      --row-alt:       #EDF1ED;
+      --text-dark:     #1C2B24;
+      --text-body:     #374151;
+      --text-muted:    #6B7280;
+
+      /* ── Status / Utility ── */
+      --green:         #16a34a;
+      --green-light:   #dcfce7;
+      --red:           #DC2626;
+      --red-light:     #FEF2F2;
+      --amber:         #F59E0B;
+      --amber-light:   #FFFBEB;
+      --blue:          #2563EB;
+      --blue-light:    #DBEAFE;
+      --purple:        #7C3AED;
+      --purple-light:  #EDE9FE;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+      font-size: 15px;
+      color: var(--text-body);
+      background: var(--off-white);
+      line-height: 1.6;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--sage-dark) 0%, var(--sage) 60%, var(--sage-mid) 100%);
+      padding: 48px 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(80px, -80px);
+    }
+    .page-header h1 {
+      font-family: 'futura-lt-w01-light', futura-lt-w05-light, 'Futura LT Light', 'Futura Std Light', 'Century Gothic', sans-serif;
+      font-size: 27px;
+      font-weight: 100;
+      color: #fff;
+      letter-spacing: 0.06em;
+      word-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-synthesis: none;
+    }
+    .page-header .subtitle {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .page-header .doc-label {
+      display: inline-block;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.18);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .accent-stripe {
+      height: 4px;
+      background: linear-gradient(90deg, var(--navy) 0%, var(--sage-dark) 50%, var(--sage) 100%);
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 40px 60px;
+    }
+
+    /* ── Section ── */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 28px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .section-header {
+      background: var(--sage-tint);
+      border-bottom: 2px solid var(--sage-dark);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--sage-dark);
+    }
+    .section-header h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--sage-dark);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .section-header .sec-num {
+      margin-left: auto;
+      background: var(--sage-dark);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 100px;
+    }
+    .section-body {
+      padding: 24px;
+    }
+    .section-body p {
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+    .section-body p:last-child { margin-bottom: 0; }
+
+    /* ── Typography Showcase ── */
+    .font-showcase {
+      background: var(--off-white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 32px;
+      margin: 16px 0;
+      text-align: center;
+    }
+    .font-name {
+      font-family: 'Aptos', 'Segoe UI', Arial, sans-serif;
+      font-size: 42px;
+      font-weight: 300;
+      color: var(--sage-dark);
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .logo-font-name {
+      font-family: 'futura-lt-w01-light', futura-lt-w05-light, 'Futura LT Light', 'Futura Std Light', 'Century Gothic', sans-serif;
+      font-size: 27px;
+      font-weight: 100;
+      color: var(--sage-dark);
+      letter-spacing: 0.06em;
+      word-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-synthesis: none;
+    }
+    .font-tagline {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .font-specimen {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .specimen-item {
+      text-align: center;
+    }
+    .specimen-item .label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .specimen-item .sample-light { font-weight: 300; font-size: 22px; color: var(--text-dark); }
+    .specimen-item .sample-regular { font-weight: 400; font-size: 22px; color: var(--text-dark); }
+    .specimen-item .sample-semibold { font-weight: 600; font-size: 22px; color: var(--text-dark); }
+    .specimen-item .sample-bold { font-weight: 700; font-size: 22px; color: var(--text-dark); }
+
+    .type-scale {
+      margin: 20px 0 8px;
+    }
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--row-alt);
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-meta {
+      flex: 0 0 180px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .type-meta .size { color: var(--navy); font-weight: 700; }
+    .type-example-h1 { font-family: 'futura-lt-w01-light', futura-lt-w05-light, 'Futura LT Light', 'Futura Std Light', 'Century Gothic', sans-serif; font-size: 27px; font-weight: 100; color: var(--sage-dark); letter-spacing: 0.06em; word-spacing: 0.3em; text-transform: uppercase; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-synthesis: none; }
+    .type-example-h2 { font-size: 20px; font-weight: 700; color: var(--navy); }
+    .type-example-h3 { font-size: 14px; font-weight: 700; color: var(--sage-dark); text-transform: uppercase; letter-spacing: 0.06em; }
+    .type-example-body { font-size: 14px; font-weight: 400; color: var(--text-body); line-height: 1.65; }
+    .type-example-caption { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .type-example-link { font-size: 14px; font-weight: 700; color: var(--navy-link); text-decoration: none; }
+
+    /* ── Colour Palette ── */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .colour-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .colour-swatch {
+      height: 64px;
+    }
+    .colour-info {
+      padding: 10px 12px;
+      background: var(--white);
+    }
+    .colour-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+    .colour-hex {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+    }
+    .colour-use {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .palette-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--sage-dark);
+      margin: 20px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .palette-label:first-of-type { margin-top: 0; }
+
+    /* ── Rules / Do / Don't ── */
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 16px 0;
+    }
+    .rule-card {
+      border-radius: 8px;
+      padding: 16px 18px;
+      border: 1px solid;
+    }
+    .rule-card.do {
+      background: #F0FDF4;
+      border-color: #BBF7D0;
+    }
+    .rule-card.dont {
+      background: #FEF2F2;
+      border-color: #FECACA;
+    }
+    .rule-card .rule-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .rule-card.do .rule-badge { color: #166534; }
+    .rule-card.dont .rule-badge { color: #991B1B; }
+    .rule-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .rule-card li {
+      font-size: 13px;
+      padding: 4px 0;
+      padding-left: 18px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .rule-card.do li::before {
+      content: '\2713';
+      position: absolute;
+      left: 0;
+      color: #16A34A;
+      font-weight: 700;
+    }
+    .rule-card.dont li::before {
+      content: '\2717';
+      position: absolute;
+      left: 0;
+      color: #DC2626;
+      font-weight: 700;
+    }
+
+    /* ── Email Template Preview ── */
+    .email-preview {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .email-preview-header {
+      background: var(--sage-bg);
+      padding: 16px 20px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ep-logo {
+      font-family: 'futura-lt-w01-light', futura-lt-w05-light, 'Futura LT Light', 'Futura Std Light', 'Century Gothic', sans-serif;
+      font-size: 16px;
+      font-weight: 100;
+      color: var(--sage-dark);
+      letter-spacing: 0.06em;
+      word-spacing: 0.3em;
+      text-transform: uppercase;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-synthesis: none;
+    }
+    .email-preview-stripe {
+      height: 3px;
+      background: var(--sage-dark);
+      opacity: 0.5;
+    }
+    .email-preview-body {
+      padding: 24px;
+      background: var(--white);
+      font-size: 14px;
+    }
+    .email-preview-body p {
+      margin-bottom: 12px;
+      line-height: 1.65;
+    }
+    .ep-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 14px 0;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .ep-table th {
+      background: var(--sage-dark);
+      color: #fff;
+      padding: 9px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      border-bottom: 1px solid var(--sage-dark);
+      border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .ep-table th:last-child { border-right: none; }
+    .ep-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--navy);
+      font-weight: 600;
+    }
+    .ep-table td:last-child { border-right: none; }
+    .ep-table tr:last-child td { border-bottom: none; }
+    .ep-table tr:nth-child(even) td:first-child { background: var(--sage-tint); }
+    .ep-table tr:nth-child(odd) td:first-child { background: var(--sage-tint); }
+    .ep-rec-label {
+      display: inline-block;
+      background: var(--navy-rec-bg);
+      border: 1px solid var(--navy-rec-bdr);
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--navy-link);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-radius: 3px;
+      margin: 12px 0 6px;
+    }
+    .ep-rec-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 8px 0 16px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .ep-rec-table th {
+      background: var(--sage-dark);
+      color: #fff;
+      padding: 9px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      border-bottom: 1px solid var(--sage-dark);
+      border-right: 1px solid rgba(255,255,255,0.15);
+      width: 50%;
+    }
+    .ep-rec-table th:last-child { border-right: none; }
+    .ep-rec-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .ep-rec-table td:last-child { border-right: none; }
+    .ep-rec-table tr:last-child td { border-bottom: none; }
+    .ep-rec-table .label-cell {
+      background: var(--sage-tint);
+      color: var(--sage-dark);
+      font-weight: 700;
+    }
+    .ep-rec-table .value-cell {
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .ep-sig {
+      border-top: 2px solid var(--border-light);
+      padding-top: 14px;
+      margin-top: 16px;
+    }
+    .ep-sig-name { font-weight: 700; color: var(--navy); font-size: 14px; }
+    .ep-sig-title { font-size: 11px; color: var(--sage); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 2px 0 8px; }
+    .ep-sig-line { font-size: 12px; color: var(--text-muted); margin: 2px 0; }
+    .ep-sig-line a { color: var(--navy-link); text-decoration: none; }
+    .email-preview-footer {
+      background: var(--sage-tint);
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-light);
+    }
+    .email-preview-footer strong { color: var(--sage-dark); }
+
+    /* ── Spacing Table ── */
+    .spec-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 14px 0;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .spec-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--sage-dark);
+      background: var(--sage-tint);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .spec-table th:last-child { border-right: none; }
+    .spec-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--text-body);
+    }
+    .spec-table td:last-child { border-right: none; }
+    .spec-table tr:last-child td { border-bottom: none; }
+    .spec-table code {
+      font-family: 'Courier New', monospace;
+      background: var(--row-alt);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--navy);
+    }
+
+    /* ── Annotation Callout ── */
+    .callout {
+      background: var(--sage-tint);
+      border-left: 4px solid var(--sage-dark);
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 13px;
+      color: var(--sage-dark);
+      font-weight: 600;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .page-footer .brand {
+      font-weight: 700;
+      color: var(--sage-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ PAGE HEADER ══ -->
+  <div class="page-header">
+    <h1>New Home Solutions</h1>
+    <div class="subtitle">Part Exchange &amp; Assisted Move Specialists</div>
+    <span class="doc-label">Newsletter Branding Guidelines &mdash; v1.0</span>
+  </div>
+  <div class="accent-stripe"></div>
+
+  <div class="container">
+
+    <!-- ═══════════════════════════════════
+         1. INTRODUCTION
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Introduction</h2>
+        <span class="sec-num">01</span>
+      </div>
+      <div class="section-body">
+        <p>This document defines the visual identity standards for all <strong>New Home Solutions</strong> email newsletters and external communications. Consistent use of typography, colour, spacing, and layout ensures our brand is instantly recognisable, professional, and trustworthy across every recipient's inbox.</p>
+        <p>All newsletters, transactional emails, and partner communications <strong>must</strong> follow these guidelines. Any deviation requires approval from the Marketing or Operations team.</p>
+        <div class="callout">All email communications must use <strong>Futura LT Light</strong> for the &ldquo;New Home Solutions&rdquo; logo only, and <strong>Aptos</strong> for all other content. No other fonts are permitted.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         2. TYPOGRAPHY
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Typography</h2>
+        <span class="sec-num">02</span>
+      </div>
+      <div class="section-body">
+        <p>Two typefaces are approved for New Home Solutions communications: <strong>Futura LT Light</strong> for the logo and brand name only, and <strong>Aptos</strong> for all other content. No other fonts are permitted.</p>
+
+        <div class="font-showcase" style="margin-bottom:12px;">
+          <div class="logo-font-name">New Home Solutions</div>
+          <div class="font-tagline">Logo Typeface &mdash; Futura LT Light</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.6;">Used <strong>exclusively</strong> for the &ldquo;New Home Solutions&rdquo; brand name in the email header.<br>Must always be set in uppercase with <code style="font-family:monospace;background:var(--row-alt);padding:1px 6px;border-radius:3px;font-size:11px;">letter-spacing: 0.15em</code> and <code style="font-family:monospace;background:var(--row-alt);padding:1px 6px;border-radius:3px;font-size:11px;">font-weight: 300</code> at <code style="font-family:monospace;background:var(--row-alt);padding:1px 6px;border-radius:3px;font-size:11px;">27px</code>.</p>
+        </div>
+
+        <div class="font-showcase">
+          <div class="font-name">Aptos</div>
+          <div class="font-tagline">Body &amp; Content Typeface</div>
+          <div class="font-specimen">
+            <div class="specimen-item">
+              <div class="label">Light (300)</div>
+              <div class="sample-light">Aa Bb Cc 123</div>
+            </div>
+            <div class="specimen-item">
+              <div class="label">Regular (400)</div>
+              <div class="sample-regular">Aa Bb Cc 123</div>
+            </div>
+            <div class="specimen-item">
+              <div class="label">Semibold (600)</div>
+              <div class="sample-semibold">Aa Bb Cc 123</div>
+            </div>
+            <div class="specimen-item">
+              <div class="label">Bold (700)</div>
+              <div class="sample-bold">Aa Bb Cc 123</div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:13px;color:var(--text-muted);">Logo fallback: <code style="font-family:monospace;background:var(--row-alt);padding:1px 6px;border-radius:3px;font-size:12px;">futura-lt-w01-light, futura-lt-w05-light, 'Futura LT Light', 'Century Gothic', sans-serif</code></p>
+        <p style="font-size:13px;color:var(--text-muted);">Content fallback: <code style="font-family:monospace;background:var(--row-alt);padding:1px 6px;border-radius:3px;font-size:12px;">Aptos, 'Segoe UI', Arial, Helvetica, sans-serif</code></p>
+
+        <div class="type-scale">
+          <div class="type-row">
+            <div class="type-meta"><span class="size">27px</span> &middot; Futura LT Light &middot; 0.15em</div>
+            <div class="type-example-h1">New Home Solutions</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta"><span class="size">20px</span> &middot; Bold</div>
+            <div class="type-example-h2">Section Heading</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta"><span class="size">14px</span> &middot; Bold &middot; Uppercase</div>
+            <div class="type-example-h3">Sub-section Label</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta"><span class="size">14px</span> &middot; Regular &middot; 1.65</div>
+            <div class="type-example-body">Body text for paragraphs, descriptions, and general email content. Line height should be 1.65 for readability.</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta"><span class="size">11px</span> &middot; Semibold &middot; Uppercase</div>
+            <div class="type-example-caption">Caption / Table Label / Footer Text</div>
+          </div>
+          <div class="type-row">
+            <div class="type-meta"><span class="size">14px</span> &middot; Bold</div>
+            <a href="#" class="type-example-link">Hyperlink Style</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         3. COLOUR PALETTE
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Colour Palette</h2>
+        <span class="sec-num">03</span>
+      </div>
+      <div class="section-body">
+        <p>Our colour system is built around the sage green palette that reflects our brand's trustworthy, professional identity, complemented by a navy accent for data emphasis and recommendations.</p>
+
+        <div class="palette-label">Primary &mdash; Sage Green</div>
+        <div class="palette-grid">
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#4A6B5E;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Sage Dark</div>
+              <div class="colour-hex">#4A6B5E</div>
+              <div class="colour-use">Headers, table headers, accent stripe, primary CTA</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#6B9080;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Sage</div>
+              <div class="colour-hex">#6B9080</div>
+              <div class="colour-use">Sub-headings, signature titles, secondary text</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#C9D5CB;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Sage Background</div>
+              <div class="colour-hex">#C9D5CB</div>
+              <div class="colour-use">Email header bar, page background</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#EAF4EF;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Sage Tint</div>
+              <div class="colour-hex">#EAF4EF</div>
+              <div class="colour-use">Section labels, footer background, subtle highlights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="palette-label">Secondary &mdash; Navy</div>
+        <div class="palette-grid">
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#0D1E4A;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Navy</div>
+              <div class="colour-hex">#0D1E4A</div>
+              <div class="colour-use">NHS Recommendation table header, data values, signature name</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#1A4FCC;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Navy Link</div>
+              <div class="colour-hex">#1A4FCC</div>
+              <div class="colour-use">Hyperlinks, email addresses, recommendation label text</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#DCE8FF;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Navy Tint</div>
+              <div class="colour-hex">#DCE8FF</div>
+              <div class="colour-use">NHS Recommendation label background</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#C5D5F9;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Navy Border</div>
+              <div class="colour-hex">#C5D5F9</div>
+              <div class="colour-use">NHS Recommendation label border</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="palette-label">Neutrals &amp; Borders</div>
+        <div class="palette-grid">
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#374151;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Body Text</div>
+              <div class="colour-hex">#374151</div>
+              <div class="colour-use">Paragraph text, general content</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#6B7280;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Muted Text</div>
+              <div class="colour-hex">#6B7280</div>
+              <div class="colour-use">Footer text, captions, contact labels</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#C5DCCC;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Border</div>
+              <div class="colour-hex">#C5DCCC</div>
+              <div class="colour-use">Table borders, dividers, card outlines</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background:#EDF1ED;"></div>
+            <div class="colour-info">
+              <div class="colour-name">Row Alternate</div>
+              <div class="colour-hex">#EDF1ED</div>
+              <div class="colour-use">Alternating table row backgrounds</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="palette-label">Status Colours (Internal Use)</div>
+        <div class="palette-grid">
+          <div class="colour-card">
+            <div class="colour-swatch" style="background: linear-gradient(135deg, #16a34a 50%, #dcfce7 50%);"></div>
+            <div class="colour-info">
+              <div class="colour-name">Green / Success</div>
+              <div class="colour-hex">#16A34A / #DCFCE7</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background: linear-gradient(135deg, #DC2626 50%, #FEF2F2 50%);"></div>
+            <div class="colour-info">
+              <div class="colour-name">Red / Error</div>
+              <div class="colour-hex">#DC2626 / #FEF2F2</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background: linear-gradient(135deg, #F59E0B 50%, #FFFBEB 50%);"></div>
+            <div class="colour-info">
+              <div class="colour-name">Amber / Warning</div>
+              <div class="colour-hex">#F59E0B / #FFFBEB</div>
+            </div>
+          </div>
+          <div class="colour-card">
+            <div class="colour-swatch" style="background: linear-gradient(135deg, #2563EB 50%, #DBEAFE 50%);"></div>
+            <div class="colour-info">
+              <div class="colour-name">Blue / Info</div>
+              <div class="colour-hex">#2563EB / #DBEAFE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         4. EMAIL LAYOUT & STRUCTURE
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Email Layout &amp; Structure</h2>
+        <span class="sec-num">04</span>
+      </div>
+      <div class="section-body">
+        <p>All email newsletters follow a consistent, table-based structure for maximum email client compatibility. The layout width is fixed at <strong>640px</strong>, centred on a sage background.</p>
+
+        <table class="spec-table">
+          <tr>
+            <th>Element</th>
+            <th>Specification</th>
+          </tr>
+          <tr>
+            <td>Email Width</td>
+            <td><code>640px</code> fixed, centred</td>
+          </tr>
+          <tr>
+            <td>Body Background</td>
+            <td><code>#C9D5CB</code> (Sage Background)</td>
+          </tr>
+          <tr>
+            <td>Content Background</td>
+            <td><code>#FFFFFF</code> (White)</td>
+          </tr>
+          <tr>
+            <td>Body Padding</td>
+            <td><code>24px &ndash; 32px</code> horizontal</td>
+          </tr>
+          <tr>
+            <td>Header Bar</td>
+            <td><code>#C9D5CB</code> background, <code>23px 24px</code> padding, &ldquo;New Home Solutions&rdquo; in Futura LT Light</td>
+          </tr>
+          <tr>
+            <td>Accent Stripe</td>
+            <td><code>3px</code> height, <code>#4A6B5E</code> below header</td>
+          </tr>
+          <tr>
+            <td>Footer</td>
+            <td><code>#EAF4EF</code> background, centred, <code>11px</code> text</td>
+          </tr>
+          <tr>
+            <td>Signature Divider</td>
+            <td><code>2px</code> solid <code>#CCE3D8</code></td>
+          </tr>
+        </table>
+
+        <div class="callout">All styles must be inline. CSS classes, &lt;style&gt; blocks, and CSS variables are <strong>not supported</strong> by most email clients. Use inline <code>style=""</code> attributes on every element.</div>
+
+        <p><strong>Structure order:</strong></p>
+        <table class="spec-table">
+          <tr><th>#</th><th>Section</th><th>Background</th></tr>
+          <tr><td>1</td><td>Header Bar (Logo)</td><td><code>#C9D5CB</code></td></tr>
+          <tr><td>2</td><td>Accent Stripe</td><td><code>#4A6B5E</code></td></tr>
+          <tr><td>3</td><td>Email Body (Content)</td><td><code>#FFFFFF</code></td></tr>
+          <tr><td>4</td><td>Signature Block</td><td><code>#FFFFFF</code> (within body)</td></tr>
+          <tr><td>5</td><td>Disclaimer</td><td><code>#FFFFFF</code> (within body)</td></tr>
+          <tr><td>6</td><td>Footer</td><td><code>#EAF4EF</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         5. TABLE STYLING
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Table Styling</h2>
+        <span class="sec-num">05</span>
+      </div>
+      <div class="section-body">
+        <p>Data tables are a key element of our valuation communications. All tables use <code>border-radius: 10px</code> with rounded corners. Two table styles are defined:</p>
+
+        <div class="palette-label">Agent Details Table</div>
+        <table class="spec-table">
+          <tr><th>Element</th><th>Style</th></tr>
+          <tr><td>Container</td><td><code>border-radius: 10px</code>, <code>border-collapse: separate</code>, <code>overflow: hidden</code></td></tr>
+          <tr><td>Header Row</td><td>Background <code>#4A6B5E</code>, white text, <code>12px</code> bold</td></tr>
+          <tr><td>Label Column (1st)</td><td>Background <code>#EAF4EF</code> (Sage Tint), colour <code>#4A6B5E</code>, semibold, left-aligned</td></tr>
+          <tr><td>Value Columns</td><td>Background <code>#FFFFFF</code> (White), colour <code>#0D1E4A</code>, bold, <strong>centre-aligned</strong></td></tr>
+          <tr><td>Agent Headers</td><td>Centre-aligned (Agent 1, Agent 2, Agent 3, Average)</td></tr>
+          <tr><td>Borders</td><td><code>1px solid #C5DCCC</code></td></tr>
+          <tr><td>Cell Padding</td><td><code>9px 14px</code></td></tr>
+          <tr><td>Section Label</td><td>Background <code>#EAF4EF</code>, border <code>#CCE3D8</code>, <code>11px</code> bold uppercase sage</td></tr>
+        </table>
+
+        <div class="palette-label">NHS Recommendation Table</div>
+        <table class="spec-table">
+          <tr><th>Element</th><th>Style</th></tr>
+          <tr><td>Container</td><td><code>border-radius: 10px</code>, <code>border-collapse: separate</code>, <code>overflow: hidden</code></td></tr>
+          <tr><td>Header Row</td><td>Background <code>#4A6B5E</code> (Sage Dark), white text, <strong>merged single cell</strong> with <code>colspan="2"</code>, centre-aligned, text: &ldquo;New Home Solutions Recommendation&rdquo;</td></tr>
+          <tr><td>Label Cells (left)</td><td>Background <code>#EAF4EF</code>, colour <code>#4A6B5E</code>, bold, left-aligned, <code>width: 50%</code></td></tr>
+          <tr><td>Value Cells (right)</td><td>Background <code>#FFFFFF</code>, colour <code>#0D1E4A</code>, <code>14px</code> bold, <strong>centre-aligned</strong>, <code>width: 50%</code></td></tr>
+          <tr><td>Borders</td><td><code>1px solid #C5DCCC</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         6. EMAIL TEMPLATE PREVIEW
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Email Template Preview</h2>
+        <span class="sec-num">06</span>
+      </div>
+      <div class="section-body">
+        <p>Below is the standard layout for valuation figure return emails. All newsletters should follow this structural pattern.</p>
+
+        <div class="email-preview">
+          <div class="email-preview-header">
+            <span class="ep-logo">New Home Solutions</span>
+          </div>
+          <div class="email-preview-stripe"></div>
+          <div class="email-preview-body">
+            <p>Good afternoon,</p>
+            <p>Further to the valuations carried out on the above property, please find below our pricing recommendations. Full reports and photos attached.</p>
+
+            <div style="display:inline-block;background:var(--sage-tint);border:1px solid var(--border-light);padding:3px 10px;font-size:10px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:0.06em;border-radius:3px;margin:12px 0 6px;">Agent Details</div>
+
+            <table class="ep-table">
+              <tr><th>Price Guide</th><th style="text-align:center;">Agent 1</th><th style="text-align:center;">Agent 2</th><th style="text-align:center;">Agent 3</th><th style="text-align:center;">Average</th></tr>
+              <tr><td style="background:var(--sage-tint);color:var(--sage-dark);font-weight:600;">Initial Asking Price</td><td style="text-align:center;background:#fff;">&pound;200,000</td><td style="text-align:center;background:#fff;">&pound;200,000</td><td style="text-align:center;background:#fff;">&pound;210,000</td><td style="text-align:center;background:#fff;">&pound;203,333</td></tr>
+              <tr><td style="background:var(--sage-tint);color:var(--sage-dark);font-weight:600;">Target Sale</td><td style="text-align:center;background:#fff;">&pound;190,000</td><td style="text-align:center;background:#fff;">&pound;195,000</td><td style="text-align:center;background:#fff;">&pound;200,000</td><td style="text-align:center;background:#fff;">&pound;195,000</td></tr>
+              <tr><td style="background:var(--sage-tint);color:var(--sage-dark);font-weight:600;">Forced Sale</td><td style="text-align:center;background:#fff;">&pound;180,000</td><td style="text-align:center;background:#fff;">&pound;190,000</td><td style="text-align:center;background:#fff;">&pound;190,000</td><td style="text-align:center;background:#fff;">&pound;186,667</td></tr>
+            </table>
+
+            <table class="ep-rec-table">
+              <tr><th colspan="2" style="text-align:center;">New Home Solutions Recommendation</th></tr>
+              <tr><td class="label-cell">Open Market</td><td class="value-cell" style="text-align:center;">&pound;200,000</td></tr>
+              <tr><td class="label-cell">Target</td><td class="value-cell" style="text-align:center;">&pound;190,000</td></tr>
+              <tr><td class="label-cell">Forced Sale</td><td class="value-cell" style="text-align:center;">&pound;180,000</td></tr>
+            </table>
+
+            <p>Please kindly ensure that you forward marketing instructions to:<br>
+            <a href="#" style="color:var(--navy-link);font-weight:700;text-decoration:none;">instructions@newhomesolutions.co.uk</a></p>
+
+            <div class="ep-sig">
+              <div class="ep-sig-name">Ruth O&rsquo;Connell</div>
+              <div class="ep-sig-title">Valuation Administrator</div>
+              <div class="ep-sig-line">T: 03330 068 058</div>
+              <div class="ep-sig-line">E: <a href="#">valuations@newhomesolutions.co.uk</a></div>
+              <div class="ep-sig-line">W: <a href="#">www.newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+          <div class="email-preview-footer">
+            <strong>P: SAVE THE TREES &mdash; Think Before You Print</strong><br>
+            &copy; New Home Solutions Ltd &middot; Registered in England
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         7. SIGNATURE FORMAT
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Signature Format</h2>
+        <span class="sec-num">07</span>
+      </div>
+      <div class="section-body">
+        <p>All email signatures must follow this exact structure. The signature is separated from the body by a <code>2px solid #CCE3D8</code> border.</p>
+
+        <table class="spec-table">
+          <tr><th>Element</th><th>Style</th></tr>
+          <tr><td>Name</td><td><code>14px</code> Bold, <code>#0D1E4A</code></td></tr>
+          <tr><td>Job Title</td><td><code>12px</code> Bold Uppercase, <code>#6B9080</code>, letter-spacing <code>0.06em</code></td></tr>
+          <tr><td>Contact Lines (T/F/E/W)</td><td><code>13px</code>, label <code>#6B7280</code>, value <code>#374151</code></td></tr>
+          <tr><td>Links</td><td><code>#1A4FCC</code>, no underline</td></tr>
+          <tr><td>Tagline</td><td><code>11px</code> Semibold Uppercase, <code>#4A6B5E</code>, letter-spacing <code>0.10em</code></td></tr>
+        </table>
+
+        <div class="palette-label">Department Signatures</div>
+        <p style="font-size:13px;">Each department uses the same signature structure with its own telephone option and email address. All share <strong>T: 03330 068 058</strong> with the relevant option, <strong>F: 08456 729 310</strong>, and <strong>W: www.newhomesolutions.co.uk</strong>.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;">
+          <!-- Sales -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--sage-dark);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">1. Sales</div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">[Name]</div>
+              <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Sales Department</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">T: 03330 068 058 (Option 1)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">E: <a href="#" style="color:var(--navy-link);text-decoration:none;">info@newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+          <!-- Offers -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--sage-dark);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">2. Offers</div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">[Name]</div>
+              <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Offers Department</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">T: 03330 068 058 (Option 1)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">E: <a href="#" style="color:var(--navy-link);text-decoration:none;">offers@newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+          <!-- Valuations -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--sage-dark);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">3. Valuations</div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">[Name]</div>
+              <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Valuation Department</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">T: 03330 068 058 (Option 2)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">E: <a href="#" style="color:var(--navy-link);text-decoration:none;">valuations@newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+          <!-- Sales Progression -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+            <div style="background:var(--sage-dark);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">4. Sales Progression</div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">[Name]</div>
+              <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Sales Progression</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">T: 03330 068 058 (Option 3)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">E: <a href="#" style="color:var(--navy-link);text-decoration:none;"><em style="color:var(--text-muted);font-style:italic;">&lt;tba&gt;</em>@newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+          <!-- Accounts -->
+          <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;grid-column:1 / -1;max-width:calc(50% - 6px);">
+            <div style="background:var(--sage-dark);color:#fff;padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">5. Accounts</div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px;">[Name]</div>
+              <div style="font-size:11px;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Accounts Department</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">T: 03330 068 058 (Option 4)</div>
+              <div style="font-size:12px;color:var(--text-muted);margin:2px 0;">E: <a href="#" style="color:var(--navy-link);text-decoration:none;">accounts@newhomesolutions.co.uk</a></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">Every signature must include the shared fax number <strong>F: 08456 729 310</strong> and website <strong>W: www.newhomesolutions.co.uk</strong> below the department-specific telephone and email lines.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         8. DO / DON'T
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Do &amp; Don&rsquo;t</h2>
+        <span class="sec-num">08</span>
+      </div>
+      <div class="section-body">
+        <div class="rules-grid">
+          <div class="rule-card do">
+            <div class="rule-badge">Do</div>
+            <ul>
+              <li>Use Futura LT Light for the &ldquo;New Home Solutions&rdquo; logo</li>
+              <li>Use Aptos for all body, headings, and content text</li>
+              <li>Use inline styles on every HTML element</li>
+              <li>Use table-based layouts for email compatibility</li>
+              <li>Use the sage/navy colour palette consistently</li>
+              <li>Include the header bar, accent stripe, and footer</li>
+              <li>Include the disclaimer and registered office text</li>
+              <li>Use the &ldquo;Save the Trees&rdquo; message in the footer</li>
+              <li>Maintain 640px email width</li>
+              <li>Use alternating row colours in data tables</li>
+              <li>Test in Outlook, Gmail, and Apple Mail</li>
+            </ul>
+          </div>
+          <div class="rule-card dont">
+            <div class="rule-badge">Don&rsquo;t</div>
+            <ul>
+              <li>Use Futura LT Light for anything other than the logo</li>
+              <li>Use Arial, Times New Roman, or any other unapproved font</li>
+              <li>Use CSS variables, classes, or &lt;style&gt; blocks</li>
+              <li>Use div-based layouts (use &lt;table&gt; instead)</li>
+              <li>Use colours outside the approved palette</li>
+              <li>Omit the NHS logo header or footer</li>
+              <li>Use bright or neon colours for emphasis</li>
+              <li>Use decorative fonts or custom web fonts</li>
+              <li>Exceed 640px width or use fluid widths</li>
+              <li>Use background images (not reliable in Outlook)</li>
+              <li>Send without including the legal disclaimer</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════
+         9. LEGAL & COMPLIANCE
+         ═══════════════════════════════════ -->
+    <div class="section">
+      <div class="section-header">
+        <div class="dot"></div>
+        <h2>Legal &amp; Compliance</h2>
+        <span class="sec-num">09</span>
+      </div>
+      <div class="section-body">
+        <p>Every outbound email <strong>must</strong> include the following disclaimer and registered office information in the footer:</p>
+
+        <div style="background:var(--off-white);border:1px solid var(--border);border-radius:6px;padding:16px 18px;margin:12px 0;font-size:11px;color:var(--text-muted);line-height:1.6;">
+          <p style="margin-bottom:8px;">This E-mail message &amp; any attachment is confidential and for the exclusive use of the intended recipient(s). If you have received this message in error, please return it in its entirety to the sender by reply &amp; then delete the message. This message &amp;/or attachment(s) may be subject to legal, professional or other privileges. Any views or opinions expressed by the author do not necessarily represent those of New Homes Solutions Ltd. Any information contained in this email must not be disclosed, copied, distributed or retained by any person without our express authority.</p>
+          <p style="margin-bottom:0;"><strong>HEAD OFFICE:</strong> New Home Solutions, Unit 7 Hepton Court, York Road, Leeds, LS9 6PW (Registration Number 7970313). Registered in England at Hutton House, Sheriff Hutton Industrial Park, York Road, Sheriff Hutton, York, YO60 6RZ.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ PAGE FOOTER ══ -->
+  <div class="page-footer">
+    <div class="brand">New Home Solutions</div>
+    <p>Newsletter Branding Guidelines v1.0 &middot; Prepared by CRM Mates Ltd</p>
+    <p>&copy; New Home Solutions Ltd &middot; Confidential</p>
+  </div>
+
+</body>
+</html>

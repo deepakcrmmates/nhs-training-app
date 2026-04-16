@@ -1,0 +1,493 @@
+/* Modern Design System for NHS Application Form */
+
+:host {
+    --brand-primary: #075f50;
+    --brand-secondary: #0a8a75;
+    --bg-light: #f8fafc;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --border-radius: 12px;
+}
+
+.form-wrapper {
+    background-color: var(--bg-light);
+    min-height: 100vh;
+}
+
+/* Sticky Header */
+.form-sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-left h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    margin: 0;
+}
+
+.header-logo {
+    height: 48px;
+    object-fit: contain;
+}
+
+/* Layout Container */
+.layout-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    gap: 1rem;
+}
+
+/* Side Navigation */
+.side-nav-container {
+    flex: 0 0 200px;
+    position: sticky;
+    top: 100px;
+    height: calc(100vh - 140px);
+}
+
+.nav-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-bottom: 0.125rem;
+    font-weight: 500;
+    font-size: 0.813rem;
+}
+
+.nav-item:hover {
+    background: #f1f5f9;
+    color: var(--brand-primary);
+}
+
+.nav-item.active {
+    background: #e6f4f2;
+    color: var(--brand-primary);
+}
+
+.nav-item lightning-icon {
+    --sds-c-icon-color-foreground: currentColor;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.section-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--card-shadow);
+    border: 1px solid #f1f5f9;
+}
+
+.section-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.section-header-modern h2 {
+    font-size: 1.063rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Grid & Form Elements */
+.modern-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.modern-grid.full {
+    grid-template-columns: 1fr;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.modern-label {
+    font-size: 0.813rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+/* Custom Table replacements */
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.modern-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Specific Section Adjustments */
+.availability-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.avail-col {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.avail-label {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #475569;
+}
+
+/* Original Modal and Utility styles */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: 'Arial', sans-serif; /* Modern, clean font */
+}
+
+.modal-content {
+    background: #ffffff; /* White background for contrast */
+    padding: 20px 24px; /* Added padding for spacing */
+    border-radius: 8px; /* Softer corners */
+    width: 50%; /* Adjust width to make it less overwhelming */
+    max-width: 600px; /* Limit maximum size for smaller screens */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Soft shadow for a polished look */
+    animation: fadeIn 0.3s ease-in-out; /* Subtle animation */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px; /* Add space below the header */
+    border-bottom: 2px solid #f0f0f0; /* Subtle separation line */
+}
+
+.modal-header h2 {
+    font-size: 1.5rem; /* Larger, clear title */
+    color: #333; /* Dark gray for better readability */
+    margin: 0; /* No extra spacing */
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.25rem; /* Slightly larger close button */
+    color: #888; /* Gray color for a softer feel */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.close-button:hover {
+    color: #333; /* Darker color on hover */
+}
+
+.modal-body {
+    font-size: 1rem; /* Standard font size for readability */
+    color: #555; /* Medium gray for text */
+    line-height: 1.6; /* Comfortable line spacing */
+}
+
+.modal-body p {
+    margin: 10px 0; /* Spacing between messages */
+    padding: 10px; /* Add some padding around messages */
+    border-radius: 5px; /* Round the edges */
+}
+
+.modal-body p.success {
+    background-color: #e6ffe6; /* Light green background */
+    color: #2e7d32; /* Dark green text */
+    border: 1px solid #c8e6c9; /* Subtle border */
+}
+
+.modal-body p.error {
+    background-color: #ffe6e6; /* Light red background */
+    color: #d32f2f; /* Dark red text */
+    border: 1px solid #ffcdd2; /* Subtle border */
+}
+
+.modal-body p.warning {
+    background-color: #fff8e6; /* Light yellow background */
+    color: #f57c00; /* Dark orange text */
+    border: 1px solid #ffe0b2; /* Subtle border */
+}
+/***************************/
+
+.result-row {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.result-row span {
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+/* Base checkbox styles */
+/* Base styles for the animated checkbox */
+.animated-checkbox {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Circle shape */
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    box-sizing: border-box;
+    background-color: #f0f0f0;
+}
+
+/* Success animation */
+.animated-checkbox.success {
+    background-color: green; /* Green circle */
+    animation: success-circle-animation 0.6s ease-out forwards;
+}
+
+.animated-checkbox.success::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 16px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    top: 6px;
+    left: 10px;
+    opacity: 0;
+    animation: tick-animation 0.4s 0.2s ease-out forwards;
+}
+
+/* Error animation */
+.animated-checkbox.error {
+    background-color: red; /* Red circle */
+    animation: error-circle-animation 0.6s ease-out forwards;
+}
+
+.animated-checkbox.error::before,
+.animated-checkbox.error::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: white;
+    top: 15px;
+    left: 7px;
+    opacity: 0;
+}
+
+.animated-checkbox.error::before {
+    transform: rotate(45deg);
+    animation: cross-line1-animation 0.4s 0.2s ease-out forwards;
+}
+
+.animated-checkbox.error::after {
+    transform: rotate(-45deg);
+    animation: cross-line2-animation 0.4s 0.2s ease-out forwards;
+}
+
+
+
+/* Animations */
+@keyframes success-circle-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes tick-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes error-circle-animation {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes cross-line1-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes cross-line2-animation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* Success animations */
+@keyframes checkmark-border-animation {
+    0% {
+        border-color: #ccc;
+    }
+    100% {
+        border-color: green;
+    }
+}
+
+@keyframes checkmark-tick-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Error animations */
+@keyframes crossmark-border-animation {
+    0% {
+        border-color: #ccc;
+    }
+    100% {
+        border-color: red;
+    }
+}
+
+@keyframes crossmark-line1-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes crossmark-line2-animation {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+
+/* Animation for modal appearance */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/*********Modal Css End **********************/
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .slds-grid.slds-gutters {
+        flex-direction: column;
+    }
+
+    .slds-col {
+        width: 100%;
+    }
+
+    .form-header {
+        font-size: 1.25rem;
+    }
+}

@@ -15,13 +15,15 @@ import { updateRecord } from 'lightning/uiRecordApi';
 
 /* ── Top-level stage nav ─────────────────────────────────────────────── */
 const TOP_STAGES = [
-    { key: 'application',         label: 'Applications',        colour: '#93c5fd', num: '1' },
-    { key: 'vendor_availability', label: 'Vendor Availability', colour: '#93c5fd', num: '2' },
-    { key: 'agents_booked',       label: 'Book Agents',          colour: '#93c5fd', num: '3' },
-    { key: 'figures_to_chase',    label: 'Figures to Chase',    colour: '#93c5fd', num: '4' },
-    { key: 'valuations_ready',    label: 'Valuations Ready',    colour: '#93c5fd', num: '5' },
-    { key: 'figures_returned',    label: 'Figures Returned',    colour: '#93c5fd', num: '6' },
-    { key: 'archived',            label: 'Archived',            colour: '#93c5fd', num: '7' },
+    { key: 'application',          label: 'Applications',        colour: '#93c5fd', num: '1' },
+    { key: 'vendor_availability',  label: 'Vendor Availability', colour: '#93c5fd', num: '2' },
+    { key: 'agents_booked',        label: 'Book Agents',         colour: '#93c5fd', num: '3' },
+    { key: 'figures_to_chase',     label: 'Figures to Chase',    colour: '#93c5fd', num: '4' },
+    { key: 'valuations_ready',     label: 'Valuations Ready',    colour: '#93c5fd', num: '5' },
+    { key: 'figures_returned',     label: 'Figures Returned',    colour: '#93c5fd', num: '6' },
+    { key: 'final_checks',        label: 'Final Checks',        colour: '#93c5fd', num: '7' },
+    { key: 'vendor_discussions',   label: 'Vendor Discussions',  colour: '#93c5fd', num: '8' },
+    { key: 'archived',             label: 'Archived',            colour: '#93c5fd', num: '9' },
 ];
 
 /* ── Kanban helpers ──────────────────────────────────────────────────── */
@@ -303,7 +305,9 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
     get isFiguresToChase()     { return this.activeNav === 'figures_to_chase'; }
     get isFiguresReturned()    { return this.activeNav === 'figures_returned'; }
     get isValuationsReady()    { return this.activeNav === 'valuations_ready'; }
-    get showComingSoon()       { return !this.isApplication && !this.isVendorAvailability && !this.isArchived && !this.isAgentsBooked && !this.isFiguresToChase && !this.isFiguresReturned && !this.isValuationsReady; }
+    get isFinalChecks()        { return this.activeNav === 'final_checks'; }
+    get isVendorDiscussions()  { return this.activeNav === 'vendor_discussions'; }
+    get showComingSoon()       { return !this.isApplication && !this.isVendorAvailability && !this.isArchived && !this.isAgentsBooked && !this.isFiguresToChase && !this.isFiguresReturned && !this.isValuationsReady && !this.isFinalChecks && !this.isVendorDiscussions; }
     get activeStageLabel()     { return TOP_STAGES.find(x=>x.key===this.activeNav)?.label || ''; }
     handleNavClick(e)          { this.activeNav = e.currentTarget.dataset.key; }
 
@@ -442,6 +446,7 @@ export default class NhsApplicationKanbanV7 extends NavigationMixin(LightningEle
                 all.push({
                     ...c,
                     stageName: col.stageName,
+                    nhsProcess: c.nhsProcess || col.stageName,
                     closeDateFormatted: fmtD(c.closeDate),
                     avInitials: ini(c.ownerName),
                     avStyle: avSt(c.ownerName),

@@ -20,6 +20,8 @@ import createApplication from '@salesforce/apex/houseBuilderApplication.createAp
 import getfs from '@salesforce/apex/AddressFinderController.getFieldSet';
 import getPdfUrl from '@salesforce/apex/HouseBuilderPdfController.getPdfUrl';
 import generatePdfBlob from '@salesforce/apex/HouseBuilderPdfController.generatePdfBlob';
+import setupFoldersAndGeneratePdf from '@salesforce/apex/HouseBuilderPdfController.setupFoldersAndGeneratePdf';
+import generatePdfToNhsFolder from '@salesforce/apex/HouseBuilderPdfController.generatePdfToNhsFolder';
 import isHouseBuilderRecordType from '@salesforce/apex/accountController.isHouseBuilderRecordType';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
@@ -651,7 +653,7 @@ export default class NHSApplicationForm extends LightningElement {
 
             // STEP 4: CREATE APPLICATION
             this.addResultWithDelay('Progress', 'Finalizing Application...', 8);
-            const appResult = await createApplication({ 
+            const appResult = await createApplication({
                 appData: this.formData.Application,
                 recordType: this.recordType,
                 vendor1Id: vendorResult.vendor1Id,
@@ -661,23 +663,38 @@ export default class NHSApplicationForm extends LightningElement {
                 agent3Id: agentResult.agent3Id
             });
             if (appResult.n) throw new Error(appResult.n);
-            
-            this.addResultWithDelay('Success', 'Application successfully submitted.', 9);
-            this.addResultWithDelay('Success', 'PDF is being generated...', 10);
-            
+
             this.applicationId = appResult.y;
+            this.addResultWithDelay('Success', 'Application successfully submitted.', 9);
+
+            // STEP 5: CREATE BOX FOLDER STRUCTURE
+            this.addResultWithDelay('Progress', 'Creating Box folder structure...', 10);
+            try {
+                await setupFoldersAndGeneratePdf({ recordId: this.applicationId });
+                this.addResultWithDelay('Success', 'Box folders created.', 11);
+            } catch (boxErr) {
+                console.error('Box folder error:', boxErr);
+                this.addResultWithDelay('Progress', 'Box folder setup queued.', 11);
+            }
+
+            // STEP 6: GENERATE PDF AND UPLOAD TO BOX
+            this.addResultWithDelay('Progress', 'Generating PDF...', 12);
+
             this.finalMessage = `Thank you ${this.name}, your application has been successfully submitted.`;
             this.animationClass = 'animated-checkbox success';
             this.disable = true;
             this.isReadOnly = true;
             this.isLoading = false;
 
-            // Trigger PDF generation in background
+            // PDF generation needs delay for Queueable folder creation to complete
             setTimeout(() => {
-                generatePdfBlob({ recordId: this.applicationId })
-                    .then(() => refreshApex(this.applicationPdfUrl))
-                    .catch(e => console.error('Error generating PDF:', e));
-            }, 5000);
+                generatePdfToNhsFolder({ recordId: this.applicationId })
+                    .then(() => {
+                        console.log('PDF generated and uploaded to NHS Box folder');
+                        return refreshApex(this.applicationPdfUrl);
+                    })
+                    .catch(e => console.error('PDF generation error:', e));
+            }, 8000);
 
             setTimeout(() => { 
                 this.isModalOpen = false; 

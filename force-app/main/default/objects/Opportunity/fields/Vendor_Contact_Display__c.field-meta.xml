@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vendor_Contact_Display__c</fullName>
+    <label>Vendor Contact Display</label>
+    <type>Text</type>
+    <required>false</required>
+    <externalId>false</externalId>
+    <formula>Vendor_1_Email__c
+&amp; IF(AND(NOT(ISBLANK(Vendor_1_Email__c)), OR(NOT(ISBLANK(Vendor_1_Mobile__c)), NOT(ISBLANK(Vendor_1_Phone__c)))), "   ", "")
+&amp; Vendor_1_Mobile__c
+&amp; IF(AND(NOT(ISBLANK(Vendor_1_Mobile__c)), NOT(ISBLANK(Vendor_1_Phone__c))), ", ", "")
+&amp; Vendor_1_Phone__c</formula>
+    <formulaTreatBlanksAs>BlankAsBlank</formulaTreatBlanksAs>
+    <description>Formatted vendor contact: email, mobile, phone - comma separated, only showing available values</description>
+</CustomField>

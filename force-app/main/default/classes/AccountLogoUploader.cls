@@ -32,10 +32,10 @@ public class AccountLogoUploader {
 
         String fileUrl = '/sfc/servlet.shepherd/version/download/' + contentVersion.Id;
         updateAccountRichTextField(accountId, fileUrl);
-          // Upload to Dropbox with try-catch to handle potential errors
+          // Upload to Box with try-catch to handle potential errors
         
         try {
-            BoxFileService.uploadFileToDropbox(accountId, contentDocumentId, 'Logo', null, null);
+            BoxFileService.uploadFileToBox(accountId, contentDocumentId, 'Logo', null, null);
         } catch (Exception e) {
             System.debug('Failed to upload file to Box for Account ' + accountId + ': ' + e.getMessage() + ' line: ' + e.getLineNumber());
         }

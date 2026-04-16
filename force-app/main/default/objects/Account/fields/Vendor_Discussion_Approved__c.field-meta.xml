@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Vendor_Discussion_Approved__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>When ticked, applications from this House Builder are approved to move to Vendor Discussions stage upon completing Final Checks.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Tick if this House Builder has given exclusive rights to New Home Solutions for Vendor Discussions.</inlineHelpText>
+    <label>Vendor Discussion Approved</label>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Checkbox</type>
+</CustomField>

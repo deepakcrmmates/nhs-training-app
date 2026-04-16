@@ -1,0 +1,164 @@
+<template>
+    <div class="fc-toolbar">
+        <div class="fc-search">
+            <svg width="13" height="13" fill="none" stroke="#9AB09A" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search address, vendor..." oninput={handleSearch}>
+        </div>
+        <button class="refresh-btn" onclick={handleRefresh} title="Refresh">&#8635;</button>
+        <div class="fc-info">{totalCount} applications in Final Checks</div>
+    </div>
+
+    <template if:true={isLoading}>
+        <div class="fc-loading"><lightning-spinner alternative-text="Loading" size="small"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <template if:false={hasApps}>
+            <div class="fc-empty">
+                <svg width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p>No applications in Final Checks</p>
+            </div>
+        </template>
+
+        <template if:true={hasApps}>
+            <div class="fc-table-wrap">
+                <table class="fc-table">
+                    <thead>
+                        <tr>
+                            <th class="fc-th">Application</th>
+                            <th class="fc-th">Vendor</th>
+                            <th class="fc-th">House Builder</th>
+                            <th class="fc-th">Owner</th>
+                            <th class="fc-th fc-th-progress">Progress</th>
+                            <th class="fc-th fc-th-status">Status</th>
+                            <th class="fc-th fc-th-act">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={allApps} for:item="app">
+                            <tr key={app.id} class="fc-row" data-id={app.id} onclick={handleRowClick}>
+                                <td class="fc-td">
+                                    <div class="app-name">{app.name}</div>
+                                    <div class="app-sub">{app.development} &bull; Plot {app.plot}</div>
+                                </td>
+                                <td class="fc-td"><span class="vendor-name">{app.vendorName}</span></td>
+                                <td class="fc-td">{app.houseBuilder}</td>
+                                <td class="fc-td">{app.ownerName}</td>
+                                <td class="fc-td fc-td-progress">
+                                    <div class="progress-wrap">
+                                        <div class="progress-track">
+                                            <div class={app.progressClass} style={app.progressStyle}></div>
+                                        </div>
+                                        <span class="progress-text">{app.progressLabel}</span>
+                                    </div>
+                                </td>
+                                <td class="fc-td"><span class={app.statusClass}>{app.statusLabel}</span></td>
+                                <td class="fc-td fc-td-act">
+                                    <div class="act-group">
+                                        <template if:true={app.canMoveNext}>
+                                            <button class="move-btn" data-id={app.id} onclick={handleMoveNext} title="Move to Vendor Discussions">
+                                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                                Move Next
+                                            </button>
+                                        </template>
+                                        <button class="view-btn" data-id={app.id} onclick={handleNavigate} title="View Record">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Expanded checklist panel -->
+                            <template if:true={app.id}>
+                                <template lwc:if={expandedApp}>
+                                    <template if:true={app.allChecked}>
+                                        <!-- placeholder to keep key unique -->
+                                    </template>
+                                </template>
+                            </template>
+                        </template>
+                    </tbody>
+                </table>
+
+                <!-- Expanded panel rendered outside table for clean layout -->
+                <template if:true={expandedApp}>
+                    <div class="fc-expand-panel">
+                        <div class="fc-expand-header">
+                            <div>
+                                <h3>{expandedApp.name}</h3>
+                                <span class="fc-expand-sub">{expandedApp.vendorName} &bull; {expandedApp.development}</span>
+                            </div>
+                            <div class="fc-expand-progress">
+                                <div class="progress-wrap lg">
+                                    <div class="progress-track">
+                                        <div class={editProgressClass} style={editProgressBarStyle}></div>
+                                    </div>
+                                    <span class="progress-text">{editProgressLabel}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fc-check-grid">
+                            <!-- Agent Reports -->
+                            <div class="fc-check-group">
+                                <h4 class="group-title">Agent Reports</h4>
+                                <template for:each={agentReports} for:item="item">
+                                    <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleCheck}>
+                                        <div class={item.iconClass}>
+                                            <template if:true={item.checked}>
+                                                <svg width="16" height="16" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                            </template>
+                                        </div>
+                                        <span class="check-label">{item.label}</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Will Reports -->
+                            <div class="fc-check-group">
+                                <h4 class="group-title">Will Reports</h4>
+                                <template for:each={willReports} for:item="item">
+                                    <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleCheck}>
+                                        <div class={item.iconClass}>
+                                            <template if:true={item.checked}>
+                                                <svg width="16" height="16" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                            </template>
+                                        </div>
+                                        <span class="check-label">{item.label}</span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Validation -->
+                            <div class="fc-check-group">
+                                <h4 class="group-title">Validation</h4>
+                                <template for:each={validations} for:item="item">
+                                    <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleCheck}>
+                                        <div class={item.iconClass}>
+                                            <template if:true={item.checked}>
+                                                <svg width="16" height="16" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                            </template>
+                                        </div>
+                                        <span class="check-label">{item.label}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="fc-expand-footer">
+                            <button class="btn-cancel" onclick={handleCancel}>Cancel</button>
+                            <button class="btn-save" onclick={handleSave} disabled={isSaving}>
+                                <template if:true={isSaving}>Saving...</template>
+                                <template if:false={isSaving}>Save</template>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </template>
+
+    <template if:true={toastVisible}>
+        <div class={toastClass}>{toastMsg}</div>
+    </template>
+</template>

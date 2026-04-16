@@ -1,0 +1,97 @@
+<template>
+    <div class="fc-card">
+        <div class="fc-header">
+            <div class="fc-header-left">
+                <div class="fc-dot"></div>
+                <h2>Final Checks</h2>
+            </div>
+            <div class="fc-header-right">
+                <div class={summaryClass}>
+                    <template if:true={allComplete}>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                    </template>
+                    <span>{summaryText}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="fc-progress">
+            <div class="bar track">
+                <div class={barClass} style={progressBarStyle}></div>
+            </div>
+            <span class="fc-progress-text">{progressText}</span>
+        </div>
+
+        <template if:true={isLoaded}>
+            <div class="fc-grid">
+                <!-- Agent Reports -->
+                <div class="fc-group">
+                    <h3 class="fc-group-title">Agent Reports</h3>
+                    <template for:each={agentReports} for:item="item">
+                        <div key={item.key} class="fc-row" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Will Reports -->
+                <div class="fc-group">
+                    <h3 class="fc-group-title">Will Reports</h3>
+                    <template for:each={willReports} for:item="item">
+                        <div key={item.key} class="fc-row" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Validation -->
+                <div class="fc-group">
+                    <h3 class="fc-group-title">Validation</h3>
+                    <template for:each={validations} for:item="item">
+                        <div key={item.key} class="fc-row" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Save button -->
+            <template if:true={isDirty}>
+                <div class="fc-footer">
+                    <button class="fc-save" onclick={handleSave} disabled={isSaving}>
+                        <template if:true={isSaving}>
+                            <lightning-spinner alternative-text="Saving" size="x-small" variant="inverse"></lightning-spinner>
+                            Saving...
+                        </template>
+                        <template if:false={isSaving}>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Save Final Checks
+                        </template>
+                    </button>
+                </div>
+            </template>
+        </template>
+
+        <template if:false={isLoaded}>
+            <div class="fc-loading">
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </template>
+    </div>
+</template>

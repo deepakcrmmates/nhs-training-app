@@ -31,11 +31,13 @@ public with sharing class NhsApplicationKanbanController {
             'Amount, Owner.Name, Sales_Advisor__c, NHS_Sales_Advisor__c, ' +
             'Development__c, Date_of_Application_Received__c, ' +
             'Vendor_1__c, Vendor_1__r.Name ' +
-            'FROM Opportunity ' +
-            'WHERE NHS_Process__c = \'Application\' ';
+            'FROM Opportunity ';
 
-        if (showArchived == null || !showArchived) {
-            query += ' AND Archived__c = false ';
+        if (showArchived != null && showArchived) {
+            // Archived view: show all archived records regardless of stage
+            query += 'WHERE Archived__c = true ';
+        } else {
+            query += 'WHERE NHS_Process__c = \'Application\' AND Archived__c = false ';
         }
 
         if (String.isNotBlank(searchTerm)) {
@@ -287,11 +289,13 @@ public with sharing class NhsApplicationKanbanController {
         @AuraEnabled public Decimal  sortOrder    { get; set; }
         @AuraEnabled public String   development  { get; set; }
         @AuraEnabled public String   vendorName   { get; set; }
+        @AuraEnabled public String   nhsProcess   { get; set; }
 
         public CardWrapper(Opportunity opp) {
             this.id           = opp.Id;
             this.name         = opp.Name;
             this.stageName    = opp.StageName;
+            this.nhsProcess   = opp.NHS_Process__c;
             this.houseBuilder = opp.House_Builder__r != null ? opp.House_Builder__r.Name : null;
             this.city         = opp.House_Builder__r != null ? opp.House_Builder__r.BillingCity : null;
             this.plot         = opp.Plot__c;

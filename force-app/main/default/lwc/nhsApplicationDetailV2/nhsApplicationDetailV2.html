@@ -41,10 +41,44 @@
           <h2 class="card-title"><span class="card-title-dot"></span>Property Details</h2>
           <template if:true={notFinalChecks}>
           <div class="card-actions">
-            <button class="action-btn" onclick={handleCallVendor} title="Call Vendor">
-              <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
-              <span>Call</span>
-            </button>
+            <div class="cc-wrap">
+              <button class="action-btn" onclick={handleCallVendor} title="Call">
+                <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
+                <span>Call</span>
+              </button>
+              <template if:true={showCallPopup}>
+                <div class="cc-popup">
+                  <div class="cc-header">
+                    <span class="cc-title">Quick Call</span>
+                    <button class="cc-close" onclick={handleCloseCallPopup}>&times;</button>
+                  </div>
+                  <div class="cc-list">
+                    <template if:true={hasCallContacts}>
+                      <template for:each={callContacts} for:item="contact">
+                        <div key={contact.key} class="cc-entry">
+                          <div class={contact.avatarClass}>
+                            <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                          </div>
+                          <div class="cc-entry-info">
+                            <div class="cc-entry-name">{contact.name}</div>
+                            <div class="cc-entry-detail">
+                              <span class="cc-entry-role">{contact.role}</span>
+                              <span class="cc-entry-number">{contact.number}</span>
+                            </div>
+                          </div>
+                          <a href={contact.href} class="cc-call-btn" title="Call">
+                            <lightning-icon icon-name="utility:call" size="x-small"></lightning-icon>
+                          </a>
+                        </div>
+                      </template>
+                    </template>
+                    <template if:false={hasCallContacts}>
+                      <div class="cc-empty">No phone numbers available.</div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
             <button class="action-btn" onclick={handleEmailVendor} title="Email Vendor">
               <lightning-icon icon-name="utility:email" size="x-small"></lightning-icon>
               <span>Email</span>
@@ -186,6 +220,58 @@
             </div>
           </div>
 
+          <!-- Vendor 2 Info Box (conditionally shown) -->
+          <template lwc:if={hasVendor2}>
+            <div class="vendor2-info-box">
+              <div class="section-label" style="color: #7C3AED;">Vendor 2 Information</div>
+              <div class="vendor-grid-4">
+                <div class="field">
+                  <label class="field-label">Vendor 2 Name</label>
+                  <lightning-input
+                    variant="label-hidden"
+                    label="Vendor 2 Name"
+                    value={formData.vendor2Name}
+                    data-field="vendor2Name"
+                    onchange={handleFieldChange}>
+                  </lightning-input>
+                </div>
+                <div class="field">
+                  <label class="field-label">Mobile</label>
+                  <lightning-input
+                    type="tel"
+                    variant="label-hidden"
+                    label="Mobile"
+                    value={formData.vendor2Mobile}
+                    data-field="vendor2Mobile"
+                    onchange={handleFieldChange}>
+                  </lightning-input>
+                </div>
+                <div class="field">
+                  <label class="field-label">Phone</label>
+                  <lightning-input
+                    type="tel"
+                    variant="label-hidden"
+                    label="Phone"
+                    value={formData.vendor2Phone}
+                    data-field="vendor2Phone"
+                    onchange={handleFieldChange}>
+                  </lightning-input>
+                </div>
+                <div class="field">
+                  <label class="field-label">Email</label>
+                  <lightning-input
+                    type="email"
+                    variant="label-hidden"
+                    label="Email"
+                    value={formData.vendor2Email}
+                    data-field="vendor2Email"
+                    onchange={handleFieldChange}>
+                  </lightning-input>
+                </div>
+              </div>
+            </div>
+          </template>
+
           <!-- Metrics Row -->
           <div class="metrics-row">
             <div class="metric metric-highlight">
@@ -306,7 +392,23 @@
 
           <!-- Save -->
           <div class="va-footer">
-            <button class="btn-primary" onclick={handleVaSave} disabled={isVaSaving}>Save Availability</button>
+            <template if:false={isVaSaving}>
+              <template if:false={vaSaveSuccess}>
+                <button class="btn-primary" onclick={handleVaSave}>Save Availability</button>
+              </template>
+              <template if:true={vaSaveSuccess}>
+                <button class="btn-primary va-btn-saved" disabled>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Saved
+                </button>
+              </template>
+            </template>
+            <template if:true={isVaSaving}>
+              <button class="btn-primary va-btn-saving" disabled>
+                <span class="save-spinner"></span>
+                Saving...
+              </button>
+            </template>
           </div>
         </div>
       </template>
@@ -317,6 +419,7 @@
           <div class="card-header">
             <h2 class="card-title"><span class="card-title-dot"></span>Book Agents</h2>
             <span class="ba-count">{bookingCountLabel}</span>
+            <button class="btn-assign-agent-sm" onclick={handleOpenAssignAgent}>+ Assign Agent</button>
           </div>
 
           <!-- 3 Agent Status Cards -->
@@ -331,6 +434,9 @@
                     <div class="ba-agent-name">{formData.agent1Name}</div>
                   </div>
                 </div>
+                <button class="ba-edit-btn" data-slot="agent1" onclick={handleEditAgent} title="Reassign Agent 1">
+                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                </button>
                 <template if:true={formData.agent1DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -393,6 +499,9 @@
                     <div class="ba-agent-name">{formData.agent2Name}</div>
                   </div>
                 </div>
+                <button class="ba-edit-btn" data-slot="agent2" onclick={handleEditAgent} title="Reassign Agent 2">
+                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                </button>
                 <template if:true={formData.agent2DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -455,6 +564,9 @@
                     <div class="ba-agent-name">{formData.agent3Name}</div>
                   </div>
                 </div>
+                <button class="ba-edit-btn" data-slot="agent3" onclick={handleEditAgent} title="Reassign Agent 3">
+                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                </button>
                 <template if:true={formData.agent3DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -589,62 +701,77 @@
                 <div class="ba-picker-agents">
                   <div class="ba-picker-row">
                     <span class="ba-dot ba-dot-1"></span>
-                    <span class="ba-picker-name">{formData.agent1Name}</span>
-                    <template if:true={baPicker1IsDV}>
-                      <span class="ba-picker-dv">Desktop</span>
-                    </template>
-                    <template if:false={baPicker1IsDV}>
-                      <template if:true={baPicker1BookedHere}>
-                        <span class="ba-picker-booked">✓ Booked</span>
+                    <template if:true={hasAgent1}>
+                      <span class="ba-picker-name">{formData.agent1Name}</span>
+                      <template if:true={baPicker1IsDV}>
+                        <span class="ba-picker-dv">Desktop</span>
                       </template>
-                      <template if:true={baPicker1BookedElsewhere}>
-                        <button class="ba-picker-amend ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Amend</button>
-                      </template>
-                      <template if:false={baPicker1BookedHere}>
-                        <template if:false={baPicker1BookedElsewhere}>
-                          <button class="ba-picker-book ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Book</button>
+                      <template if:false={baPicker1IsDV}>
+                        <template if:true={baPicker1BookedHere}>
+                          <span class="ba-picker-booked">✓ Booked</span>
+                        </template>
+                        <template if:true={baPicker1BookedElsewhere}>
+                          <button class="ba-picker-amend ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Amend</button>
+                        </template>
+                        <template if:false={baPicker1BookedHere}>
+                          <template if:false={baPicker1BookedElsewhere}>
+                            <button class="ba-picker-book ba-picker-book-1" data-agent="1" onclick={handleBaPickerBook}>Book</button>
+                          </template>
                         </template>
                       </template>
+                    </template>
+                    <template if:false={hasAgent1}>
+                      <span class="ba-picker-name ba-no-agent">No Agent Assigned</span>
                     </template>
                   </div>
                   <div class="ba-picker-row">
                     <span class="ba-dot ba-dot-2"></span>
-                    <span class="ba-picker-name">{formData.agent2Name}</span>
-                    <template if:true={baPicker2IsDV}>
-                      <span class="ba-picker-dv">Desktop</span>
-                    </template>
-                    <template if:false={baPicker2IsDV}>
-                      <template if:true={baPicker2BookedHere}>
-                        <span class="ba-picker-booked">✓ Booked</span>
+                    <template if:true={hasAgent2}>
+                      <span class="ba-picker-name">{formData.agent2Name}</span>
+                      <template if:true={baPicker2IsDV}>
+                        <span class="ba-picker-dv">Desktop</span>
                       </template>
-                      <template if:true={baPicker2BookedElsewhere}>
-                        <button class="ba-picker-amend ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Amend</button>
-                      </template>
-                      <template if:false={baPicker2BookedHere}>
-                        <template if:false={baPicker2BookedElsewhere}>
-                          <button class="ba-picker-book ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Book</button>
+                      <template if:false={baPicker2IsDV}>
+                        <template if:true={baPicker2BookedHere}>
+                          <span class="ba-picker-booked">✓ Booked</span>
+                        </template>
+                        <template if:true={baPicker2BookedElsewhere}>
+                          <button class="ba-picker-amend ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Amend</button>
+                        </template>
+                        <template if:false={baPicker2BookedHere}>
+                          <template if:false={baPicker2BookedElsewhere}>
+                            <button class="ba-picker-book ba-picker-book-2" data-agent="2" onclick={handleBaPickerBook}>Book</button>
+                          </template>
                         </template>
                       </template>
+                    </template>
+                    <template if:false={hasAgent2}>
+                      <span class="ba-picker-name ba-no-agent">No Agent Assigned</span>
                     </template>
                   </div>
                   <div class="ba-picker-row">
                     <span class="ba-dot ba-dot-3"></span>
-                    <span class="ba-picker-name">{formData.agent3Name}</span>
-                    <template if:true={baPicker3IsDV}>
-                      <span class="ba-picker-dv">Desktop</span>
-                    </template>
-                    <template if:false={baPicker3IsDV}>
-                      <template if:true={baPicker3BookedHere}>
-                        <span class="ba-picker-booked">✓ Booked</span>
+                    <template if:true={hasAgent3}>
+                      <span class="ba-picker-name">{formData.agent3Name}</span>
+                      <template if:true={baPicker3IsDV}>
+                        <span class="ba-picker-dv">Desktop</span>
                       </template>
-                      <template if:true={baPicker3BookedElsewhere}>
-                        <button class="ba-picker-amend ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Amend</button>
-                      </template>
-                      <template if:false={baPicker3BookedHere}>
-                        <template if:false={baPicker3BookedElsewhere}>
-                          <button class="ba-picker-book ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Book</button>
+                      <template if:false={baPicker3IsDV}>
+                        <template if:true={baPicker3BookedHere}>
+                          <span class="ba-picker-booked">✓ Booked</span>
+                        </template>
+                        <template if:true={baPicker3BookedElsewhere}>
+                          <button class="ba-picker-amend ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Amend</button>
+                        </template>
+                        <template if:false={baPicker3BookedHere}>
+                          <template if:false={baPicker3BookedElsewhere}>
+                            <button class="ba-picker-book ba-picker-book-3" data-agent="3" onclick={handleBaPickerBook}>Book</button>
+                          </template>
                         </template>
                       </template>
+                    </template>
+                    <template if:false={hasAgent3}>
+                      <span class="ba-picker-name ba-no-agent">No Agent Assigned</span>
                     </template>
                   </div>
                 </div>
@@ -781,6 +908,9 @@
                 <div class="agent-header agent-header-1">
                   <span class="agent-num">Agent 1</span>
                   <span class="agent-name">{formData.agent1Name}</span>
+                  <button class="agent-edit-btn" data-slot="agent1" onclick={handleEditAgent} title="Reassign Agent 1">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
                 </div>
                 <div class="agent-body">
                   <div class="agent-contact">
@@ -847,6 +977,9 @@
                 <div class="agent-header agent-header-2">
                   <span class="agent-num">Agent 2</span>
                   <span class="agent-name">{formData.agent2Name}</span>
+                  <button class="agent-edit-btn" data-slot="agent2" onclick={handleEditAgent} title="Reassign Agent 2">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
                 </div>
                 <div class="agent-body">
                   <div class="agent-contact">
@@ -913,6 +1046,9 @@
                 <div class="agent-header agent-header-3">
                   <span class="agent-num">Agent 3</span>
                   <span class="agent-name">{formData.agent3Name}</span>
+                  <button class="agent-edit-btn" data-slot="agent3" onclick={handleEditAgent} title="Reassign Agent 3">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
                 </div>
                 <div class="agent-body">
                   <div class="agent-contact">
@@ -1099,6 +1235,23 @@
     <!-- ===== SIDE COLUMN ===== -->
     <div class="side-col">
 
+      <!-- Quick Actions (conditional) -->
+      <template if:true={hasQuickActions}>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="card-title-dot"></span>Quick Actions</h2>
+          </div>
+          <div class="card-body qa-body">
+            <template for:each={quickActions} for:item="action">
+              <button key={action.key} class="qa-btn" data-action={action.action} onclick={handleQuickAction}>
+                <lightning-icon icon-name={action.icon} size="xx-small"></lightning-icon>
+                <span>{action.label}</span>
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
+
       <!-- Quick Summary Card -->
       <div class="card card-summary">
         <div class="card-header">
@@ -1141,6 +1294,10 @@
             <span class="info-key">Plot</span>
             <span class="info-val">{formData.plot}</span>
           </div>
+          <div class="info-row">
+            <span class="info-key">Property Description</span>
+            <span class="info-val">{formData.propertyDescription}</span>
+          </div>
           <div class="info-divider"></div>
           <div class="info-row">
             <span class="info-key">Property Address</span>
@@ -1162,16 +1319,32 @@
             <span class="info-key">Vendor Email</span>
             <span class="info-val">{formData.vendorEmail}</span>
           </div>
+          <template if:true={formData.notes}>
+            <div class="info-divider"></div>
+            <div class="info-row info-row-notes">
+              <span class="info-key">Application Notes</span>
+              <span class="info-val info-val-notes">{formData.notes}</span>
+            </div>
+          </template>
         </div>
       </div>
 
-      <!-- Application Notes Card -->
+      <!-- Quick Notes Card -->
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title"><span class="card-title-dot"></span>Application Notes</h2>
+          <h2 class="card-title"><span class="card-title-dot"></span>Quick Notes</h2>
         </div>
-        <div class="card-body" style="padding: 14px;">
-          <textarea class="app-notes-textarea" placeholder="Application notes..." onchange={handleAppNotesChange}>{formData.notes}</textarea>
+        <div class="card-body" style="padding: 0;">
+          <!-- Add note input -->
+          <div class="qn-inline">
+            <textarea class="qn-inline-textarea" placeholder="Add a quick note..." onchange={handleQuickNoteChange}>{quickNoteText}</textarea>
+            <div class="qn-inline-footer">
+              <button class="btn-primary btn-sm" onclick={handleSaveQuickNote} disabled={isQuickNoteSaving}>
+                <template if:true={isQuickNoteSaving}>Saving...</template>
+                <template if:false={isQuickNoteSaving}>Add Note</template>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1190,6 +1363,12 @@
         <lightning-icon icon-name="utility:pdf_ext" size="x-small"></lightning-icon>
         Generate PDF
       </button>
+      <template if:true={isAdmin}>
+        <button class="btn-bottom btn-pdf" onclick={handleOpenEditApp}>
+          <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+          Edit Application
+        </button>
+      </template>
       <button class="btn-bottom btn-refresh" onclick={handleRefresh}>
         <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
         Refresh
@@ -1222,14 +1401,198 @@
     </div>
   </div>
 
-  <!-- ========== 5. COMMS HUB OVERLAY ========== -->
+  <!-- ========== 5. COMMS HUB OVERLAY (right panel) ========== -->
   <template if:true={showCommsHub}>
-    <div class="overlay-backdrop" onclick={handleCloseCommsHub}></div>
-    <div class="overlay-panel">
+    <div class="comms-backdrop"></div>
+    <div class="comms-slide-panel">
       <c-nhs-communications-hub
         record-id={recordId}
+        property-address={formData.propertyAddress}
+        vendor-name={formData.vendor1Name}
+        vendor-email={formData.vendorEmail}
+        vendor-mobile={formData.vendorMobile}
+        house-builder-name={formData.houseBuilderName}
+        auto-compose={_commsHubAutoCompose}
         onclose={handleCloseCommsHub}>
       </c-nhs-communications-hub>
+    </div>
+  </template>
+
+  <!-- ========== VENDOR AVAILABILITY LIGHTBOX ========== -->
+  <template if:true={showVaLightbox}>
+    <div class="va-lb-backdrop"></div>
+    <div class="va-lb-modal">
+      <div class="va-lb-header">
+        <h3>Vendor Availability</h3>
+        <div class="va-toolbar">
+          <span class="va-bulk-label">Mark:</span>
+          <button class="va-bulk-btn va-bulk-all" onclick={handleVaBulkAll}>All Day</button>
+          <button class="va-bulk-btn va-bulk-am" onclick={handleVaBulkAm}>AM (9–12)</button>
+          <button class="va-bulk-btn va-bulk-pm" onclick={handleVaBulkPm}>PM (12–5)</button>
+          <button class="va-bulk-btn va-bulk-clear" onclick={handleVaBulkClear}>✕ Clear</button>
+        </div>
+        <button class="va-lb-close" onclick={handleCloseVaLightbox}>&times;</button>
+      </div>
+
+      <!-- Vendor info strip -->
+      <div class="va-vendor-strip">
+        <div class="va-vendor-name">{formData.vendor1Name}</div>
+        <div class="va-vendor-contact">{formData.vendorMobile}</div>
+        <div class="va-vendor-contact">{formData.vendorEmail}</div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="va-nav">
+        <button class="va-nav-btn" onclick={handleVaPrev}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+          Prev
+        </button>
+        <span class="va-range">{vaRangeLabel}</span>
+        <button class="va-nav-btn" onclick={handleVaNext}>
+          Next
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="va-nav-btn va-nav-today" onclick={handleVaToday}>Today</button>
+      </div>
+
+      <!-- Calendar -->
+      <div class="va-calendar">
+        <table class="va-table">
+          <thead>
+            <tr>
+              <th class="va-th-time">Period</th>
+              <template for:each={vaDays} for:item="day">
+                <th key={day.key} class={day.thClass}>
+                  <template if:true={day.showWeekendToggle}>
+                    <label class="va-weekend-toggle" data-di={day.idx} onclick={handleWeekendToggle}>
+                      <input type="checkbox" checked={day.weekendEnabled}/>
+                    </label>
+                  </template>
+                  <div class="va-day-name">{day.dayName}</div>
+                  <div class="va-day-num">{day.dayNum}</div>
+                  <template if:false={day.isDisabled}>
+                    <button class={day.allBtnClass} data-di={day.idx} onclick={handleVaDayAll}>All</button>
+                  </template>
+                  <template if:true={day.isPast}>
+                    <div class="va-past-label">Past</div>
+                  </template>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="va-td-label va-td-am">
+                <div class="va-period-name">AM</div>
+                <div class="va-period-desc">Before 9 am – 12 pm</div>
+              </td>
+              <template for:each={vaDays} for:item="day">
+                <td key={day.key} class={day.amCellClass} data-di={day.idx} data-period="am" onclick={handleVaCellClick}>
+                  <template if:true={day.amActive}>
+                    <span class="va-check">✓</span>
+                  </template>
+                </td>
+              </template>
+            </tr>
+            <tr>
+              <td class="va-td-label va-td-pm">
+                <div class="va-period-name">PM</div>
+                <div class="va-period-desc">12 pm – 5 pm</div>
+              </td>
+              <template for:each={vaDays} for:item="day">
+                <td key={day.key} class={day.pmCellClass} data-di={day.idx} data-period="pm" onclick={handleVaCellClick}>
+                  <template if:true={day.pmActive}>
+                    <span class="va-check">✓</span>
+                  </template>
+                </td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="va-lb-footer">
+        <button class="btn-cancel" onclick={handleCloseVaLightbox}>Close</button>
+        <template if:false={isVaSaving}>
+          <template if:false={vaSaveSuccess}>
+            <button class="btn-primary" onclick={handleVaSave}>Save Availability</button>
+          </template>
+          <template if:true={vaSaveSuccess}>
+            <button class="btn-primary va-btn-saved" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              Saved
+            </button>
+          </template>
+        </template>
+        <template if:true={isVaSaving}>
+          <button class="btn-primary va-btn-saving" disabled>
+            <span class="save-spinner"></span>
+            Saving...
+          </button>
+        </template>
+      </div>
+    </div>
+  </template>
+
+  <!-- ========== EDIT APPLICATION MODAL (Admin Only) ========== -->
+  <template if:true={showEditApp}>
+    <div class="edit-app-backdrop" onclick={handleCloseEditApp}></div>
+    <div class="edit-app-modal">
+      <div class="edit-app-header">
+        <h3>Edit Application</h3>
+        <button class="edit-app-close" onclick={handleCloseEditApp}>&times;</button>
+      </div>
+      <div class="edit-app-body">
+        <div class="edit-app-grid">
+          <div class="edit-app-field">
+            <label class="edit-app-label">Vendor Expectations</label>
+            <input type="text" class="edit-app-input" value={editFields.vendorExpectations} data-field="vendorExpectations" onchange={handleEditFieldChange} placeholder="e.g. 250000">
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">ALCD (Target Completion)</label>
+            <input type="date" class="edit-app-input" value={editFields.etaCompEnd} data-field="etaCompEnd" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">Received Date</label>
+            <input type="date" class="edit-app-input" value={editFields.receivedDate} data-field="receivedDate" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">Scheme</label>
+            <input type="text" class="edit-app-input" value={editFields.scheme} data-field="scheme" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">Development</label>
+            <input type="text" class="edit-app-input" value={editFields.development} data-field="development" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">Plot</label>
+            <input type="text" class="edit-app-input" value={editFields.plot} data-field="plot" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field">
+            <label class="edit-app-label">Property Description</label>
+            <input type="text" class="edit-app-input" value={editFields.propertyDescription} data-field="propertyDescription" onchange={handleEditFieldChange} placeholder="e.g. Detached 3 Bed">
+          </div>
+          <div class="edit-app-field edit-app-full">
+            <label class="edit-app-label">Property Address</label>
+            <input type="text" class="edit-app-input" value={editFields.propertyAddress} data-field="propertyAddress" onchange={handleEditFieldChange}>
+          </div>
+          <div class="edit-app-field edit-app-full">
+            <label class="edit-app-label">Application Notes</label>
+            <textarea class="edit-app-textarea" data-field="notes" onchange={handleEditFieldChange} rows="3">{editFields.notes}</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="edit-app-footer">
+        <span class="edit-app-admin-badge">
+          <lightning-icon icon-name="utility:lock" size="xx-small"></lightning-icon>
+          Admin Only
+        </span>
+        <div class="edit-app-footer-right">
+          <button class="btn-cancel" onclick={handleCloseEditApp}>Cancel</button>
+          <button class="btn-primary" onclick={handleSaveEditApp}>Save Changes</button>
+        </div>
+      </div>
     </div>
   </template>
 
@@ -1237,16 +1600,45 @@
   <template if:true={showAssignAgent}>
     <div class="af-overlay" onclick={handleCloseAssignAgent}>
       <div class="af-modal" onclick={handleAssignModalClick}>
-        <div class="af-header">
-          <h3>Assign Agent</h3>
-          <div class="af-steps">
-            <div class={step1Class}><span class="af-step-num">1</span><span class="af-step-text">Search</span></div>
-            <span class="af-step-line"></span>
-            <div class={step2Class}><span class="af-step-num">2</span><span class="af-step-text">Select Agents</span></div>
-            <span class="af-step-line"></span>
-            <div class={step3Class}><span class="af-step-num">3</span><span class="af-step-text">Confirm</span></div>
+        <!-- Header: Application context -->
+        <div class="af-header-top">
+          <div class="af-header-title">
+            <h3>
+              <template if:true={isReassignMode}>Reassign {reassignLabel}</template>
+              <template if:false={isReassignMode}>Assign Agent</template>
+            </h3>
+            <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
           </div>
-          <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
+          <div class="af-header-context">
+            <div class="af-ctx-item">
+              <span class="af-ctx-label">Property</span>
+              <span class="af-ctx-value">{formData.propertyAddress}</span>
+            </div>
+            <div class="af-ctx-divider"></div>
+            <div class="af-ctx-item">
+              <span class="af-ctx-label">Housebuilder</span>
+              <span class="af-ctx-value">{formData.houseBuilderName}</span>
+            </div>
+            <div class="af-ctx-divider"></div>
+            <div class="af-ctx-item">
+              <span class="af-ctx-label">Vendor</span>
+              <span class="af-ctx-value">{formData.vendor1Name}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Step indicators -->
+        <div class="af-header-steps">
+          <div class="af-steps">
+            <div class={step1Class}><span class="af-step-num">1</span><span class="af-step-text">Radius</span></div>
+            <span class="af-step-line"></span>
+            <div class={step2Class}><span class="af-step-num">2</span><span class="af-step-text">Agents</span></div>
+            <span class="af-step-line"></span>
+            <div class={step3Class}><span class="af-step-num">3</span><span class="af-step-text">Availability</span></div>
+            <span class="af-step-line"></span>
+            <div class={step4Class}><span class="af-step-num">4</span><span class="af-step-text">Email</span></div>
+            <span class="af-step-line"></span>
+            <div class={step5Class}><span class="af-step-num">5</span><span class="af-step-text">Submit</span></div>
+          </div>
         </div>
 
         <!-- Step 1: Search -->
@@ -1282,14 +1674,22 @@
                   <div class={agent.rowClass} key={agent.id}>
                     <div class="af-agent-info">
                       <div class="af-agent-name">{agent.name}</div>
+                      <template if:true={agent.fullAddress}>
+                        <div class="af-agent-address">
+                          <a href={agent.googleMapsLink} target="_blank" class="af-link" title="Open in Google Maps">📍 {agent.fullAddress}</a>
+                        </div>
+                      </template>
                       <div class="af-agent-meta">
                         <span class="af-distance">{agent.distanceLabel}</span>
-                        <span>{agent.postcode}</span>
                       </div>
                       <div class="af-agent-contact">
-                        <template if:true={agent.phone}><span>T: {agent.phone}</span></template>
-                        <template if:true={agent.mobile}><span>M: {agent.mobile}</span></template>
-                        <template if:true={agent.email}><span>{agent.email}</span></template>
+                        <template if:true={agent.phone}><span>T: <a href={agent.phoneLink} class="af-link">{agent.phone}</a></span></template>
+                        <template if:true={agent.mobile}><span>M: <a href={agent.mobileLink} class="af-link">{agent.mobile}</a></span></template>
+                        <template if:true={agent.email}><span><a href={agent.mailtoLink} class="af-link">{agent.email}</a></span></template>
+                      </div>
+                      <div class="af-agent-links">
+                        <a href={agent.rightmoveSearchUrl} target="_blank" class="af-rightmove-btn" title="Search on Rightmove">Rightmove</a>
+                        <a href={agent.zooplaSearchUrl} target="_blank" class="af-zoopla-btn" title="Search on Zoopla">Zoopla</a>
                       </div>
                     </div>
                     <div class="af-agent-actions">
@@ -1298,8 +1698,13 @@
                         <button class="af-unassign-btn" data-id={agent.id} onclick={handleUnassignAgent}>✕</button>
                       </template>
                       <template if:false={agent.isAssigned}>
-                        <button class="af-assign-btn af-btn-a2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
-                        <button class="af-assign-btn af-btn-a3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
+                        <template if:true={isReassignMode}>
+                          <button class="af-assign-btn af-btn-reassign" data-id={agent.id} data-name={agent.name} data-slot={reassignSlot} onclick={handleReassignToSlot} disabled={isAssigning}>Assign as {reassignLabel}</button>
+                        </template>
+                        <template if:false={isReassignMode}>
+                          <button class="af-assign-btn af-btn-a2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
+                          <button class="af-assign-btn af-btn-a3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
+                        </template>
                       </template>
                     </div>
                   </div>
@@ -1318,16 +1723,180 @@
         </template>
 
         <!-- Step 3: Confirm -->
+        <!-- Step 3: Booking Calendar -->
         <template if:true={isStep3}>
-          <div class="af-body af-confirm">
-            <div class="af-confirm-icon">✓</div>
-            <h3>Agents Assigned</h3>
-            <div class="af-confirm-detail">
-              <div class="af-confirm-row"><span class="af-label-2">Agent 2</span><span>{assignedAgent2Name}</span></div>
-              <div class="af-confirm-row"><span class="af-label-3">Agent 3</span><span>{assignedAgent3Name}</span></div>
+          <div class="af-body">
+            <div class="af-cal-header">
+              <span class="af-cal-range">{afCalRangeLabel}</span>
+              <div class="af-cal-nav">
+                <button class="va-nav-btn" onclick={handleAfCalPrev}>‹ Prev</button>
+                <button class="va-nav-btn" onclick={handleAfCalToday}>Today</button>
+                <button class="va-nav-btn" onclick={handleAfCalNext}>Next ›</button>
+              </div>
+            </div>
+            <template if:true={afSelectedSlot}>
+              <div class="af-selected-banner">
+                Selected: <strong>{afSelectedSlot.dayLabel}</strong> at <strong>{afSelectedSlot.time}</strong>
+              </div>
+            </template>
+            <div class="af-cal-wrap">
+              <table class="ba-cal-table">
+                <thead>
+                  <tr>
+                    <th class="ba-cal-th-time">Time Slot</th>
+                    <template for:each={afCalDays} for:item="day">
+                      <th key={day.key} class={day.thClass}>
+                        <div class="va-day-name">{day.dayName}</div>
+                        <div class="va-day-num">{day.dayNum}</div>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template for:each={afCalRows} for:item="row">
+                    <tr key={row.key}>
+                      <td class={row.tdLabelClass}>{row.label}</td>
+                      <template for:each={row.cells} for:item="cell">
+                        <td key={cell.key} class={cell.tdClass}>
+                          <template if:true={cell.available}>
+                            <div class="ba-slot-grid">
+                              <template for:each={cell.subSlots} for:item="sub">
+                                <div key={sub.key} class={sub.chipClass}
+                                     data-sub-key={sub.subKey} data-day-label={sub.dayLabel}
+                                     data-slot-label={row.label} data-time={sub.time}
+                                     data-avail-id={sub.availId}
+                                     onclick={handleAfSlotClick}>
+                                  {sub.time}
+                                </div>
+                              </template>
+                            </div>
+                          </template>
+                          <template if:false={cell.available}>
+                            <div class="ba-slot-empty">—</div>
+                          </template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
             </div>
             <div class="af-actions">
-              <button class="af-btn-next" onclick={handleConfirmAssignment}>Done</button>
+              <button class="af-btn-cancel" onclick={handleAfBackToStep2}>Back</button>
+              <template if:false={afIsBooking}>
+                <button class="af-btn-next" onclick={handleAfStep3Next}>Book &amp; Next</button>
+              </template>
+              <template if:true={afIsBooking}>
+                <button class="af-btn-next" disabled><span class="save-spinner"></span> Booking...</button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Step 4: Email Preview -->
+        <template if:true={isStep4}>
+          <div class="af-body">
+            <div class="af-email-banner">{afEmailTemplateLabel} — {afEmailAgentName}</div>
+            <template if:true={afIsLoadingEmail}>
+              <div class="af-loading"><lightning-spinner alternative-text="Loading template" size="medium"></lightning-spinner></div>
+            </template>
+            <template if:false={afIsLoadingEmail}>
+              <div class="af-email-form">
+                <div class="af-email-row">
+                  <label class="af-email-label">TO</label>
+                  <div class="af-email-input-group">
+                    <input type="text" class="af-email-input af-email-input-with-btn" value={afEmailTo} onchange={handleAfEmailToChange}>
+                    <button class="af-ab-btn" onclick={handleOpenAfAddressBook} title="Address Book">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="af-email-row-split">
+                  <div class="af-email-row af-email-half">
+                    <label class="af-email-label">CC</label>
+                    <input type="text" class="af-email-input" value={afEmailCc} onchange={handleAfEmailCcChange} placeholder="cc@email.com (optional)">
+                  </div>
+                  <div class="af-email-row af-email-half">
+                    <label class="af-email-label">BCC</label>
+                    <input type="text" class="af-email-input" value={afEmailBcc} onchange={handleAfEmailBccChange} placeholder="bcc@email.com (optional)">
+                  </div>
+                </div>
+                <div class="af-email-row">
+                  <label class="af-email-label">SUBJECT</label>
+                  <input type="text" class="af-email-input" value={afEmailSubject} onchange={handleAfEmailSubjectChange}>
+                </div>
+                <div class="af-email-row">
+                  <label class="af-email-label">EMAIL PREVIEW</label>
+                  <div class="af-email-preview">
+                    <lightning-formatted-rich-text value={afEmailBody}></lightning-formatted-rich-text>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <div class="af-actions">
+              <button class="af-btn-cancel" onclick={handleAfBackToStep3}>Back</button>
+              <button class="af-btn-next" onclick={handleAfStep4Next}>Select and Go Next</button>
+            </div>
+
+            <!-- Address Book for Agent Email -->
+            <template if:true={showAfAddressBook}>
+              <div class="af-ab-overlay">
+                <div class="af-ab-panel">
+                  <div class="af-ab-header">
+                    <h4>Address Book</h4>
+                    <button class="af-ab-close" onclick={handleCloseAfAddressBook}>&times;</button>
+                  </div>
+                  <div class="af-ab-search">
+                    <input type="text" class="af-email-input" placeholder="Search contacts..." value={afAddressBookSearch} oninput={handleAfAddressBookSearch}>
+                  </div>
+                  <div class="af-ab-list">
+                    <template if:true={hasAfAddressBookContacts}>
+                      <template for:each={filteredAfAddressBook} for:item="contact">
+                        <div key={contact.key} class="af-ab-entry">
+                          <div class="af-ab-info">
+                            <span class="af-ab-name">{contact.name}</span>
+                            <span class="af-ab-role">{contact.role}</span>
+                            <span class="af-ab-email">{contact.email}</span>
+                          </div>
+                          <div class="af-ab-btns">
+                            <button class="af-ab-add-btn af-ab-add-to" data-email={contact.email} onclick={handleAfSelectContactTo}>To</button>
+                            <button class="af-ab-add-btn af-ab-add-cc" data-email={contact.email} onclick={handleAfSelectContactCc}>CC</button>
+                          </div>
+                        </div>
+                      </template>
+                    </template>
+                    <template if:false={hasAfAddressBookContacts}>
+                      <div class="af-ab-empty">No contacts found.</div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Step 5: Summary & Submit -->
+        <template if:true={isStep5}>
+          <div class="af-body">
+            <div class="af-info">Review and submit</div>
+            <div class="af-summary">
+              <template for:each={afSummaryItems} for:item="item">
+                <div class="af-summary-row" key={item.label}>
+                  <span class="af-summary-label">{item.label}</span>
+                  <span class="af-summary-value">{item.value}</span>
+                </div>
+              </template>
+            </div>
+            <div class="af-actions">
+              <button class="af-btn-cancel" onclick={handleAfBackToStep4}>Back</button>
+              <template if:false={afIsSubmitting}>
+                <button class="af-btn-submit" onclick={handleAfSubmit}>Submit</button>
+              </template>
+              <template if:true={afIsSubmitting}>
+                <button class="af-btn-submit" disabled>
+                  <span class="save-spinner"></span> Submitting...
+                </button>
+              </template>
             </div>
           </div>
         </template>

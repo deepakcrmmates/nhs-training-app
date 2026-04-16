@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NHS_Process__c</fullName>
+    <externalId>false</externalId>
+    <label>NHS Process</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Application</fullName>
+                <default>true</default>
+                <label>Application</label>
+            </value>
+            <value>
+                <fullName>Vendor Availability</fullName>
+                <default>false</default>
+                <label>Vendor Availability</label>
+            </value>
+            <value>
+                <fullName>Agents Booked</fullName>
+                <default>false</default>
+                <label>Agents Booked</label>
+            </value>
+            <value>
+                <fullName>Figures to chased</fullName>
+                <default>false</default>
+                <label>Figures to chase</label>
+            </value>
+            <value>
+                <fullName>Figures returned</fullName>
+                <default>false</default>
+                <label>Figures returned</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

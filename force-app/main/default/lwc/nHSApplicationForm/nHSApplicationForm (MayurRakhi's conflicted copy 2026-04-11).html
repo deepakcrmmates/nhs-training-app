@@ -1,0 +1,262 @@
+<template>
+    <div class="form-wrapper">
+        <!-- Sticky Header -->
+        <header class="form-sticky-header">
+            <div class="header-left">
+                <template if:true={logoUrl}>
+                    <img src={logoUrl} alt="House Builder Logo" class="header-logo" />
+                </template>
+                <h2>Application Form</h2>
+            </div>
+            <div class="header-actions">
+                <lightning-button variant="neutral" label="Cancel" onclick={handleClickCancel} class="slds-m-right_x-small"></lightning-button>
+                <lightning-button variant="brand" label="Save & Submit" onclick={handleSaveAndSubmit} disabled={disable}></lightning-button>
+            </div>
+        </header>
+
+        <div class="layout-container">
+            <!-- Side Navigation -->
+            <aside class="side-nav-container">
+                <div class="nav-card">
+                    <template for:each={sections} for:item="nav">
+                        <div key={nav.id} class={nav.itemClass} data-id={nav.id} onclick={handleNavClick}>
+                            <lightning-icon icon-name={nav.icon} size="x-small" class="slds-m-right_small"></lightning-icon>
+                            <span>{nav.label}</span>
+                        </div>
+                    </template>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <template if:true={isLoading}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <!-- SECTION 1: House Builder Details -->
+                <section class="section-card" data-id="housebuilder">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:company" size="small"></lightning-icon>
+                        <h2>House Builder Details</h2>
+                    </div>
+                    <div class="modern-grid">
+                        <div class="field-group">
+                            <label class="modern-label">House Builder</label>
+                            <c-custom-lookup-lwc 
+                                label=" "
+                                selected-icon-name="standard:account" 
+                                object-label="Account"
+                                object-api-name="Account" 
+                                field-api-name="Name"
+                                other-field-api-name="Industry" 
+                                selected-record-id={housebuilderId} 
+                                disabled={isReadOnly}
+                                onvalueselected={handleValueSelectedOnAccount}>
+                            </c-custom-lookup-lwc>
+                        </div>
+                        <div class="field-group">
+                            <label class="modern-label">Development Name</label>
+                            <lightning-input disabled={isReadOnly} type="text" variant="label-hidden" name="development" value={formData.Application.development} onchange={handleApplicationChange}></lightning-input>
+                        </div>
+                        <div class="field-group">
+                            <label class="modern-label">Plot Number</label>
+                            <lightning-input disabled={isReadOnly} type="text" variant="label-hidden" name="plot" value={formData.Application.plot} onchange={handleApplicationChange}></lightning-input>
+                        </div>
+                        <div class="field-group">
+                            <label class="modern-label">Scheme</label>
+                            <lightning-combobox variant="label-hidden" name="scheme" value={formData.Application.scheme} options={options} disabled={isReadOnly} onchange={handleApplicationChange}></lightning-combobox>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: Property & ETA -->
+                <section class="section-card" data-id="property-eta">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:date_input" size="small"></lightning-icon>
+                        <h2>Property & ETA</h2>
+                    </div>
+                    <div class="modern-grid">
+                        <div class="field-group">
+                            <label class="modern-label">Date of Enquiry</label>
+                            <lightning-input disabled={isReadOnly} type="date" variant="label-hidden" name="dateOfApplicationReceived" value={formData.Application.dateOfApplicationReceived} onchange={handleApplicationChange}></lightning-input>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-m-top_medium">
+                        <h3 class="modern-label slds-m-bottom_small">ALCD Completion Date</h3>
+                        <div class="modern-grid">
+                            <div class="field-group">
+                                <label class="slds-text-body_small slds-m-bottom_x-small">Start Date</label>
+                                <template if:false={isReadOnly}>
+                                    <input class="startDateInput" type="month" id="startDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
+                                </template>
+                                <template if:true={isReadOnly}>
+                                    <lightning-input type="text" variant="label-hidden" value={startDateInputs} disabled></lightning-input>
+                                </template>
+                            </div>
+                            <div class="field-group">
+                                <label class="slds-text-body_small slds-m-bottom_x-small">End Date</label>
+                                <template if:false={isReadOnly}>
+                                    <input class="endDateInput" type="month" id="endDateInput" onchange={handleApplicationChange} style="height: 32px; border: 1px solid #d8dde6; border-radius: 4px; padding: 0 12px; width: 100%;">
+                                </template>
+                                <template if:true={isReadOnly}>
+                                    <lightning-input type="text" variant="label-hidden" value={endDateInputs} disabled></lightning-input>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: Search Property -->
+                <section class="section-card" data-id="search-property">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:search" size="small"></lightning-icon>
+                        <h2>Search Property</h2>
+                    </div>
+                    <template if:false={isReadOnly}>
+                        <c-idealaddresslookup 
+                            selected-icon-name="standard:account" 
+                            object-label="Property"
+                            object-api-name="NHS_Property__c" 
+                            field-api-name="Name"
+                            other-field-api-name="Industry" 
+                            onvalueselected={handleValueSelectedOnAccounts}>
+                        </c-idealaddresslookup>
+                    </template>
+                </section>
+
+                <!-- SECTION 4: Property Details -->
+                <section class="section-card" data-id="property-details">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:retail_execution" size="small"></lightning-icon>
+                        <h2>Property Details</h2>
+                    </div>
+                    <template if:false={isReadOnly}>
+                        <lightning-record-edit-form object-api-name="NHS_Property__c">
+                            <template for:each={mapData} for:item="keyValue">
+                                <div key={keyValue.key} class="slds-m-bottom_small">
+                                    <div class="modern-grid">
+                                        <template for:each={keyValue.value} for:item="field">
+                                            <lightning-input-field key={field.fieldPath} field-name={field.fieldPath} data-field-name={field.fieldPath} disabled></lightning-input-field>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </lightning-record-edit-form>
+                    </template>
+                    <template if:true={isReadOnly}>
+                        <div class="slds-text-heading_small">{propertAddress}</div>
+                    </template>
+                </section>
+
+                <!-- SECTION 5: Vendor Details -->
+                <section class="section-card" data-id="vendor-details">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:groups" size="small"></lightning-icon>
+                        <h2>Vendor Details</h2>
+                    </div>
+                    <div class="modern-grid slds-m-bottom_small">
+                        <div class="field-group">
+                            <h3 class="slds-text-title_bold slds-m-bottom_small">Vendor 1</h3>
+                            <lightning-input disabled={isReadOnly} type="text" label="First Name" name="firstname" value={formData.Vendor.firstname} onchange={handleVendorChange}></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="text" label="Last Name" name="lastname" data-field-name="lastname" value={formData.Vendor.lastname} onchange={handleVendorChange} required></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="email" label="Email" name="email" value={formData.Vendor.email} onchange={handleVendorChange}></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="tel" label="Phone" name="mobilePhone" value={formData.Vendor.mobilePhone} onchange={handleVendorChange}></lightning-input>
+                        </div>
+                        <div class="field-group">
+                            <h3 class="slds-text-title_bold slds-m-bottom_small">Vendor 2</h3>
+                            <lightning-input disabled={isReadOnly} type="text" label="First Name" name="firstname1" value={formData.Vendor.firstname1} onchange={handleVendorChange}></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="text" label="Last Name" name="lastname1" value={formData.Vendor.lastname1} onchange={handleVendorChange}></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="email" label="Email" name="email1" value={formData.Vendor.email1} onchange={handleVendorChange}></lightning-input>
+                            <lightning-input disabled={isReadOnly} type="tel" label="Phone" name="mobilePhone1" value={formData.Vendor.mobilePhone1} onchange={handleVendorChange}></lightning-input>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 6: Property Description -->
+                <section class="section-card" data-id="property-description">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:description" size="small"></lightning-icon>
+                        <h2>Property Description</h2>
+                    </div>
+                    <div class="modern-grid">
+                        <div class="field-group">
+                            <h3 class="slds-text-title_bold slds-m-bottom_small">Type</h3>
+                            <div class="slds-grid slds-wrap">
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Detached" name="Detached" checked={formData.Property.Detached} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Semi Detached" name="SemiDetached" checked={formData.Property.SemiDetached} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="End Terrace" name="EndTerrace" checked={formData.Property.EndTerrace} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Mid Terrace" name="MidTerrace" checked={formData.Property.MidTerrace} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Apartment" name="Apartment" checked={formData.Property.Apartment} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Maisonette" name="Maisonette" checked={formData.Property.Maisonette} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Studio" name="Studio" checked={formData.Property.Studio} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                                <lightning-input disabled={isReadOnly} type="checkbox" label="Bungalow" name="Bungalow" checked={formData.Property.Bungalow} onchange={handlePropertChange} class="slds-size_1-of-2"></lightning-input>
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <lightning-combobox label="Number of Bedrooms" name="NumberofBedrooms" value={formData.Property.NumberofBedrooms} options={numberOfBedrooms} disabled={isReadOnly} onchange={handlePropertChange}></lightning-combobox>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 7: Additional Details -->
+                <section class="section-card" data-id="additional-details">
+                    <div class="section-header-modern">
+                        <lightning-icon icon-name="utility:add" size="small"></lightning-icon>
+                        <h2>Additional Details</h2>
+                    </div>
+                    <div class="modern-grid full">
+                        <lightning-input disabled={isReadOnly} type="number" label="Vendor's Expectations" name="ClientsEstimatedValuation" formatter="currency" step=".01" value={formData.Application.ClientsEstimatedValuation} onchange={handleApplicationChange}></lightning-input>
+                    </div>
+                    <lightning-textarea disabled={isReadOnly} label="Notes" name="notes" placeholder="Any additional notes..." value={formData.Application.notes} onchange={handleApplicationChange} class="slds-m-top_small"></lightning-textarea>
+                </section>
+
+                <!-- BOTTOM ACTION BUTTONS -->
+                <section class="section-card slds-text-align_center">
+                    <div class="slds-grid slds-wrap slds-gutters">
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-button variant="neutral" label="Cancel" onclick={handleClickCancel} class="slds-m-right_small"></lightning-button>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-button variant="brand" label="Save" onclick={handleSave} disabled={disable}></lightning-button>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-button variant="brand" label="Save & Submit" onclick={handleSaveAndSubmit} disabled={disable}></lightning-button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SUCCESS MESSAGE -->
+                <template if:true={finalCheck}>
+                    <div class="section-card slds-text-align_center">
+                        <lightning-icon icon-name="action:approval" size="large" class="slds-m-bottom_small"></lightning-icon>
+                        <h2 class="slds-text-heading_medium">{finalMessage}</h2>
+                        <div class="slds-m-top_small">
+                            <lightning-button label="Download PDF Summary" variant="brand" onclick={handleDownloadPdf} icon-name="utility:download"></lightning-button>
+                        </div>
+                    </div>
+                </template>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Original Modals (Preserved) -->
+    <template if:true={isModalOpen}>
+        <div class="custom-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Processing Application</h2>
+                </div>
+                <div class="modal-body">
+                    <template for:each={processResults} for:item="res">
+                        <div key={res.id} class="result-row">
+                            <div class={res.animationClass}></div>
+                            <span>{res.message}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

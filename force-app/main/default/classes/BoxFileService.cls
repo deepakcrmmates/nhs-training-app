@@ -5,7 +5,7 @@ public class BoxFileService {
     private static final String BOX_TOKEN_URL = 'https://api.box.com/oauth2/token';
 
     // ── Upload file to Box ──
-    public static void uploadFileToDropbox(String accountId, Id attachmentId, String subFolderLabel, Id opportunityId, Blob fileValueBlob) {
+    public static void uploadFileToBox(String accountId, Id attachmentId, String subFolderLabel, Id opportunityId, Blob fileValueBlob) {
         String accName = '';
         String base64File = '';
 
@@ -63,6 +63,28 @@ public class BoxFileService {
             }
         } catch (Exception e) {
             System.debug('BoxFileService upload error: ' + e.getMessage());
+        }
+    }
+
+    // ── Upload PDF to NHS Application subfolder (called from AuraEnabled after PDF generated) ──
+    @future(callout=true)
+    public static void uploadPdfToNhsFolderAsync(String mainFolderId, String oppName, String hbName, String base64File) {
+        try {
+            String accessToken = BoxOAuthController.refreshAccessToken();
+            if (accessToken == null) return;
+
+            String appFolderId = getOrCreateFolder('Application', mainFolderId, accessToken);
+            if (appFolderId == null) return;
+
+            String timestamp = String.valueOf(DateTime.now().getTime());
+            String fileName = sanitizeName(oppName) + ' (' + sanitizeName(hbName) + ') - ' + timestamp + '.pdf';
+
+            String fileId = uploadFile(appFolderId, fileName, base64File, accessToken);
+            if (fileId != null) {
+                System.debug('BoxFileService: PDF uploaded to NHS folder. File ID: ' + fileId);
+            }
+        } catch (Exception e) {
+            System.debug('BoxFileService uploadPdfToNhsFolderAsync error: ' + e.getMessage());
         }
     }
 

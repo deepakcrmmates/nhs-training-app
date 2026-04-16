@@ -265,6 +265,7 @@
                                 <th class="va-th">Development</th>
                                 <th class="va-th">Plot</th>
                                 <th class="va-th">Vendor</th>
+                                <th class="va-th">Last Stage</th>
                                 <th class="va-th">Received</th>
                                 <th class="va-th va-th-act">Action</th>
                             </tr>
@@ -279,6 +280,7 @@
                                     <td class="va-td">{c.development}</td>
                                     <td class="va-td">{c.plot}</td>
                                     <td class="va-td"><span class="vendor-name">{c.vendorName}</span></td>
+                                    <td class="va-td"><span class="stage-chip">{c.nhsProcess}</span></td>
                                     <td class="va-td"><span class="lv-date">{c.closeDateFormatted}</span></td>
                                     <td class="va-td va-td-act">
                                         <button class="btn-unarchive" data-id={c.id} data-archived="true" onclick={handleArchiveClick}>Unarchive</button>
@@ -286,7 +288,7 @@
                                 </tr>
                             </template>
                             <template if:false={arcFilteredCount}>
-                                <tr><td colspan="7" class="va-empty">No archived applications found</td></tr>
+                                <tr><td colspan="8" class="va-empty">No archived applications found</td></tr>
                             </template>
                         </tbody>
                     </table>
@@ -342,6 +344,16 @@
         <!-- ══ Valuations Ready View ══ -->
         <template if:true={isValuationsReady}>
             <c-nhs-valuations-ready-list></c-nhs-valuations-ready-list>
+        </template>
+
+        <!-- ══ Final Checks View ══ -->
+        <template if:true={isFinalChecks}>
+            <c-nhs-final-checks-list></c-nhs-final-checks-list>
+        </template>
+
+        <!-- ══ Vendor Discussions View ══ -->
+        <template if:true={isVendorDiscussions}>
+            <c-nhs-vendor-discussions-list></c-nhs-vendor-discussions-list>
         </template>
 
         <!-- ══ Other stage coming-soon views ══ -->

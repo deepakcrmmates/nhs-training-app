@@ -36,6 +36,26 @@
                 <default>false</default>
                 <label>Figures returned</label>
             </value>
+            <value>
+                <fullName>Valuations Ready</fullName>
+                <default>false</default>
+                <label>Valuations Ready</label>
+            </value>
+            <value>
+                <fullName>Final Checks</fullName>
+                <default>false</default>
+                <label>Final Checks</label>
+            </value>
+            <value>
+                <fullName>Vendor Discussions</fullName>
+                <default>false</default>
+                <label>Vendor Discussions</label>
+            </value>
+            <value>
+                <fullName>Archived</fullName>
+                <default>false</default>
+                <label>Archived</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

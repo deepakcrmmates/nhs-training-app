@@ -37,30 +37,43 @@ public with sharing class AgentFinderController {
 
             List<Google_Maps_Config__c> configs = [SELECT Id, API_Key__c, Daily_Limit__c, Requests_Today__c, Last_Reset_Date__c, Distance_Method__c FROM Google_Maps_Config__c LIMIT 1];
             Google_Maps_Config__c config = configs.isEmpty() ? null : configs[0];
-            if (config == null || String.isBlank(config.API_Key__c)) {
-                result.put('status', 'error');
-                result.put('message', 'Google Maps API key not configured.');
-                return result;
+            String distanceMethod = config != null && String.isNotBlank(config.Distance_Method__c) ? config.Distance_Method__c : 'Postcodes.io';
+            Boolean usePostcodesIo = distanceMethod == 'Postcodes.io';
+
+            Decimal dailyLimit = 0;
+
+            // Validate Google Maps config if using Google
+            if (!usePostcodesIo) {
+                if (config == null || String.isBlank(config.API_Key__c)) {
+                    result.put('status', 'error');
+                    result.put('message', 'Google Maps API key not configured. Switch to Postcodes.io (free) in API Config.');
+                    return result;
+                }
+
+                if (config.Last_Reset_Date__c != Date.today()) {
+                    config.Requests_Today__c = 0;
+                    config.Last_Reset_Date__c = Date.today();
+                }
+
+                dailyLimit = config.Daily_Limit__c != null ? config.Daily_Limit__c : 100;
+                if (config.Requests_Today__c >= dailyLimit) {
+                    result.put('status', 'error');
+                    result.put('message', 'Daily API limit reached (' + dailyLimit.intValue() + '). Switch to Postcodes.io (free) or try tomorrow.');
+                    return result;
+                }
             }
 
-            if (config.Last_Reset_Date__c != Date.today()) {
-                config.Requests_Today__c = 0;
-                config.Last_Reset_Date__c = Date.today();
+            // Geocode property postcode
+            Map<String, Decimal> propertyCoords;
+            if (usePostcodesIo) {
+                propertyCoords = geocodeWithPostcodesIo(propertyPostcode);
+            } else {
+                propertyCoords = geocodePostcode(propertyPostcode, config.API_Key__c);
+                config.Requests_Today__c = (config.Requests_Today__c != null ? config.Requests_Today__c : 0) + 1;
             }
-
-            Decimal dailyLimit = config.Daily_Limit__c != null ? config.Daily_Limit__c : 100;
-            if (config.Requests_Today__c >= dailyLimit) {
-                result.put('status', 'error');
-                result.put('message', 'Daily API limit reached (' + dailyLimit.intValue() + '). Try again tomorrow.');
-                return result;
-            }
-
-            // Geocode property postcode (1 API call)
-            Map<String, Decimal> propertyCoords = geocodePostcode(propertyPostcode, config.API_Key__c);
-            config.Requests_Today__c = (config.Requests_Today__c != null ? config.Requests_Today__c : 0) + 1;
 
             if (propertyCoords == null) {
-                update config;
+                if (!usePostcodesIo) update config;
                 result.put('status', 'error');
                 result.put('message', 'Could not geocode postcode: ' + propertyPostcode);
                 return result;
@@ -72,7 +85,7 @@ public with sharing class AgentFinderController {
             String areaLike = areaCode + '%';
 
             List<Account> agents = [
-                SELECT Id, Name, BillingPostalCode, BillingCity, Phone, Email__c,
+                SELECT Id, Name, BillingStreet, BillingPostalCode, BillingCity, Phone, Email__c,
                        Geo_Latitude__c, Geo_Longitude__c, Rightmove_URL__c,
                        (SELECT Id, MobilePhone FROM Contacts ORDER BY CreatedDate LIMIT 1)
                 FROM Account
@@ -89,9 +102,12 @@ public with sharing class AgentFinderController {
 
             for (Account agent : agents) {
                 if (agent.Geo_Latitude__c == null || agent.Geo_Longitude__c == null) {
-                    if (newGeocodes >= 95 || config.Requests_Today__c >= dailyLimit) break;
-                    Map<String, Decimal> coords = geocodePostcode(agent.BillingPostalCode, config.API_Key__c);
-                    config.Requests_Today__c = config.Requests_Today__c + 1;
+                    if (newGeocodes >= 95) break;
+                    if (!usePostcodesIo && config.Requests_Today__c >= dailyLimit) break;
+                    Map<String, Decimal> coords = usePostcodesIo
+                        ? geocodeWithPostcodesIo(agent.BillingPostalCode)
+                        : geocodePostcode(agent.BillingPostalCode, config.API_Key__c);
+                    if (!usePostcodesIo) config.Requests_Today__c = config.Requests_Today__c + 1;
                     newGeocodes++;
                     if (coords != null) {
                         agent.Geo_Latitude__c = coords.get('lat');
@@ -107,7 +123,7 @@ public with sharing class AgentFinderController {
 
             // Pre-filter by aerial distance (1.5x radius to allow for driving routes)
             Decimal maxDist = maxDistanceMiles != null ? maxDistanceMiles : 10;
-            Boolean useDistanceMatrix = config.Distance_Method__c == 'Distance Matrix';
+            Boolean useDistanceMatrix = !usePostcodesIo && config.Distance_Method__c == 'Distance Matrix';
             List<Account> candidateAgents = new List<Account>();
             Map<Id, Decimal> aerialDistances = new Map<Id, Decimal>();
 
@@ -173,8 +189,10 @@ public with sharing class AgentFinderController {
                 }
             }
 
-            // Save counter
-            update config;
+            // Save counter (only for Google Maps)
+            if (!usePostcodesIo && config != null) {
+                update config;
+            }
 
             // Build results
             List<Map<String, Object>> agentList = new List<Map<String, Object>>();
@@ -197,6 +215,7 @@ public with sharing class AgentFinderController {
                 Map<String, Object> agentMap = new Map<String, Object>();
                 agentMap.put('id', agent.Id);
                 agentMap.put('name', agent.Name);
+                agentMap.put('street', agent.BillingStreet);
                 agentMap.put('postcode', agent.BillingPostalCode);
                 agentMap.put('city', agent.BillingCity);
                 agentMap.put('phone', agent.Phone);
@@ -229,7 +248,7 @@ public with sharing class AgentFinderController {
             result.put('agents', agentList);
             result.put('requestsUsed', config.Requests_Today__c);
             result.put('dailyLimit', dailyLimit);
-            result.put('distanceMethod', useDistanceMatrix ? 'Distance Matrix' : 'Geocoding');
+            result.put('distanceMethod', usePostcodesIo ? 'Postcodes.io' : (useDistanceMatrix ? 'Distance Matrix' : 'Geocoding'));
         } catch (Exception e) {
             result.put('status', 'error');
             result.put('message', e.getMessage());
@@ -306,11 +325,11 @@ public with sharing class AgentFinderController {
         try {
             Vendor_Availability__c va = [SELECT Id, Date__c, AM__c, PM__c, Booked__c, Application__c FROM Vendor_Availability__c WHERE Id = :availabilityId LIMIT 1];
 
-            // Parse selected time
+            // Parse selected time — use GMT so the stored time matches the intended local time
             List<String> timeParts = selectedTime.split(':');
             Integer hour = Integer.valueOf(timeParts[0]);
             Integer minute = Integer.valueOf(timeParts[1]);
-            DateTime apptDateTime = DateTime.newInstance(va.Date__c, Time.newInstance(hour, minute, 0, 0));
+            DateTime apptDateTime = DateTime.newInstanceGmt(va.Date__c.year(), va.Date__c.month(), va.Date__c.day(), hour, minute, 0);
             DateTime apptEndDateTime = apptDateTime.addHours(1);
 
             // Get opportunity with agent and vendor details
@@ -356,6 +375,31 @@ public with sharing class AgentFinderController {
             result.put('message', e.getMessage());
         }
         return result;
+    }
+
+    // Geocode using Postcodes.io (free, no API key required)
+    private static Map<String, Decimal> geocodeWithPostcodesIo(String postcode) {
+        try {
+            String cleanPostcode = postcode.trim().replaceAll('\\s+', '');
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint('https://api.postcodes.io/postcodes/' + cleanPostcode);
+            req.setMethod('GET');
+            req.setTimeout(10000);
+            HttpResponse resp = new Http().send(req);
+
+            if (resp.getStatusCode() == 200) {
+                Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(resp.getBody());
+                Map<String, Object> resultData = (Map<String, Object>) body.get('result');
+                if (resultData != null) {
+                    Decimal lat = (Decimal) resultData.get('latitude');
+                    Decimal lng = (Decimal) resultData.get('longitude');
+                    return new Map<String, Decimal>{ 'lat' => lat, 'lng' => lng };
+                }
+            }
+        } catch (Exception e) {
+            System.debug('Postcodes.io geocode error: ' + e.getMessage());
+        }
+        return null;
     }
 
     private static Map<String, Decimal> geocodePostcode(String postcode, String apiKey) {

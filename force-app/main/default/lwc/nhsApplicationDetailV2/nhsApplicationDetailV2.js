@@ -12,7 +12,9 @@ import assignAgent from '@salesforce/apex/AgentFinderController.assignAgent';
 import getAvailableSlots from '@salesforce/apex/AgentFinderController.getAvailableSlots';
 import getEmailTemplates from '@salesforce/apex/NHSCommunicationsController.getEmailTemplates';
 import getRenderedTemplate from '@salesforce/apex/NHSCommunicationsController.getRenderedTemplate';
-import sendEmail from '@salesforce/apex/NHSCommunicationsController.sendEmail';
+import sendEmailComplete from '@salesforce/apex/NHSCommunicationsController.sendEmailComplete';
+import getAddressBook from '@salesforce/apex/NHSCommunicationsController.getAddressBook';
+import isAdminUser from '@salesforce/apex/NHSCommunicationsController.isAdminUser';
 import ensureAccessToken from '@salesforce/apex/BoxOAuthController.ensureAccessToken';
 import browseFolderById from '@salesforce/apex/BoxOAuthController.browseFolderById';
 import uploadFile from '@salesforce/apex/BoxOAuthController.uploadFile';
@@ -36,11 +38,17 @@ import APP_RECEIVED_DATE_FIELD from '@salesforce/schema/Opportunity.Date_of_Appl
 import NOTES_FIELD from '@salesforce/schema/Opportunity.Notes__c';
 import DEVELOPMENT_FIELD from '@salesforce/schema/Opportunity.Development__c';
 import PLOT_FIELD from '@salesforce/schema/Opportunity.Plot__c';
+import PROPERTY_DESCRIPTION_FIELD from '@salesforce/schema/Opportunity.Property_Description__c';
 import VENDOR_MOBILE_FIELD from '@salesforce/schema/Opportunity.Vendor_1_Mobile__c';
 import VENDOR_EXPECTATIONS_FIELD from '@salesforce/schema/Opportunity.Client_Expectations__c';
 import VENDOR_PHONE_FIELD from '@salesforce/schema/Opportunity.Vendor_1_Phone__c';
 import ETA_COMP_END_FIELD from '@salesforce/schema/Opportunity.ETA_Comp_End__c';
 import VENDOR_EMAIL_FIELD from '@salesforce/schema/Opportunity.Vendor_1_Email__c';
+import VENDOR_2_FIELD from '@salesforce/schema/Opportunity.Vendor_2__c';
+import VENDOR_2_NAME_FIELD from '@salesforce/schema/Opportunity.Vendor_2__r.Name';
+import VENDOR_2_MOBILE_FIELD from '@salesforce/schema/Opportunity.Vendor_2_Mobile__c';
+import VENDOR_2_PHONE_FIELD from '@salesforce/schema/Opportunity.Vendor_2_Phone__c';
+import VENDOR_2_EMAIL_FIELD from '@salesforce/schema/Opportunity.Vendor_2_Email__c';
 import SCHEME_FIELD from '@salesforce/schema/Opportunity.Scheme__c';
 import STAGE_FIELD from '@salesforce/schema/Opportunity.StageName';
 import NHS_PROCESS_FIELD from '@salesforce/schema/Opportunity.NHS_Process__c';
@@ -97,8 +105,9 @@ import RECOMMENDED_FORCED_FIELD from '@salesforce/schema/Opportunity.Forced_Sale
 // ── Fields Array ───────────────────────────────────────────────────────────────
 const FIELDS = [
     NAME_FIELD, HOUSE_BUILDER_FIELD, HOUSE_BUILDER_NAME_FIELD, PROPERTY_ADDRESS_FIELD, VENDOR_1_FIELD, VENDOR_1_NAME_FIELD,
-    APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD,
+    APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD, PROPERTY_DESCRIPTION_FIELD,
     VENDOR_MOBILE_FIELD, VENDOR_EXPECTATIONS_FIELD, VENDOR_PHONE_FIELD, ETA_COMP_END_FIELD, VENDOR_EMAIL_FIELD, SCHEME_FIELD, STAGE_FIELD, NHS_PROCESS_FIELD,
+    VENDOR_2_FIELD, VENDOR_2_NAME_FIELD, VENDOR_2_MOBILE_FIELD, VENDOR_2_PHONE_FIELD, VENDOR_2_EMAIL_FIELD,
     AGENT_1_FIELD, AGENT_1_NAME_FIELD, AGENT_1_PHONE_FIELD, AGENT_1_EMAIL_FIELD, AGENT_1_APPT_FIELD, AGENT_1_EMAILED_FIELD, AGENT_1_VERBALLY_CONFIRMED_FIELD, AGENT_1_INITIAL_PRICE_FIELD, AGENT_1_TARGET_SALE_FIELD, AGENT_1_BOTTOM_LINE_FIELD,
     AGENT_2_FIELD, AGENT_2_NAME_FIELD, AGENT_2_PHONE_FIELD, AGENT_2_EMAIL_FIELD, AGENT_2_APPT_FIELD, AGENT_2_EMAILED_FIELD, AGENT_2_VERBALLY_CONFIRMED_FIELD, AGENT_2_INITIAL_PRICE_FIELD, AGENT_2_TARGET_SALE_FIELD, AGENT_2_BOTTOM_LINE_FIELD,
     AGENT_3_FIELD, AGENT_3_NAME_FIELD, AGENT_3_PHONE_FIELD, AGENT_3_EMAIL_FIELD, AGENT_3_APPT_FIELD, AGENT_3_EMAILED_FIELD, AGENT_3_VERBALLY_CONFIRMED_FIELD, AGENT_3_INITIAL_PRICE_FIELD, AGENT_3_TARGET_SALE_FIELD, AGENT_3_BOTTOM_LINE_FIELD,
@@ -169,6 +178,10 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track formData = {};
     @track agentCardExpanded = true;
     @track showCommsHub = false;
+    @track isAdmin = false;
+    @track showEditApp = false;
+    @track showVaLightbox = false;
+    @track editFields = {};
     @track showPdfModal = false;
     @track pdfStatus = 'Generating PDF...';
 
@@ -206,11 +219,17 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             vendorMobile:       f.Vendor_1_Mobile__c?.value || '',
             vendorPhone:        f.Vendor_1_Phone__c?.value || '',
             vendorEmail:        f.Vendor_1_Email__c?.value || '',
+            vendor2Id:          f.Vendor_2__c?.value,
+            vendor2Name:        f.Vendor_2__r?.value?.fields?.Name?.value || '',
+            vendor2Mobile:      f.Vendor_2_Mobile__c?.value || '',
+            vendor2Phone:       f.Vendor_2_Phone__c?.value || '',
+            vendor2Email:       f.Vendor_2_Email__c?.value || '',
             vendorExpectations: this.currencyVal(f.Client_Expectations__c?.value),
             receivedDate:       f.Date_of_Application_Received__c?.value || '',
             etaCompEnd:         f.ETA_Comp_End__c?.value || '',
             development:        f.Development__c?.value || '',
             plot:               f.Plot__c?.value || '',
+            propertyDescription: f.Property_Description__c?.value || '',
             scheme:             f.Scheme__c?.value || '',
             nhsProcess:         f.NHS_Process__c?.value || '',
             stageName:          f.StageName?.value || '',
@@ -296,6 +315,78 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ── Stage Visibility Getters ───────────────────────────────────────────────
+    // ── Quick Action Buttons (conditional per stage) ─────────────────────────
+    get quickActions() {
+        const actions = [];
+        const process = this.formData.nhsProcess || '';
+        const earlyStages = ['Application', 'Vendor Availability', 'Agents Booked'];
+
+        if (!earlyStages.includes(process)) return actions;
+
+        // Check if future vendor availability exists
+        const now = new Date();
+        const hasFutureAvail = this.vaExistingRecords.some(rec => {
+            if (!rec.Date__c || rec.Availability__c !== 'Available') return false;
+            if (!rec.AM__c && !rec.PM__c) return false;
+            const recDate = new Date(rec.Date__c + 'T23:59:59');
+            return recDate >= now;
+        });
+        if (!hasFutureAvail) {
+            actions.push({ key: 'va', label: 'Set Vendor Availability', icon: 'utility:date_input', action: 'vendorAvailability' });
+        }
+
+        // Check if agents not yet assigned
+        if (!this.formData.agent1Id) {
+            actions.push({ key: 'a1', label: 'Assign Agent 1', icon: 'utility:add', action: 'assignAgent1' });
+        }
+        if (!this.formData.agent2Id) {
+            actions.push({ key: 'a2', label: 'Assign Agent 2', icon: 'utility:add', action: 'assignAgent2' });
+        }
+        if (!this.formData.agent3Id) {
+            actions.push({ key: 'a3', label: 'Assign Agent 3', icon: 'utility:add', action: 'assignAgent3' });
+        }
+
+        return actions;
+    }
+
+    get hasQuickActions() { return this.quickActions.length > 0; }
+
+    handleQuickAction(event) {
+        const action = event.currentTarget.dataset.action;
+        if (action === 'vendorAvailability') {
+            // Set stage to Vendor Availability and open lightbox
+            this.handleStageClick({ currentTarget: { dataset: { stage: 'Vendor Availability' } } });
+            this.showVaLightbox = true;
+        } else if (action === 'assignAgent1') {
+            this.reassignSlot = 'agent1';
+            this.showAssignAgent = true;
+            this.assignStep = 1;
+            this.assignRadius = '5';
+            this.nearbyAgents = [];
+            this.assignAgentInfo = '';
+            this.assignedAgent2Name = '';
+            this.assignedAgent3Name = '';
+        } else if (action === 'assignAgent2') {
+            this.reassignSlot = 'agent2';
+            this.showAssignAgent = true;
+            this.assignStep = 1;
+            this.assignRadius = '5';
+            this.nearbyAgents = [];
+            this.assignAgentInfo = '';
+            this.assignedAgent2Name = '';
+            this.assignedAgent3Name = '';
+        } else if (action === 'assignAgent3') {
+            this.reassignSlot = 'agent3';
+            this.showAssignAgent = true;
+            this.assignStep = 1;
+            this.assignRadius = '5';
+            this.nearbyAgents = [];
+            this.assignAgentInfo = '';
+            this.assignedAgent2Name = '';
+            this.assignedAgent3Name = '';
+        }
+    }
+
     get showFinalChecks() { return this.formData.nhsProcess === 'Final Checks'; }
     get notFinalChecks() { return this.formData.nhsProcess !== 'Final Checks'; }
     get propCardClass() { return 'card' + (this.showFinalChecks ? ' card-readonly' : ''); }
@@ -335,6 +426,14 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             return dateStr;
         }
     }
+
+    get hasVendor2() {
+        return !!this.formData.vendor2Id;
+    }
+
+    get hasAgent1() { return !!this.formData.agent1Id; }
+    get hasAgent2() { return !!this.formData.agent2Id; }
+    get hasAgent3() { return !!this.formData.agent3Id; }
 
     get vendorExpectationsDisplay() {
         const val = this.formData.vendorExpectations;
@@ -459,6 +558,11 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         // Update local state
         this.formData = { ...this.formData, nhsProcess: newStage };
 
+        // Reload Book Agents slots when entering that stage
+        if (newStage === 'Agents Booked') {
+            this.loadBaSlots();
+        }
+
         // Persist to Salesforce
         const fields = {};
         fields[ID_FIELD.fieldApiName] = this.recordId;
@@ -568,6 +672,26 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track assignedAgent2Name = '';
     @track assignedAgent3Name = '';
 
+    // Step 3: Booking calendar for wizard
+    @track afSelectedSlot = null; // { subKey, dayLabel, slotLabel, time, availId }
+    @track afCalOffset = 0;
+    @track afIsBooking = false;
+
+    // Step 4: Email preview
+    @track afEmailSubject = '';
+    @track afEmailBody = '';
+    @track afEmailTo = '';
+    @track afEmailCc = '';
+    @track afEmailBcc = '';
+    @track afIsLoadingEmail = false;
+    @track showAfAddressBook = false;
+    @track afAddressBookContacts = [];
+    @track afAddressBookSearch = '';
+    _afAddressBookLoaded = false;
+
+    // Step 5: Submitting
+    @track afIsSubmitting = false;
+
     get radiusOptions() {
         return [
             { label: '0.5 miles', value: '0.5' }, { label: '1 mile', value: '1' },
@@ -579,10 +703,31 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get isStep1() { return this.assignStep === 1; }
     get isStep2() { return this.assignStep === 2; }
     get isStep3() { return this.assignStep === 3; }
+    get isStep4() { return this.assignStep === 4; }
+    get isStep5() { return this.assignStep === 5; }
     get step1Class() { return 'af-step' + (this.assignStep === 1 ? ' af-step-active' : '') + (this.assignStep > 1 ? ' af-step-done' : ''); }
     get step2Class() { return 'af-step' + (this.assignStep === 2 ? ' af-step-active' : '') + (this.assignStep > 2 ? ' af-step-done' : ''); }
-    get step3Class() { return 'af-step' + (this.assignStep === 3 ? ' af-step-active' : ''); }
+    get step3Class() { return 'af-step' + (this.assignStep === 3 ? ' af-step-active' : '') + (this.assignStep > 3 ? ' af-step-done' : ''); }
+    get step4Class() { return 'af-step' + (this.assignStep === 4 ? ' af-step-active' : '') + (this.assignStep > 4 ? ' af-step-done' : ''); }
+    get step5Class() { return 'af-step' + (this.assignStep === 5 ? ' af-step-active' : ''); }
     get hasNearbyAgents() { return this.nearbyAgents.length > 0; }
+    // Determine which agent was last assigned (for email template selection)
+    get afLastAssignedSlot() {
+        // Prefer the most recently assigned agent
+        if (this.assignedAgent3Name && !this.assignedAgent2Name) return 'agent3';
+        if (this.assignedAgent2Name && !this.assignedAgent3Name) return 'agent2';
+        // If both, default to agent2
+        return 'agent2';
+    }
+    get afEmailAgentNum() {
+        return this.afLastAssignedSlot === 'agent3' ? 3 : 2;
+    }
+    get afEmailAgentName() {
+        return this.afEmailAgentNum === 2 ? this.assignedAgent2Name : this.assignedAgent3Name;
+    }
+    get afEmailTemplateLabel() {
+        return this.afEmailAgentNum === 2 ? 'Template 4b — Agent 2' : 'Template 4c — Agent 3';
+    }
 
     // ── Full Save (all modified fields) ────────────────────────────────────────
     async handleSave() {
@@ -642,6 +787,16 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 });
             }
 
+            // Update Vendor 2 Contact details
+            if (this.formData.vendor2Id) {
+                await updateVendorContact({
+                    contactId: this.formData.vendor2Id,
+                    mobile: this.formData.vendor2Mobile || null,
+                    phone: this.formData.vendor2Phone || null,
+                    email: this.formData.vendor2Email || null
+                });
+            }
+
             await updateRecord({ fields });
 
             // Save Desktop Valuation via Apex (UI API may not support these fields)
@@ -651,6 +806,15 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 agent2DV: this.formData.agent2DesktopVal || false,
                 agent3DV: this.formData.agent3DesktopVal || false
             });
+
+            // Also save Vendor Availability if on the relevant stage
+            if (this.showVendorAvailability) {
+                try {
+                    await this.saveVendorAvailabilityData();
+                } catch (vaErr) {
+                    console.error('Vendor availability save error:', vaErr);
+                }
+            }
 
             this.isSaving = false;
             this.saveSuccess = true;
@@ -753,7 +917,30 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ── Assign Agent 3-Step Wizard ────────────────────────────────────────────
+    @track reassignSlot = null; // null = normal mode, 'agent1'|'agent2'|'agent3' = reassign specific slot
+
+    get isReassignMode() { return !!this.reassignSlot; }
+    get reassignLabel() {
+        if (this.reassignSlot === 'agent1') return 'Agent 1';
+        if (this.reassignSlot === 'agent2') return 'Agent 2';
+        if (this.reassignSlot === 'agent3') return 'Agent 3';
+        return '';
+    }
+
+    handleEditAgent(event) {
+        const slot = event.currentTarget.dataset.slot;
+        this.reassignSlot = slot;
+        this.showAssignAgent = true;
+        this.assignStep = 1;
+        this.assignRadius = '5';
+        this.nearbyAgents = [];
+        this.assignAgentInfo = '';
+        this.assignedAgent2Name = '';
+        this.assignedAgent3Name = '';
+    }
+
     handleOpenAssignAgent() {
+        this.reassignSlot = null;
         this.showAssignAgent = true;
         this.assignStep = 1;
         this.assignRadius = '5';
@@ -775,15 +962,36 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         try {
             const result = await findNearestAgents({ opportunityId: this.recordId, maxDistanceMiles: parseFloat(this.assignRadius) });
             if (result.status === 'success') {
-                this.nearbyAgents = (result.agents || []).map(a => ({
-                    ...a,
-                    distanceLabel: a.distance + ' miles' + (a.duration ? ' (' + a.duration + ')' : '') + (a.distanceType === 'aerial' ? ' ✈' : ' 🚗'),
-                    canAssignAgent2: !a.isAssigned && a.id !== this.formData.agent1Id,
-                    canAssignAgent3: !a.isAssigned && a.id !== this.formData.agent1Id,
-                    assignedLabel: a.isAgent2 ? 'Agent 2' : (a.isAgent3 ? 'Agent 3' : ''),
-                    rowClass: 'af-row' + (a.isAssigned ? ' af-assigned' : ''),
-                    rightmoveLink: a.rightmoveUrl || ''
-                }));
+                this.nearbyAgents = (result.agents || []).map(a => {
+                    // Build search URLs from agent name + postcode
+                    const outcode = a.postcode ? a.postcode.split(' ')[0] : '';
+                    // Strip symbols but keep hyphens for Rightmove/Zoopla matching
+                    const cleanName = (a.name || '').replace(/[–—/&.,()'"!@#$%^*+=]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+                    const rmName = encodeURIComponent(cleanName);
+                    const rmUrl = `https://www.google.com/search?q=${rmName}+rightmove+estate+agent+${encodeURIComponent(a.city || outcode)}`;
+
+                    // Build full address
+                    const addrParts = [a.street, a.city, a.postcode].filter(Boolean);
+                    const fullAddress = addrParts.join(', ');
+                    const mapsQuery = encodeURIComponent(fullAddress || a.name);
+
+                    return {
+                        ...a,
+                        fullAddress,
+                        googleMapsLink: `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
+                        distanceLabel: a.distance + ' miles' + (a.duration ? ' (' + a.duration + ')' : '') + (a.distanceType === 'aerial' ? ' ✈' : ' 🚗'),
+                        canAssignAgent2: !a.isAssigned && a.id !== this.formData.agent1Id,
+                        canAssignAgent3: !a.isAssigned && a.id !== this.formData.agent1Id,
+                        assignedLabel: a.isAgent2 ? 'Agent 2' : (a.isAgent3 ? 'Agent 3' : ''),
+                        rowClass: 'af-row' + (a.isAssigned ? ' af-assigned' : ''),
+                        phoneLink: a.phone ? 'tel:' + a.phone.replace(/\s/g, '') : '',
+                        mobileLink: a.mobile ? 'tel:' + a.mobile.replace(/\s/g, '') : '',
+                        mailtoLink: a.email ? 'mailto:' + a.email : '',
+                        rightmoveSearchUrl: a.rightmoveUrl || rmUrl,
+                        zooplaSearchUrl: `https://www.zoopla.co.uk/find-agents/${outcode.toLowerCase()}/?q=${encodeURIComponent(outcode)}&radius=0&company_name=${rmName}&search_source=find-agents-landing-page`,
+                        hasRightmoveUrl: !!a.rightmoveUrl
+                    };
+                });
                 this.assignAgentInfo = this.nearbyAgents.length + ' agents found within ' + this.assignRadius + ' miles';
             } else {
                 this.assignAgentInfo = result.message;
@@ -830,7 +1038,50 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                     };
                 });
 
-                if (this.assignedAgent2Name && this.assignedAgent3Name) this.assignStep = 3;
+                if (this.assignedAgent2Name || this.assignedAgent3Name) {
+                    this.loadBaSlots();
+                    this.assignStep = 3;
+                }
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed', variant: 'error' }));
+        }
+        this.isAssigning = false;
+    }
+
+    async handleReassignToSlot(event) {
+        const agentId = event.currentTarget.dataset.id;
+        const agentName = event.currentTarget.dataset.name;
+        const slot = event.currentTarget.dataset.slot;
+        this.isAssigning = true;
+        try {
+            const result = await assignAgent({ opportunityId: this.recordId, agentId: agentId, agentSlot: slot });
+            if (result.status === 'success') {
+                this.formData = { ...this.formData, [slot + 'Id']: agentId, [slot + 'Name']: agentName };
+
+                // Track assignment for the reassigned slot
+                if (slot === 'agent2') this.assignedAgent2Name = agentName;
+                if (slot === 'agent3') this.assignedAgent3Name = agentName;
+
+                // Mark agent as assigned in the list
+                this.nearbyAgents = this.nearbyAgents.map(a => {
+                    const isThisAgent = a.id === agentId;
+                    const isAssigned = isThisAgent;
+                    return {
+                        ...a,
+                        isAssigned,
+                        assignedLabel: isThisAgent ? this.reassignLabel : '',
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '')
+                    };
+                });
+
+                this.dispatchEvent(new ShowToastEvent({ title: 'Agent Reassigned', message: this.reassignLabel + ' updated to ' + agentName, variant: 'success' }));
+
+                // Continue to booking calendar (step 3)
+                this.loadBaSlots();
+                this.assignStep = 3;
             } else {
                 this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
             }
@@ -868,15 +1119,384 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         this.isAssigning = false;
     }
 
+    // ── Step 3: Booking Calendar (reuses baAvailSlots data) ──
+    getAfMonday() {
+        const d = new Date();
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1) + (this.afCalOffset * 7);
+        d.setDate(diff); d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    get afCalDays() {
+        const monday = this.getAfMonday();
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(monday); d.setDate(monday.getDate() + i);
+            const isToday = d.getTime() === today.getTime();
+            const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+            days.push({
+                key: 'afd-' + i, idx: i, date: d,
+                dayName: NhsApplicationDetailV2.VA_DAY_NAMES[d.getDay()],
+                dayNum: d.getDate(), isToday, isWeekend,
+                thClass: 'ba-cal-table-th' + (isToday ? ' va-th-today' : '') + (isWeekend ? ' va-th-weekend' : ''),
+                dateStr: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+            });
+        }
+        return days;
+    }
+
+    get afCalRangeLabel() {
+        const monday = this.getAfMonday();
+        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+        return monday.getDate() + ' ' + MONTHS[monday.getMonth()] + ' – ' + sunday.getDate() + ' ' + MONTHS[sunday.getMonth()] + ' ' + sunday.getFullYear();
+    }
+
+    get afCalRows() {
+        const days = this.afCalDays;
+        const now = new Date();
+        const selectedKey = this.afSelectedSlot ? this.afSelectedSlot.subKey : null;
+        return NhsApplicationDetailV2.BA_SLOT_LABELS.map((label, si) => {
+            const isAm = si <= 3;
+            const hour = NhsApplicationDetailV2.BA_SLOT_HOURS[si];
+            const cells = days.map((day, di) => {
+                const dateStr = day.dateStr;
+                const slotRec = this.baAvailSlots.find(s => s.date === dateStr);
+                const vendorAvail = slotRec && ((isAm && slotRec.am) || (!isAm && slotRec.pm));
+                const slotEnd = new Date(day.date);
+                slotEnd.setHours(hour + 1, 0, 0, 0);
+                const isPast = slotEnd.getTime() <= now.getTime();
+                const available = vendorAvail && !isPast;
+
+                const subSlots = ['00', '15', '30', '45'].map(m => {
+                    const time = String(hour).padStart(2, '0') + ':' + m;
+                    const subKey = 'af-' + di + '-' + si + '-' + time;
+                    const dayLabel = day.dayName + ' ' + day.dayNum + ' ' + MONTHS[day.date.getMonth()];
+                    const isSelected = subKey === selectedKey;
+                    return {
+                        key: subKey, subKey, time, dayLabel,
+                        availId: slotRec ? slotRec.id : null,
+                        chipClass: 'ba-chip' + (isAm ? ' ba-chip-am' : ' ba-chip-pm') + (isSelected ? ' af-chip-selected' : '')
+                    };
+                });
+                return {
+                    key: 'afc-' + di + '-' + si, available,
+                    tdClass: 'ba-cal-td' + (day.isWeekend ? ' va-td-weekend' : ''),
+                    subSlots
+                };
+            });
+            return {
+                key: 'afr-' + si, label,
+                tdLabelClass: isAm ? 'ba-td-am' : 'ba-td-pm',
+                cells
+            };
+        });
+    }
+
+    handleAfSlotClick(event) {
+        const subKey = event.currentTarget.dataset.subKey;
+        const dayLabel = event.currentTarget.dataset.dayLabel;
+        const slotLabel = event.currentTarget.dataset.slotLabel;
+        const time = event.currentTarget.dataset.time;
+        const availId = event.currentTarget.dataset.availId;
+        this.afSelectedSlot = { subKey, dayLabel, slotLabel, time, availId };
+    }
+
+    handleAfCalPrev() { this.afCalOffset--; }
+    handleAfCalNext() { this.afCalOffset++; }
+    handleAfCalToday() { this.afCalOffset = 0; }
+
+    async handleAfStep3Next() {
+        if (!this.afSelectedSlot) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Select a Slot', message: 'Please select a time slot to continue', variant: 'warning' }));
+            return;
+        }
+        // Book the appointment now so email template has the data
+        this.afIsBooking = true;
+        try {
+            const agentSlot = this.afLastAssignedSlot;
+            await bookAppointment({
+                opportunityId: this.recordId,
+                agentSlot: agentSlot,
+                availabilityId: this.afSelectedSlot.availId,
+                selectedTime: this.afSelectedSlot.time
+            });
+            // Refresh record so template gets appointment fields
+            await refreshApex(this.wiredRecordResult);
+            this.loadAfEmailTemplate();
+            this.assignStep = 4;
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed to book appointment', variant: 'error' }));
+        }
+        this.afIsBooking = false;
+    }
+
+    handleAfBackToStep2() { this.assignStep = 2; }
+
+    // ── Step 4: Load email template ──
+    async loadAfEmailTemplate() {
+        this.afIsLoadingEmail = true;
+        const agentNum = this.afEmailAgentNum;
+        this.afEmailTo = this.formData['agent' + agentNum + 'Email'] || '';
+        const templateId = NhsApplicationDetailV2.AGENT_TEMPLATE_IDS[agentNum] || null;
+
+        try {
+            if (templateId) {
+                const rendered = await getRenderedTemplate({ templateId, opportunityId: this.recordId });
+                this.afEmailSubject = rendered.subject || '';
+                this.afEmailBody = rendered.body || '';
+            }
+        } catch (e) {
+            this.afEmailSubject = 'Valuation Appointment Confirmation';
+            this.afEmailBody = '';
+        }
+        this.afIsLoadingEmail = false;
+    }
+
+    handleAfEmailToChange(event) { this.afEmailTo = event.target.value; }
+    handleAfEmailSubjectChange(event) { this.afEmailSubject = event.target.value; }
+    handleAfEmailCcChange(event) { this.afEmailCc = event.target.value; }
+    handleAfEmailBccChange(event) { this.afEmailBcc = event.target.value; }
+    handleAfBackToStep3() { this.assignStep = 3; }
+
+    // Address book for agent email step
+    async handleOpenAfAddressBook() {
+        this.showAfAddressBook = true;
+        this.afAddressBookSearch = '';
+        if (!this._afAddressBookLoaded) {
+            try {
+                const results = await getAddressBook({ opportunityId: this.recordId });
+                this.afAddressBookContacts = (results || []).map((c, i) => ({
+                    key: 'afab-' + i, role: c.role, name: c.name, email: c.email, category: c.category
+                }));
+                this._afAddressBookLoaded = true;
+            } catch (e) {
+                // Fallback: build from formData
+                const contacts = [];
+                const fd = this.formData;
+                if (fd.vendorEmail) contacts.push({ key: 'afab-v1', role: 'Vendor 1', name: fd.vendor1Name, email: fd.vendorEmail, category: 'vendor' });
+                if (fd.vendor2Email) contacts.push({ key: 'afab-v2', role: 'Vendor 2', name: fd.vendor2Name, email: fd.vendor2Email, category: 'vendor' });
+                if (fd.agent1Email) contacts.push({ key: 'afab-a1', role: 'Agent 1', name: fd.agent1Name, email: fd.agent1Email, category: 'agent' });
+                if (fd.agent2Email) contacts.push({ key: 'afab-a2', role: 'Agent 2', name: fd.agent2Name, email: fd.agent2Email, category: 'agent' });
+                if (fd.agent3Email) contacts.push({ key: 'afab-a3', role: 'Agent 3', name: fd.agent3Name, email: fd.agent3Email, category: 'agent' });
+                this.afAddressBookContacts = contacts;
+                this._afAddressBookLoaded = true;
+            }
+        }
+    }
+
+    handleCloseAfAddressBook() { this.showAfAddressBook = false; }
+    handleAfAddressBookSearch(event) { this.afAddressBookSearch = event.target.value; }
+
+    get filteredAfAddressBook() {
+        const q = this.afAddressBookSearch.toLowerCase();
+        if (!q) return this.afAddressBookContacts;
+        return this.afAddressBookContacts.filter(c =>
+            (c.name || '').toLowerCase().includes(q) ||
+            (c.email || '').toLowerCase().includes(q) ||
+            (c.role || '').toLowerCase().includes(q)
+        );
+    }
+
+    get hasAfAddressBookContacts() { return this.filteredAfAddressBook.length > 0; }
+
+    handleAfSelectContactTo(event) {
+        const email = event.currentTarget.dataset.email;
+        if (this.afEmailTo) {
+            const existing = this.afEmailTo.split(',').map(e => e.trim().toLowerCase());
+            if (!existing.includes(email.toLowerCase())) this.afEmailTo += ', ' + email;
+        } else {
+            this.afEmailTo = email;
+        }
+        this.showAfAddressBook = false;
+    }
+
+    handleAfSelectContactCc(event) {
+        const email = event.currentTarget.dataset.email;
+        if (this.afEmailCc) {
+            const existing = this.afEmailCc.split(',').map(e => e.trim().toLowerCase());
+            if (!existing.includes(email.toLowerCase())) this.afEmailCc += ', ' + email;
+        } else {
+            this.afEmailCc = email;
+        }
+        this.showAfAddressBook = false;
+    }
+
+    handleAfStep4Next() {
+        this.assignStep = 5;
+    }
+
+    // ── Step 5: Summary & Submit ──
+    get afSummaryItems() {
+        const items = [];
+        if (this.assignedAgent2Name) items.push({ label: 'Agent 2', value: this.assignedAgent2Name, cls: 'af-sum-a2' });
+        if (this.assignedAgent3Name) items.push({ label: 'Agent 3', value: this.assignedAgent3Name, cls: 'af-sum-a3' });
+        if (this.afSelectedSlot) items.push({ label: 'Appointment', value: this.afSelectedSlot.dayLabel + ' at ' + this.afSelectedSlot.time, cls: '' });
+        if (this.afEmailTo) items.push({ label: 'Email To', value: this.afEmailTo, cls: '' });
+        if (this.afEmailSubject) items.push({ label: 'Email Subject', value: this.afEmailSubject, cls: '' });
+        return items;
+    }
+
+    handleAfBackToStep4() { this.assignStep = 4; }
+
+    async handleAfSubmit() {
+        this.afIsSubmitting = true;
+        try {
+            // Booking already done in Step 3 — send the email
+            if (this.afEmailTo && this.afEmailSubject) {
+                const agentNum = this.afEmailAgentNum;
+                const templateId = NhsApplicationDetailV2.AGENT_TEMPLATE_IDS[agentNum] || null;
+                await sendEmailComplete({
+                    opportunityId: this.recordId,
+                    toAddress: this.afEmailTo,
+                    subject: this.afEmailSubject,
+                    body: this.afEmailBody,
+                    ccAddress: this.afEmailCc || '',
+                    bccAddress: this.afEmailBcc || '',
+                    templateId: templateId,
+                    contentDocumentIds: []
+                });
+
+                // Stamp Last Agent X Emailed On
+                const fields = { Id: this.recordId };
+                fields['Last_Agent_' + agentNum + '_Emailed_On__c'] = new Date().toISOString();
+                try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+            }
+
+            this.afIsSubmitting = false;
+            this.showAssignAgent = false;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Success',
+                message: 'Agent assigned, appointment booked, and email sent',
+                variant: 'success'
+            }));
+            refreshApex(this.wiredRecordResult);
+            this.loadBaSlots();
+        } catch (e) {
+            this.afIsSubmitting = false;
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || e.message || 'Submission failed', variant: 'error' }));
+        }
+    }
+
     handleConfirmAssignment() {
         this.showAssignAgent = false;
         this.dispatchEvent(new ShowToastEvent({ title: 'Agents Assigned', message: 'Agent 2: ' + this.assignedAgent2Name + ' | Agent 3: ' + this.assignedAgent3Name, variant: 'success' }));
         refreshApex(this.wiredRecordResult);
     }
 
-    // ── Toggle Comms Hub ───────────────────────────────────────────────────────
+    // ── Comms Hub ─────────────────────────────────────────────────────────────
     toggleCommsHub() {
         this.showCommsHub = !this.showCommsHub;
+    }
+
+    // ── Edit Application (Admin Only) ──────────────────────────────────────
+    handleOpenEditApp() {
+        this.editFields = {
+            vendorExpectations: this.formData.vendorExpectations || '',
+            etaCompEnd: this.formData.etaCompEnd || '',
+            receivedDate: this.formData.receivedDate || '',
+            scheme: this.formData.scheme || '',
+            development: this.formData.development || '',
+            plot: this.formData.plot || '',
+            propertyDescription: this.formData.propertyDescription || '',
+            propertyAddress: this.formData.propertyAddress || '',
+            notes: this.formData.notes || ''
+        };
+        this.showEditApp = true;
+    }
+
+    handleCloseEditApp() { this.showEditApp = false; }
+    handleCloseVaLightbox() { this.showVaLightbox = false; }
+
+    handleEditFieldChange(event) {
+        const field = event.target.dataset.field;
+        this.editFields = { ...this.editFields, [field]: event.target.value };
+    }
+
+    async handleSaveEditApp() {
+        try {
+            const fields = { Id: this.recordId };
+            if (this.editFields.vendorExpectations !== this.formData.vendorExpectations) fields['Client_Expectations__c'] = this.editFields.vendorExpectations ? parseFloat(this.editFields.vendorExpectations.replace(/[^0-9.]/g, '')) : null;
+            if (this.editFields.etaCompEnd !== this.formData.etaCompEnd) fields['ETA_Comp_End__c'] = this.editFields.etaCompEnd || null;
+            if (this.editFields.receivedDate !== this.formData.receivedDate) fields['Date_of_Application_Received__c'] = this.editFields.receivedDate || null;
+            if (this.editFields.scheme !== this.formData.scheme) fields['Scheme__c'] = this.editFields.scheme || null;
+            if (this.editFields.development !== this.formData.development) fields['Development__c'] = this.editFields.development || null;
+            if (this.editFields.plot !== this.formData.plot) fields['Plot__c'] = this.editFields.plot || null;
+            if (this.editFields.propertyDescription !== this.formData.propertyDescription) fields['Property_Description__c'] = this.editFields.propertyDescription || null;
+            if (this.editFields.propertyAddress !== this.formData.propertyAddress) fields['Property_Address__c'] = this.editFields.propertyAddress || null;
+            if (this.editFields.notes !== this.formData.notes) fields['Notes__c'] = this.editFields.notes || null;
+
+            await updateRecord({ fields });
+            this.showEditApp = false;
+            refreshApex(this.wiredRecordResult);
+            this.dispatchEvent(new ShowToastEvent({ title: 'Saved', message: 'Application updated successfully.', variant: 'success' }));
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed to save', variant: 'error' }));
+        }
+    }
+
+    handleOpenCommsHub() {
+        this.showCommsHub = true;
+        this._commsHubAutoCompose = false;
+    }
+
+    handleEmailVendor() {
+        this.showCommsHub = true;
+        this._commsHubAutoCompose = true;
+    }
+
+    @track showCallPopup = false;
+
+    get callContacts() {
+        const contacts = [];
+        const fd = this.formData;
+
+        // Vendor 1
+        const v1Num = fd.vendorMobile || fd.vendorPhone || '';
+        if (v1Num) {
+            contacts.push({ key: 'v1', role: 'Vendor 1', name: fd.vendor1Name || 'Vendor 1', number: v1Num, href: 'tel:' + v1Num, avatarClass: 'cc-avatar cc-vendor' });
+        }
+
+        // Vendor 2
+        if (fd.vendor2Id) {
+            const v2Num = fd.vendor2Mobile || fd.vendor2Phone || '';
+            if (v2Num) {
+                contacts.push({ key: 'v2', role: 'Vendor 2', name: fd.vendor2Name || 'Vendor 2', number: v2Num, href: 'tel:' + v2Num, avatarClass: 'cc-avatar cc-vendor' });
+            }
+        }
+
+        // Agent 1
+        if (fd.agent1Phone) {
+            contacts.push({ key: 'a1', role: 'Agent 1', name: fd.agent1Name || 'Agent 1', number: fd.agent1Phone, href: 'tel:' + fd.agent1Phone, avatarClass: 'cc-avatar cc-agent' });
+        }
+
+        // Agent 2
+        if (fd.agent2Phone) {
+            contacts.push({ key: 'a2', role: 'Agent 2', name: fd.agent2Name || 'Agent 2', number: fd.agent2Phone, href: 'tel:' + fd.agent2Phone, avatarClass: 'cc-avatar cc-agent' });
+        }
+
+        // Agent 3
+        if (fd.agent3Phone) {
+            contacts.push({ key: 'a3', role: 'Agent 3', name: fd.agent3Name || 'Agent 3', number: fd.agent3Phone, href: 'tel:' + fd.agent3Phone, avatarClass: 'cc-avatar cc-agent' });
+        }
+
+        return contacts;
+    }
+
+    get hasCallContacts() { return this.callContacts.length > 0; }
+
+    handleCallVendor() {
+        this.showCallPopup = !this.showCallPopup;
+    }
+
+    handleCloseCallPopup() {
+        this.showCallPopup = false;
+    }
+
+    handleCloseCommsHub() {
+        this.showCommsHub = false;
+        this._commsHubAutoCompose = false;
     }
 
     // ── Refresh Data ───────────────────────────────────────────────────────────
@@ -1587,6 +2207,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track vaSlots = {}; // key: 'di-period' (e.g. '0-am', '3-pm'), value: true/false
     @track vaCalOffset = 0;
     @track isVaSaving = false;
+    @track vaSaveSuccess = false;
     @track vaExistingRecords = []; // from Apex
     @track vaSatEnabled = false; // persistent: true if Saturdays are enabled
     @track vaSunEnabled = false; // persistent: true if Sundays are enabled
@@ -1599,6 +2220,15 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         this.loadVaData();
         this.loadBaSlots();
         this.loadVendorNotes();
+        this.checkAdminAccess();
+    }
+
+    async checkAdminAccess() {
+        try {
+            this.isAdmin = await isAdminUser();
+        } catch (e) {
+            this.isAdmin = false;
+        }
     }
 
     async loadVaData() {
@@ -1803,53 +2433,63 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     handleVaToday() { this.vaCalOffset = 0; this.rebuildVaSlots(); }
 
     // Save
+    // Shared vendor availability save logic (called from both Save Availability and Save Application)
+    async saveVendorAvailabilityData() {
+        const monday = this.getVaMonday();
+        const dataList = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let di = 0; di < 7; di++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + di);
+            if (d.getTime() <= today.getTime()) continue;
+
+            const dateStr = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+
+            const amOn = !!this.vaSlots[di + '-am'];
+            const pmOn = !!this.vaSlots[di + '-pm'];
+
+            dataList.push({
+                'Date__c': dateStr,
+                'Availability__c': (amOn || pmOn) ? 'Available' : 'Unavailable',
+                'AM__c': amOn,
+                'PM__c': pmOn,
+                'Notes__c': '',
+                'Id': ''
+            });
+        }
+
+        // Skip if no future days to save
+        if (dataList.length === 0) return true;
+
+        const result = await processVendorAvailability({
+            dataList: dataList,
+            currentId: this.recordId
+        });
+
+        if (result === 'Success') {
+            this.loadVaData();
+            this.loadBaSlots();
+            return true;
+        }
+        throw new Error(result || 'Failed to save availability');
+    }
+
     async handleVaSave() {
         this.isVaSaving = true;
         try {
-            const monday = this.getVaMonday();
-            const dataList = [];
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            for (let di = 0; di < 7; di++) {
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + di);
-
-                // Skip past days (today and before)
-                if (d.getTime() <= today.getTime()) continue;
-
-                const dateStr = d.getFullYear() + '-' +
-                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                    String(d.getDate()).padStart(2, '0');
-
-                const amOn = !!this.vaSlots[di + '-am'];
-                const pmOn = !!this.vaSlots[di + '-pm'];
-
-                dataList.push({
-                    'Date__c': dateStr,
-                    'Availability__c': (amOn || pmOn) ? 'Available' : 'Unavailable',
-                    'AM__c': amOn,
-                    'PM__c': pmOn,
-                    'Notes__c': '',
-                    'Id': ''
-                });
-            }
-
-            const result = await processVendorAvailability({
-                dataList: dataList,
-                currentId: this.recordId
-            });
-
-            if (result === 'Success') {
-                this.dispatchEvent(new ShowToastEvent({ title: 'Saved', message: 'Vendor availability updated', variant: 'success' }));
-                this.loadVaData();
-            } else {
-                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result, variant: 'error' }));
-            }
+            await this.saveVendorAvailabilityData();
+            this.isVaSaving = false;
+            this.vaSaveSuccess = true;
+            this.dispatchEvent(new ShowToastEvent({ title: 'Saved', message: 'Vendor availability updated', variant: 'success' }));
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => { this.vaSaveSuccess = false; }, 2500);
         } catch (e) {
-            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed to save', variant: 'error' }));
+            this.isVaSaving = false;
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || e.message || 'Failed to save', variant: 'error' }));
         }
-        this.isVaSaving = false;
     }
 }

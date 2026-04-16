@@ -1,0 +1,371 @@
+<template>
+    <template if:false={isLoaded}>
+        <div class="fc-loading"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div>
+    </template>
+
+    <template if:true={isLoaded}>
+        <!-- ══ SECTION 1: APPLICATION DETAILS ══ -->
+        <div class="fc-section">
+            <div class="fc-section-hdr">
+                <div class="fc-dot"></div>
+                <h2>Application Details</h2>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Application Name</span>
+                    <span class="detail-value">{appName}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Builder Name</span>
+                    <span class="detail-value">{builderName}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Vendor Name</span>
+                    <span class="detail-value">{vendorName}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Vendor Email</span>
+                    <span class="detail-value">{vendorEmail}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Vendor Mobile</span>
+                    <span class="detail-value">{vendorMobile}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SECTION 2: AGENT VALUATIONS ══ -->
+        <div class="fc-section">
+            <div class="fc-section-hdr">
+                <div class="fc-dot"></div>
+                <h2>Agent Valuations</h2>
+            </div>
+            <table class="val-table">
+                <thead>
+                    <tr>
+                        <th class="val-th"></th>
+                        <th class="val-th val-th-a1">{agent1Name}</th>
+                        <th class="val-th val-th-a2">{agent2Name}</th>
+                        <th class="val-th val-th-a3">{agent3Name}</th>
+                        <th class="val-th val-th-avg">Average</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="val-td val-label">Initial Asking Price</td>
+                        <td class="val-td val-num">{a1Initial}</td>
+                        <td class="val-td val-num">{a2Initial}</td>
+                        <td class="val-td val-num">{a3Initial}</td>
+                        <td class="val-td val-num val-avg">{avgInitial}</td>
+                    </tr>
+                    <tr>
+                        <td class="val-td val-label">Target Sale Price</td>
+                        <td class="val-td val-num">{a1Target}</td>
+                        <td class="val-td val-num">{a2Target}</td>
+                        <td class="val-td val-num">{a3Target}</td>
+                        <td class="val-td val-num val-avg">{avgTarget}</td>
+                    </tr>
+                    <tr>
+                        <td class="val-td val-label">Bottom Price</td>
+                        <td class="val-td val-num">{a1Bottom}</td>
+                        <td class="val-td val-num">{a2Bottom}</td>
+                        <td class="val-td val-num">{a3Bottom}</td>
+                        <td class="val-td val-num val-avg">{avgBottom}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ══ SECTION 3: NHS RECOMMENDATION ══ -->
+        <div class="fc-section nhs-rec">
+            <div class="fc-section-hdr">
+                <div class="fc-dot green"></div>
+                <h2>NHS Recommendation</h2>
+            </div>
+            <div class="nhs-grid">
+                <div class="nhs-item">
+                    <span class="nhs-label">Market Value</span>
+                    <span class="nhs-value">{nhsMarket}</span>
+                </div>
+                <div class="nhs-item">
+                    <span class="nhs-label">Target Sale</span>
+                    <span class="nhs-value">{nhsTarget}</span>
+                </div>
+                <div class="nhs-item">
+                    <span class="nhs-label">Forced Sale</span>
+                    <span class="nhs-value">{nhsForced}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SECTION 4: FINAL CHECKS ══ -->
+        <div class="fc-section">
+            <div class="fc-section-hdr">
+                <div class="fc-dot"></div>
+                <h2>Final Checks</h2>
+                <div class="fc-progress-inline">
+                    <div class="bar track">
+                        <div class={barClass} style={progressBarStyle}></div>
+                    </div>
+                    <span class="fc-prog-text">{progressText}</span>
+                </div>
+            </div>
+
+            <div class="fc-check-grid">
+                <div class="fc-check-group">
+                    <h4 class="group-title">Agent Reports</h4>
+                    <template for:each={agentReports} for:item="item">
+                        <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="fc-check-group">
+                    <h4 class="group-title">Will Reports</h4>
+                    <template for:each={willReports} for:item="item">
+                        <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="fc-check-group">
+                    <h4 class="group-title">Validation</h4>
+                    <template for:each={validations} for:item="item">
+                        <div key={item.key} class="fc-check-item" data-key={item.key} onclick={handleToggle}>
+                            <div class={item.boxClass}>
+                                <template if:true={item.checked}>
+                                    <svg width="14" height="14" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                </template>
+                            </div>
+                            <span class={item.labelClass}>{item.label}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <template if:true={isDirty}>
+                <div class="fc-save-row">
+                    <button class="btn-save" onclick={handleSave} disabled={isSaving}>
+                        <template if:true={isSaving}>Saving...</template>
+                        <template if:false={isSaving}>Save Checks</template>
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <!-- ══ SECTION 5: FINAL EMAIL (only when all 7 checks done) ══ -->
+        <template if:true={showEmail}>
+            <div class="fc-section email-section">
+                <div class="fc-section-hdr">
+                    <div class="fc-dot green"></div>
+                    <h2>Final Email</h2>
+                    <span class="email-to-badge">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        To: {builderName}
+                    </span>
+                </div>
+
+                <!-- Recipient contacts -->
+                <div class="contact-picker">
+                    <div class="contact-picker-header">
+                        <span class="contact-picker-label">Recipients ({selectedCount})</span>
+                        <div class="contact-picker-actions">
+                            <button class="link-btn" onclick={handleSelectAllContacts}>Select All</button>
+                            <button class="link-btn" onclick={handleDeselectAllContacts}>Clear</button>
+                        </div>
+                    </div>
+                    <div class="contact-list">
+                        <template for:each={contactList} for:item="c">
+                            <div key={c.id} class={c.pillClass} data-id={c.id} onclick={handleToggleContact}>
+                                <div class="contact-check">
+                                    <template if:true={c.selected}>
+                                        <svg width="12" height="12" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                    </template>
+                                </div>
+                                <div class="contact-detail">
+                                    <span class="contact-name">{c.name}</span>
+                                    <span class="contact-email">{c.email}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={hasBuilderContacts}>
+                            <div class="contact-empty">No contacts found for {builderName}</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- CC / BCC manual fields -->
+                <div class="cc-bcc-row">
+                    <div class="cc-field">
+                        <label class="cc-label">CC</label>
+                        <input type="text" class="cc-input" placeholder="Add CC emails, comma separated..." value={manualCc} onchange={handleCcChange}>
+                    </div>
+                    <div class="cc-field">
+                        <label class="cc-label">BCC</label>
+                        <input type="text" class="cc-input" placeholder="Add BCC emails, comma separated..." value={manualBcc} onchange={handleBccChange}>
+                    </div>
+                </div>
+
+                <!-- Template selection trigger -->
+                <template if:false={emailReady}>
+                    <div class="email-choose">
+                        <button class="btn-choose-template" onclick={handleOpenTemplates}>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            Choose Email Template
+                        </button>
+                        <p class="choose-hint">Select a template to preview and send the final email to the vendor.</p>
+                    </div>
+                </template>
+
+                <!-- Template loaded — show preview -->
+                <template if:true={emailReady}>
+                    <div class="email-envelope">
+                        <div class="email-meta-row">
+                            <div class="email-meta">
+                                <span class="email-meta-label">To</span>
+                                <span class="email-meta-value">{selectedEmailsDisplay}</span>
+                            </div>
+                            <template if:true={hasCc}>
+                                <div class="email-meta">
+                                    <span class="email-meta-label">CC</span>
+                                    <span class="email-meta-value email-meta-sm">{manualCc}</span>
+                                </div>
+                            </template>
+                            <template if:true={hasBcc}>
+                                <div class="email-meta">
+                                    <span class="email-meta-label">BCC</span>
+                                    <span class="email-meta-value email-meta-sm">{manualBcc}</span>
+                                </div>
+                            </template>
+                            <div class="email-meta">
+                                <span class="email-meta-label">Template</span>
+                                <span class="email-meta-value">{selectedTemplateName}</span>
+                            </div>
+                            <button class="btn-change-template" onclick={handleOpenTemplates}>Change Template</button>
+                        </div>
+                        <div class="email-subject-row">
+                            <span class="email-meta-label">Subject</span>
+                            <input type="text" class="email-subject-input" value={emailSubject} onchange={handleSubjectChange}>
+                        </div>
+                        <div class="email-body-container">
+                            <div class="email-body-preview" lwc:dom="manual"></div>
+                        </div>
+                    </div>
+
+                    <div class="commit-row">
+                        <template if:true={isDirty}>
+                            <span class="commit-warn">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                Save your checks before sending
+                            </span>
+                        </template>
+                        <button class="btn-commit" onclick={handleCommitSend} disabled={isSending}>
+                            <template if:true={isSending}>
+                                <lightning-spinner alternative-text="Sending" size="x-small" variant="inverse"></lightning-spinner>
+                                Sending...
+                            </template>
+                            <template if:false={isSending}>
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                Confirm &amp; Send
+                            </template>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Loading template -->
+                <template if:true={emailLoading}>
+                    <div class="email-loading"><lightning-spinner alternative-text="Loading template" size="small"></lightning-spinner></div>
+                </template>
+            </div>
+        </template>
+
+        <!-- ══ TEMPLATE PICKER LIGHTBOX ══ -->
+        <template if:true={showTemplateLightbox}>
+            <div class="tpl-overlay" onclick={handleCloseLightbox}>
+                <div class="tpl-modal" onclick={handleModalClick}>
+                    <div class="tpl-modal-header">
+                        <h3>Select Email Template</h3>
+                        <button class="tpl-close" onclick={handleCloseLightbox}>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="tpl-search">
+                        <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" placeholder="Search templates..." oninput={handleTemplateSearch}>
+                    </div>
+                    <div class="tpl-list">
+                        <template for:each={filteredTemplates} for:item="tpl">
+                            <div key={tpl.value} class={tpl.itemClass} data-id={tpl.value} onclick={handlePickTemplate}>
+                                <div class="tpl-icon">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                </div>
+                                <div class="tpl-info">
+                                    <span class="tpl-name">{tpl.label}</span>
+                                </div>
+                                <template if:true={tpl.isSelected}>
+                                    <div class="tpl-selected-badge">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasFilteredTemplates}>
+                            <div class="tpl-empty">No templates found</div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ══ MOVE NEXT (shown when all checks done + builder approved) ══ -->
+        <template if:true={showMoveNext}>
+            <div class="fc-section move-next-section">
+                <div class="move-next-content">
+                    <div class="move-next-left">
+                        <div class="move-next-icon">
+                            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3>Final Checks Complete</h3>
+                            <p><strong>{builderName}</strong> is approved for Vendor Discussions. Move this application to the next stage.</p>
+                        </div>
+                    </div>
+                    <button class="btn-move-next" onclick={handleMoveNext} disabled={isMoving}>
+                        <template if:true={isMoving}>
+                            <lightning-spinner alternative-text="Moving" size="x-small" variant="inverse"></lightning-spinner>
+                            Moving...
+                        </template>
+                        <template if:false={isMoving}>
+                            Move to Vendor Discussions
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </template>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Locked message when checks incomplete -->
+        <template if:false={showEmail}>
+            <div class="fc-section locked-section">
+                <div class="locked-content">
+                    <svg width="24" height="24" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    <div>
+                        <h3>Final Email Locked</h3>
+                        <p>Complete all 7 checks above to unlock the final email and send.</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </template>
+</template>

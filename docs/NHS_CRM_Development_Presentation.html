@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Home Solutions — CRM Development Summary</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #0D1E4A; color: #1C2B24; overflow-x: hidden; }
+
+  /* Slide container */
+  .slides { scroll-snap-type: y mandatory; overflow-y: scroll; height: 100vh; }
+  .slide {
+    min-height: 100vh; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px 80px; position: relative;
+  }
+
+  /* Backgrounds */
+  .bg-navy { background: linear-gradient(135deg, #0D1E4A 0%, #1a3a6e 100%); color: #fff; }
+  .bg-sage { background: linear-gradient(135deg, #4A6B5E 0%, #6B9080 100%); color: #fff; }
+  .bg-white { background: #FFFFFF; color: #1C2B24; }
+  .bg-pale { background: #F5F7F5; color: #1C2B24; }
+  .bg-dark { background: #111827; color: #fff; }
+
+  /* Typography */
+  h1 { font-size: 52px; font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+  h2 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+  h3 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+  .subtitle { font-size: 20px; font-weight: 400; opacity: 0.8; line-height: 1.5; }
+  .label { font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.6; margin-bottom: 12px; }
+  .big-num { font-size: 64px; font-weight: 900; line-height: 1; }
+
+  /* Layout */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+  .flex-col { display: flex; flex-direction: column; gap: 16px; }
+  .center { text-align: center; align-items: center; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px; padding: 28px; backdrop-filter: blur(10px);
+  }
+  .card-white {
+    background: #fff; border: 1px solid #C5DCCC; border-radius: 16px;
+    padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .card-sage {
+    background: #EAF4EF; border: 1px solid #C5DCCC; border-radius: 12px;
+    padding: 20px;
+  }
+
+  /* KPI */
+  .kpi { text-align: center; }
+  .kpi-value { font-size: 48px; font-weight: 900; color: #4A6B5E; }
+  .kpi-label { font-size: 13px; font-weight: 600; color: #6B7280; margin-top: 6px; }
+
+  /* Tags */
+  .tag {
+    display: inline-block; padding: 4px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; margin: 3px;
+  }
+  .tag-green { background: #EAF4EF; color: #4A6B5E; border: 1px solid #C5DCCC; }
+  .tag-blue { background: #EBF3FB; color: #1A4F7A; border: 1px solid #93C4E0; }
+  .tag-purple { background: #F3EEF9; color: #5B3A8A; border: 1px solid #C4A8E0; }
+  .tag-amber { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+  .tag-navy { background: rgba(255,255,255,0.15); color: #fff; }
+
+  /* Pipeline */
+  .pipeline { display: flex; gap: 4px; margin: 30px 0; }
+  .pipe-step {
+    flex: 1; padding: 14px 8px; border-radius: 10px; text-align: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+  }
+  .pipe-1 { background: #4A6B5E; }
+  .pipe-2 { background: #5a7b6e; }
+  .pipe-3 { background: #6B9080; }
+  .pipe-4 { background: #7ba090; }
+  .pipe-5 { background: #8bb0a0; }
+  .pipe-6 { background: #4A6B5E; }
+  .pipe-7 { background: #3a5b4e; }
+  .pipe-8 { background: #2D5248; }
+  .pipe-9 { background: #1C2B24; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+  .tbl th { background: #4A6B5E; color: #fff; padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .tbl th:first-child { border-radius: 10px 0 0 0; }
+  .tbl th:last-child { border-radius: 0 10px 0 0; }
+  .tbl td { padding: 10px 16px; border-bottom: 1px solid #E5E7EB; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: #F5F7F5; }
+
+  /* Dot */
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+  .dot-green { background: #16a34a; }
+  .dot-blue { background: #2563EB; }
+  .dot-amber { background: #F59E0B; }
+
+  /* List */
+  .feature-list { list-style: none; }
+  .feature-list li { padding: 8px 0; font-size: 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .feature-list li::before { content: '✓'; color: #4A6B5E; font-weight: 800; font-size: 18px; flex-shrink: 0; }
+
+  /* Divider */
+  .divider { height: 2px; background: rgba(255,255,255,0.1); margin: 30px 0; }
+  .divider-sage { background: #C5DCCC; }
+
+  /* Slide number */
+  .slide-num {
+    position: absolute; bottom: 30px; right: 40px; font-size: 13px;
+    font-weight: 600; opacity: 0.4;
+  }
+
+  /* Logo */
+  .logo { font-size: 14px; font-weight: 300; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.5; }
+
+  /* Accent bar */
+  .accent-bar { height: 4px; background: linear-gradient(90deg, #0D1E4A, #4A6B5E, #6B9080); border-radius: 2px; margin-bottom: 30px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 3px; background: #C5DCCC; border-radius: 2px; }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item::before { content: ''; position: absolute; left: -26px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: #4A6B5E; border: 3px solid #fff; }
+  .tl-date { font-size: 12px; font-weight: 700; color: #4A6B5E; }
+  .tl-text { font-size: 14px; color: #374151; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="slides">
+
+<!-- SLIDE 1: Title -->
+<div class="slide bg-navy center">
+  <div class="logo">CRM Mates Ltd</div>
+  <h1 style="margin-top:20px;">New Home Solutions<br>CRM Platform</h1>
+  <p class="subtitle" style="max-width:600px;">A comprehensive Salesforce Lightning platform for property sales,<br>agent valuations, and application management</p>
+  <div style="margin-top:40px;display:flex;gap:12px;justify-content:center;">
+    <span class="tag tag-navy">Salesforce Lightning</span>
+    <span class="tag tag-navy">LWC + Apex</span>
+    <span class="tag tag-navy">9 Integrations</span>
+  </div>
+  <div style="margin-top:60px;font-size:14px;opacity:0.5;">
+    Development Partner: CRM Mates Ltd, London<br>
+    Lead Consultant: Deepak K Rana<br>
+    April 2026
+  </div>
+  <span class="slide-num">1</span>
+</div>
+
+<!-- SLIDE 2: Platform Overview -->
+<div class="slide bg-white">
+  <div class="accent-bar"></div>
+  <p class="label">Platform Overview</p>
+  <h2 style="color:#0D1E4A;">Built for Property Sales Excellence</h2>
+  <p class="subtitle" style="color:#6B7280;max-width:700px;">NHS acts as an intermediary between house builders and property vendors, managing the complete lifecycle from application to completion.</p>
+  <div class="grid-4" style="margin-top:40px;">
+    <div class="card-sage kpi">
+      <div class="kpi-value">116+</div>
+      <div class="kpi-label">Lightning Web Components</div>
+    </div>
+    <div class="card-sage kpi">
+      <div class="kpi-value">82</div>
+      <div class="kpi-label">Apex Classes</div>
+    </div>
+    <div class="card-sage kpi">
+      <div class="kpi-value">9</div>
+      <div class="kpi-label">External Integrations</div>
+    </div>
+    <div class="card-sage kpi">
+      <div class="kpi-value">192</div>
+      <div class="kpi-label">Custom Fields</div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">2</span>
+</div>
+
+<!-- SLIDE 3: Application Navigation -->
+<div class="slide bg-pale">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Application Navigation</p>
+  <h2 style="color:#0D1E4A;">12 Dedicated Tabs</h2>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">🏠 Home</h3><p style="font-size:13px;color:#6B7280;">Dashboard with KPIs, pipeline chart, recent applications, appointments</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">📝 Create Application</h3><p style="font-size:13px;color:#6B7280;">Full application form — vendors, property, agents, housebuilder</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">📋 New Applications</h3><p style="font-size:13px;color:#6B7280;">Kanban board with 9-stage pipeline management</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">🔍 Search Property</h3><p style="font-size:13px;color:#6B7280;">Google Maps with postcode search, numbered pins, filters</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">🏘️ Existing Properties</h3><p style="font-size:13px;color:#6B7280;">Property records with EPC badges, two-line rows</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">🤝 Agents / Builders / Vendors</h3><p style="font-size:13px;color:#6B7280;">Filtered list views by record type with search & pagination</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">📨 Inbox</h3><p style="font-size:13px;color:#6B7280;">Airparser PDF parsing — review & create applications</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">📧 Email Templates</h3><p style="font-size:13px;color:#6B7280;">11 branded NHS email templates with merge fields</p></div>
+    <div class="card-white"><h3 style="font-size:16px;color:#4A6B5E;">⚙️ API Config</h3><p style="font-size:13px;color:#6B7280;">Centralised API key management with health checks</p></div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">3</span>
+</div>
+
+<!-- SLIDE 4: NHS Process Pipeline -->
+<div class="slide bg-navy">
+  <p class="label">Workflow</p>
+  <h2>9-Stage Application Pipeline</h2>
+  <div class="pipeline">
+    <div class="pipe-step pipe-1">1<br>Application</div>
+    <div class="pipe-step pipe-2">2<br>Vendor<br>Availability</div>
+    <div class="pipe-step pipe-3">3<br>Book<br>Agents</div>
+    <div class="pipe-step pipe-4">4<br>Figures<br>to Chase</div>
+    <div class="pipe-step pipe-5">5<br>Valuations<br>Ready</div>
+    <div class="pipe-step pipe-6">6<br>Figures<br>Returned</div>
+    <div class="pipe-step pipe-7">7<br>Final<br>Checks</div>
+    <div class="pipe-step pipe-8">8<br>Vendor<br>Discussions</div>
+    <div class="pipe-step pipe-9">9<br>Archived</div>
+  </div>
+  <div class="grid-3" style="margin-top:20px;">
+    <div class="card">
+      <h3 style="font-size:16px;">Stage-Specific Views</h3>
+      <p style="font-size:13px;opacity:0.7;">Each stage shows relevant components — vendor calendar, booking slots, figures table, final checklist</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">Automated Transitions</h3>
+      <p style="font-size:13px;opacity:0.7;">Batch jobs auto-advance stages when appointments pass. Stage gates validate required data before progression</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">Visual Pipeline</h3>
+      <p style="font-size:13px;opacity:0.7;">Yellow = current stage, Green = completed, White = future. Clickable navigation with real-time updates</p>
+    </div>
+  </div>
+  <span class="slide-num">4</span>
+</div>
+
+<!-- SLIDE 5: Application Detail V2 -->
+<div class="slide bg-white">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Core Feature</p>
+  <h2 style="color:#0D1E4A;">Application Detail Page V2</h2>
+  <div class="grid-2">
+    <div>
+      <ul class="feature-list">
+        <li>Pipeline view with clickable numbered stages</li>
+        <li>Property Details with address, housebuilder lookup, vendor info</li>
+        <li>3 color-coded agent columns (green, blue, lavender)</li>
+        <li>AM/PM vendor availability calendar with weekend toggles</li>
+        <li>Book Agents with 15-min sub-slot calendar & agent picker</li>
+        <li>Email Agent with template 4a/4b/4c pre-populated</li>
+        <li>Desktop Valuation toggle blocks physical bookings</li>
+        <li>Outstanding Figures table with dynamic status</li>
+        <li>Will Report upload to Box on Valuations Ready</li>
+        <li>Final Checks — entire page read-only with 7-point checklist</li>
+        <li>Vendor Notes with pagination & quick note popup</li>
+        <li>Sticky Quick Summary sidebar</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card-sage" style="margin-bottom:16px;">
+        <h3 style="font-size:14px;color:#4A6B5E;margin-bottom:10px;">Stage-Specific Components</h3>
+        <div style="font-size:13px;line-height:2;">
+          <strong>Stage 2:</strong> AM/PM availability calendar<br>
+          <strong>Stage 3:</strong> Agent booking + email<br>
+          <strong>Stage 4:</strong> Figures to chase table<br>
+          <strong>Stage 5:</strong> NHS Recommendations + Will Report upload<br>
+          <strong>Stage 7:</strong> Final Checks (read-only)<br>
+        </div>
+      </div>
+      <div class="card-sage">
+        <h3 style="font-size:14px;color:#4A6B5E;margin-bottom:10px;">Key Interactions</h3>
+        <div style="font-size:13px;line-height:2;">
+          Cancel booking → double confirmation + reason → Vendor Notes<br>
+          Email Agent → template rendered → stamps Last Emailed On<br>
+          Save → animated button (Saving... → ✓ Saved)<br>
+          Quick Note → floating popup from Property Details
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">5</span>
+</div>
+
+<!-- SLIDE 6: Integrations -->
+<div class="slide bg-sage">
+  <p class="label">Integrations</p>
+  <h2>9 External Services Connected</h2>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card">
+      <h3 style="font-size:16px;">📁 Box</h3>
+      <p style="font-size:13px;opacity:0.7;">OAuth2 file storage — NHS folder structure, upload/download, Will Report upload, permanent folder ID mapping</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">📱 Twilio</h3>
+      <p style="font-size:13px;opacity:0.7;">Managed package for SMS/Chat — outbound/inbound messaging, delivery tracking</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">🗺️ Google Maps</h3>
+      <p style="font-size:13px;opacity:0.7;">JavaScript API, Geocoding, Distance Matrix — property search, agent finder, driving distances</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">📄 Airparser</h3>
+      <p style="font-size:13px;opacity:0.7;">AI PDF parsing — email inbox, transformation rules, split-screen review, auto-create applications</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">📮 Ideal Postcodes</h3>
+      <p style="font-size:13px;opacity:0.7;">UK address autocomplete and validation</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">🏠 Street Data / RapidAPI</h3>
+      <p style="font-size:13px;opacity:0.7;">EPC ratings, property reports, energy performance data</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">📍 Postcodes.io</h3>
+      <p style="font-size:13px;opacity:0.7;">Free UK postcode geocoding — configured and ready for use</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">🔗 TinyURL</h3>
+      <p style="font-size:13px;opacity:0.7;">URL shortening for SMS and email links</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">📧 Email</h3>
+      <p style="font-size:13px;opacity:0.7;">Salesforce native — 11 branded templates, merge fields, file attachments</p>
+    </div>
+  </div>
+  <span class="slide-num">6</span>
+</div>
+
+<!-- SLIDE 7: Property Search -->
+<div class="slide bg-white">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Feature Highlight</p>
+  <h2 style="color:#0D1E4A;">Property Search with Google Maps</h2>
+  <div class="grid-2">
+    <div>
+      <ul class="feature-list">
+        <li>Search by postcode + radius (1-20 miles)</li>
+        <li>Google Maps with numbered green pins</li>
+        <li>Property cards with EPC, council tax, flood risk, floor area</li>
+        <li>Application history badges and filter stats</li>
+        <li>Snapshot bar — Total Applications, This Month, This Year</li>
+        <li>Clickable filters on snapshot stats</li>
+        <li>Recent Application and Property links per card</li>
+        <li>Sort by distance, bedrooms, or EPC rating</li>
+        <li>Map ↔ card click sync</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card-sage" style="padding:24px;">
+        <h3 style="font-size:15px;color:#4A6B5E;">Technical Implementation</h3>
+        <div style="margin-top:12px;font-size:13px;line-height:1.8;color:#374151;">
+          <strong>Map:</strong> Visualforce page in iframe (Locker Service workaround)<br>
+          <strong>Communication:</strong> LWC ↔ VF via postMessage<br>
+          <strong>Geocoding:</strong> Google Maps API with daily counter<br>
+          <strong>Distance:</strong> Haversine formula (aerial)<br>
+          <strong>Data:</strong> NHS_Property__c with Longitude_Latitude__s coordinates<br>
+          <strong>History:</strong> Opportunity.Property__c lookup aggregation
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">7</span>
+</div>
+
+<!-- SLIDE 8: Airparser -->
+<div class="slide bg-pale">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Automation</p>
+  <h2 style="color:#0D1E4A;">Airparser — PDF Application Parsing</h2>
+  <div class="grid-2">
+    <div>
+      <h3 style="color:#0D1E4A;font-size:18px;margin-bottom:16px;">Flow</h3>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-date">Step 1</div><div class="tl-text">Email with PDF sent to Airparser inbox</div></div>
+        <div class="tl-item"><div class="tl-date">Step 2</div><div class="tl-text">Airparser AI extracts structured data</div></div>
+        <div class="tl-item"><div class="tl-date">Step 3</div><div class="tl-text">Salesforce fetches parsed data via API</div></div>
+        <div class="tl-item"><div class="tl-date">Step 4</div><div class="tl-text">Split-screen review: parsed data ↔ editable form</div></div>
+        <div class="tl-item"><div class="tl-date">Step 5</div><div class="tl-text">Accept & Create Application</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card-white" style="margin-bottom:16px;">
+        <h3 style="font-size:15px;color:#4A6B5E;">Smart Transformations</h3>
+        <div style="margin-top:10px;font-size:13px;line-height:1.8;">
+          <span class="tag tag-green">Name Splitting</span> "ANTHONY WHITWELL" → First + Last<br>
+          <span class="tag tag-green">Address Parsing</span> Street / City / Postcode auto-split<br>
+          <span class="tag tag-green">Currency</span> "£495,000" → 495000<br>
+          <span class="tag tag-green">Housebuilder Lookup</span> Name → Account ID<br>
+          <span class="tag tag-green">45 Default Rules</span> Configurable mapping<br>
+        </div>
+      </div>
+      <div class="card-white">
+        <h3 style="font-size:15px;color:#4A6B5E;">Two Interfaces</h3>
+        <div style="margin-top:10px;font-size:13px;line-height:1.8;">
+          <strong>Inbox</strong> (Standard Users) — simplified document list, review & create<br>
+          <strong>Airparser</strong> (Admin) — schema management, transformation rules, upload
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">8</span>
+</div>
+
+<!-- SLIDE 9: Home Dashboard -->
+<div class="slide bg-navy">
+  <p class="label">Dashboard</p>
+  <h2>Custom Home Page</h2>
+  <div class="grid-2" style="margin-top:20px;">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:16px;">Personalised Greeting</h3>
+        <p style="font-size:13px;opacity:0.7;">Time-based greeting with today's date. Quick action buttons for New Application and Search Property.</p>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:16px;">4 KPI Cards</h3>
+        <p style="font-size:13px;opacity:0.7;">Active Applications, New This Month/Week, Upcoming Appointments (7 days), Properties + Agents count</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:16px;">Pipeline Overview</h3>
+        <p style="font-size:13px;opacity:0.7;">Horizontal bar chart showing application counts by NHS Process stage. Visual pipeline health at a glance.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h3 style="font-size:16px;">Upcoming Appointments</h3>
+        <p style="font-size:13px;opacity:0.7;">Next 5 events within 7 days. Date badge with day/month, subject, time range, location.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:16px;">Recent Applications</h3>
+        <p style="font-size:13px;opacity:0.7;">Last 10 applications with Property, Vendor, Housebuilder, Stage (colour-coded badge), Process, Created date. Click to navigate.</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">9</span>
+</div>
+
+<!-- SLIDE 10: Technology Stack -->
+<div class="slide bg-white">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Architecture</p>
+  <h2 style="color:#0D1E4A;">Technology Stack</h2>
+  <table class="tbl" style="margin-top:30px;">
+    <thead>
+      <tr><th>Layer</th><th>Technology</th><th>Details</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Frontend</strong></td><td>Lightning Web Components</td><td>116+ components with Aptos font, NHS sage branding</td></tr>
+      <tr><td><strong>Backend</strong></td><td>Apex</td><td>82 classes — Controllers, Services, Batch, Queueable</td></tr>
+      <tr><td><strong>File Storage</strong></td><td>Box</td><td>OAuth2 with token rotation, folder structure, permanent ID mapping</td></tr>
+      <tr><td><strong>Maps</strong></td><td>Google Maps</td><td>JavaScript API, Geocoding, Distance Matrix, Street View</td></tr>
+      <tr><td><strong>PDF Parsing</strong></td><td>Airparser</td><td>LLM-powered extraction with 45 transformation rules</td></tr>
+      <tr><td><strong>SMS</strong></td><td>Twilio</td><td>Managed package v4.159 — outbound/inbound/chat</td></tr>
+      <tr><td><strong>Email</strong></td><td>Salesforce Native</td><td>11 branded templates with merge fields and attachments</td></tr>
+      <tr><td><strong>API Config</strong></td><td>Custom Settings</td><td>Box, Google Maps, NHS API Config — centralised key management</td></tr>
+      <tr><td><strong>PDF Generation</strong></td><td>Visualforce</td><td>Application PDFs, valuation reports</td></tr>
+    </tbody>
+  </table>
+  <span class="slide-num" style="color:#9CA3AF;">10</span>
+</div>
+
+<!-- SLIDE 11: Development Timeline -->
+<div class="slide bg-pale">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Progress</p>
+  <h2 style="color:#0D1E4A;">Development Timeline — April 2026</h2>
+  <div class="grid-2" style="margin-top:20px;">
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">7 April</div><div class="tl-text">Final Checks module, stage gates, email with BCC</div></div>
+      <div class="tl-item"><div class="tl-date">8 April</div><div class="tl-text">9 branded email templates, formula fields, attachments</div></div>
+      <div class="tl-item"><div class="tl-date">9 April</div><div class="tl-text">Box integration (replacing Dropbox), vendor contact write-back</div></div>
+      <div class="tl-item"><div class="tl-date">10 April</div><div class="tl-text">Twilio managed package, Assign Agent wizard, Google Maps</div></div>
+      <div class="tl-item"><div class="tl-date">11 April</div><div class="tl-text">Distance Matrix, API config, integration cleanup, booking sync</div></div>
+    </div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-date">13 April</div><div class="tl-text">Property Search, Home Dashboard, app navigation, list views</div></div>
+      <div class="tl-item"><div class="tl-date">13 April</div><div class="tl-text">Airparser integration — inbox, schema, transformation rules</div></div>
+      <div class="tl-item"><div class="tl-date">14 April</div><div class="tl-text">Application Detail V2 — pipeline, vendor availability AM/PM</div></div>
+      <div class="tl-item"><div class="tl-date">14 April</div><div class="tl-text">Book Agents calendar, Email Agent, Figures to Chase</div></div>
+      <div class="tl-item"><div class="tl-date">14 April</div><div class="tl-text">Final Checks read-only, Will Report upload, vendor notes</div></div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">11</span>
+</div>
+
+<!-- SLIDE 12: Custom Objects -->
+<div class="slide bg-white">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Data Model</p>
+  <h2 style="color:#0D1E4A;">Custom Objects & Settings</h2>
+  <div class="grid-2" style="margin-top:20px;">
+    <div>
+      <h3 style="font-size:16px;color:#4A6B5E;margin-bottom:16px;">Core Objects</h3>
+      <table class="tbl">
+        <thead><tr><th>Object</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>NHS_Property__c</td><td>Property details, EPC, coordinates</td></tr>
+          <tr><td>Vendor_Availability__c</td><td>Calendar slots (AM/PM + hourly)</td></tr>
+          <tr><td>Vendor_Note__c</td><td>Communication notes</td></tr>
+          <tr><td>Offer__c</td><td>Agent offers & valuations</td></tr>
+          <tr><td>Chain_Details__c</td><td>Property chain tracking</td></tr>
+          <tr><td>Parsed_Application__c</td><td>Airparser staging records</td></tr>
+          <tr><td>Airparser_Field_Mapping__c</td><td>Transformation rules</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="font-size:16px;color:#4A6B5E;margin-bottom:16px;">Custom Settings</h3>
+      <table class="tbl">
+        <thead><tr><th>Setting</th><th>APIs</th></tr></thead>
+        <tbody>
+          <tr><td>Box_Config__c</td><td>OAuth tokens, root folder</td></tr>
+          <tr><td>Google_Maps_Config__c</td><td>API key, daily limits</td></tr>
+          <tr><td>NHS_API_Config__c</td><td>Ideal Postcodes, RapidAPI, Airparser, TinyURL</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:20px;">
+        <h3 style="font-size:16px;color:#4A6B5E;margin-bottom:12px;">Opportunity</h3>
+        <p style="font-size:13px;color:#6B7280;">192 custom fields · 13 record types · 9 NHS Process stages · 7 Final Check checkboxes · 3 agent slots with appointment, valuation, and email tracking</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">12</span>
+</div>
+
+<!-- SLIDE 13: API Health -->
+<div class="slide bg-sage">
+  <p class="label">Operations</p>
+  <h2>API Configuration & Health Monitoring</h2>
+  <div class="grid-3" style="margin-top:30px;">
+    <div class="card">
+      <h3 style="font-size:16px;">🟢 Centralised Config</h3>
+      <p style="font-size:13px;opacity:0.7;">All API keys managed via Custom Settings. Single API Config page with block/list view, edit modal, masked passwords.</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">🟢 Health Checks</h3>
+      <p style="font-size:13px;opacity:0.7;">Schedulable every 6 hours. Tests 8 APIs: Box, Google Maps, Ideal Postcodes, RapidAPI, Street Data, TinyURL, Twilio, Airparser.</p>
+    </div>
+    <div class="card">
+      <h3 style="font-size:16px;">🟢 Status Bulbs</h3>
+      <p style="font-size:13px;opacity:0.7;">Green/Red/Yellow/Grey status indicators per API. Manual test button per integration. Compact status string storage.</p>
+    </div>
+  </div>
+  <div style="margin-top:30px;text-align:center;">
+    <span class="tag tag-green">Box</span>
+    <span class="tag tag-green">Google Maps</span>
+    <span class="tag tag-green">Ideal Postcodes</span>
+    <span class="tag tag-green">RapidAPI</span>
+    <span class="tag tag-green">Street Data</span>
+    <span class="tag tag-green">TinyURL</span>
+    <span class="tag tag-green">Twilio</span>
+    <span class="tag tag-green">Airparser</span>
+    <span class="tag tag-green">Postcodes.io</span>
+  </div>
+  <span class="slide-num">13</span>
+</div>
+
+<!-- SLIDE 14: What's Next -->
+<div class="slide bg-pale">
+  <div class="accent-bar"></div>
+  <p class="label" style="color:#4A6B5E;">Roadmap</p>
+  <h2 style="color:#0D1E4A;">Pending & Planned</h2>
+  <div class="grid-2" style="margin-top:30px;">
+    <div>
+      <h3 style="font-size:16px;color:#4A6B5E;margin-bottom:16px;">Pending Items</h3>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-amber"></span>Twilio UK phone number — regulatory submission pending</div>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-amber"></span>Email Relay (Resend) — DNS records needed</div>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-amber"></span>Dropbox package uninstall — awaiting confirmation</div>
+      <div class="card-sage"><span class="dot dot-amber"></span>Airparser schema refinement for different PDF formats</div>
+    </div>
+    <div>
+      <h3 style="font-size:16px;color:#4A6B5E;margin-bottom:16px;">Future Scope</h3>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-blue"></span>Postcodes.io integration for free geocoding</div>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-blue"></span>Auto Box folder creation on application create</div>
+      <div class="card-sage" style="margin-bottom:12px;"><span class="dot dot-blue"></span>WhatsApp integration via Twilio</div>
+      <div class="card-sage"><span class="dot dot-blue"></span>Vendor Discussions stage components</div>
+    </div>
+  </div>
+  <span class="slide-num" style="color:#9CA3AF;">14</span>
+</div>
+
+<!-- SLIDE 15: Thank You -->
+<div class="slide bg-navy center">
+  <div class="logo">CRM Mates Ltd</div>
+  <h1 style="margin-top:20px;">Thank You</h1>
+  <p class="subtitle" style="max-width:500px;">New Home Solutions CRM Platform<br>Built with Salesforce Lightning</p>
+  <div class="divider" style="max-width:200px;margin:30px auto;"></div>
+  <div style="font-size:16px;opacity:0.7;line-height:2;">
+    <strong>Deepak K Rana</strong><br>
+    Lead Salesforce Consultant<br>
+    CRM Mates Ltd, London<br>
+    deepak@crmmates.com · 07443 340401
+  </div>
+  <span class="slide-num">15</span>
+</div>
+
+</div>
+</body>
+</html>

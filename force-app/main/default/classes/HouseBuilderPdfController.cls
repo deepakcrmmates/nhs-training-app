@@ -218,8 +218,35 @@ public without sharing class HouseBuilderPdfController {
         PageReference pdfPage = Page.houseBuilderApplicationPDF;
         pdfPage.getParameters().put('Id', recordId);
         Blob pdfBlob =  pdfPage.getContent();
-        BoxFileService.uploadFileToDropbox(op.House_Builder__c, null, 'Application', recordId, pdfBlob);
-        //  return pdfPage.getContent();
+        BoxFileService.uploadFileToBox(op.House_Builder__c, null, 'Application', recordId, pdfBlob);
+    }
+
+    // Create NHS Box folder structure (async via Queueable)
+    @AuraEnabled
+    public static void setupFoldersAndGeneratePdf(Id recordId) {
+        System.enqueueJob(new NhsFolderSetupJob(recordId));
+    }
+
+    // Generate PDF and upload to the NHS Application subfolder in Box
+    // Must be called from LWC context (requires user session for getContent)
+    @AuraEnabled
+    public static void generatePdfToNhsFolder(Id recordId) {
+        Opportunity opp = [SELECT Id, Name, Box_Folder_Id__c, House_Builder__r.Name
+                           FROM Opportunity WHERE Id = :recordId LIMIT 1];
+
+        // Generate PDF
+        PageReference pdfPage = Page.houseBuilderApplicationPDF;
+        pdfPage.getParameters().put('Id', recordId);
+        Blob pdfBlob = pdfPage.getContent();
+        String base64File = EncodingUtil.base64Encode(pdfBlob);
+
+        // Upload to NHS Application subfolder via @future
+        if (String.isNotBlank(opp.Box_Folder_Id__c)) {
+            String hbName = opp.House_Builder__r != null ? opp.House_Builder__r.Name : '';
+            BoxFileService.uploadPdfToNhsFolderAsync(
+                opp.Box_Folder_Id__c, opp.Name, hbName, base64File
+            );
+        }
     }
     
   

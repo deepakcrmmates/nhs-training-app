@@ -25,12 +25,15 @@ public with sharing class NHSCommunicationsController {
             comm.put('Contact_Name__c', em.Incoming ? em.FromName : getRecipientName(em.ToAddress));
             comm.put('Subject__c', em.Subject);
             comm.put('Preview__c', truncateText(em.TextBody, 150));
+            comm.put('Body__c', em.HtmlBody != null ? em.HtmlBody : (em.TextBody != null ? em.TextBody : ''));
             comm.put('DateTime__c', em.MessageDate);
             comm.put('Status__c', getEmailStatus(em));
             comm.put('Is_Unread__c', em.Incoming && em.Status == '0'); // New/unread
             comm.put('HasAttachment', em.HasAttachment);
             comm.put('FromAddress', em.FromAddress);
+            comm.put('FromName', em.FromName);
             comm.put('ToAddress', em.ToAddress);
+            comm.put('CcAddress', em.CcAddress);
             results.add(comm);
         }
 
@@ -48,17 +51,22 @@ public with sharing class NHSCommunicationsController {
         for (TwilioSF__Message__c sms : smsMessages) {
             Map<String, Object> comm = new Map<String, Object>();
             Boolean isInbound = sms.TwilioSF__Direction__c == 'inbound';
+            String toNum = sms.TwilioSF__To_Number__c;
+            String fromNum = sms.TwilioSF__From_Number__c;
+            Boolean isWhatsApp = (toNum != null && toNum.startsWith('whatsapp:')) ||
+                                 (fromNum != null && fromNum.startsWith('whatsapp:'));
             comm.put('Id', sms.Id);
-            comm.put('Channel__c', 'SMS');
+            comm.put('Channel__c', isWhatsApp ? 'WhatsApp' : 'SMS');
             comm.put('Direction__c', isInbound ? 'Inbound' : 'Outbound');
             comm.put('Contact_Name__c', sms.TwilioSF__Contact__r != null ? sms.TwilioSF__Contact__r.Name : (sms.TwilioSF__Recipient_Name__c != null ? sms.TwilioSF__Recipient_Name__c : 'Unknown'));
-            comm.put('Subject__c', 'SMS');
+            comm.put('Subject__c', isWhatsApp ? 'WhatsApp' : 'SMS');
             comm.put('Preview__c', truncateText(sms.TwilioSF__Body__c, 150));
+            comm.put('Body__c', sms.TwilioSF__Body__c);
             comm.put('DateTime__c', sms.TwilioSF__Date_Created__c);
             comm.put('Status__c', sms.TwilioSF__Status__c != null ? sms.TwilioSF__Status__c : 'queued');
             comm.put('Is_Unread__c', sms.TwilioSF__Unread__c);
-            comm.put('ToAddress', sms.TwilioSF__To_Number__c);
-            comm.put('FromAddress', sms.TwilioSF__From_Number__c);
+            comm.put('ToAddress', toNum != null ? toNum.replace('whatsapp:', '') : '');
+            comm.put('FromAddress', fromNum != null ? fromNum.replace('whatsapp:', '') : '');
             results.add(comm);
         }
 
@@ -154,6 +162,11 @@ public with sharing class NHSCommunicationsController {
     @AuraEnabled
     public static Map<String, String> sendEmailWithBcc(Id opportunityId, String toAddress, String subject, String body, String ccAddress, String bccAddress, Id templateId) {
         return sendEmailFull(opportunityId, toAddress, subject, body, ccAddress, bccAddress, templateId, new List<Id>());
+    }
+
+    @AuraEnabled
+    public static Map<String, String> sendEmailComplete(Id opportunityId, String toAddress, String subject, String body, String ccAddress, String bccAddress, Id templateId, List<Id> contentDocumentIds) {
+        return sendEmailFull(opportunityId, toAddress, subject, body, ccAddress, bccAddress, templateId, contentDocumentIds);
     }
 
     private static Map<String, String> sendEmailFull(Id opportunityId, String toAddress, String subject, String body, String ccAddress, String bccAddress, Id templateId, List<Id> contentDocumentIds) {
@@ -264,6 +277,39 @@ public with sharing class NHSCommunicationsController {
     }
 
     @AuraEnabled
+    public static Map<String, String> sendWhatsApp(Id opportunityId, String toNumber, String body) {
+        Map<String, String> result = new Map<String, String>();
+
+        try {
+            Opportunity opp = [SELECT Id, Vendor_1__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+
+            // WhatsApp via Twilio uses whatsapp: prefix
+            String waTo = toNumber.startsWith('whatsapp:') ? toNumber : 'whatsapp:' + toNumber;
+
+            TwilioSF__Message__c msg = new TwilioSF__Message__c();
+            msg.TwilioSF__To_Number__c = waTo;
+            msg.TwilioSF__Body__c = body;
+            msg.TwilioSF__Direction__c = 'outbound-api';
+            msg.TwilioSF__Status__c = 'queued';
+            msg.TwilioSF__Date_Created__c = Datetime.now();
+            msg.TwilioSF__SF_Parent_Record_Id__c = opportunityId;
+            if (opp.Vendor_1__c != null) {
+                msg.TwilioSF__Contact__c = opp.Vendor_1__c;
+            }
+            insert msg;
+
+            result.put('status', 'success');
+            result.put('message', 'WhatsApp message queued for delivery');
+            result.put('messageId', msg.Id);
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+
+        return result;
+    }
+
+    @AuraEnabled
     public static Map<String, String> logCall(Id opportunityId, Id vendorContactId, String subject, String description, String callType, String status) {
         Map<String, String> result = new Map<String, String>();
 
@@ -296,8 +342,9 @@ public with sharing class NHSCommunicationsController {
 
         Opportunity opp = [
             SELECT Id, Name, Property_Address__c,
-                   Vendor_1__c, Vendor_1__r.Name, Vendor_1_Email__c, Vendor_1_Mobile__c,
-                   Vendor_2__c, Vendor_2__r.Name
+                   Vendor_1__c, Vendor_1__r.Name, Vendor_1_Email__c, Vendor_1_Mobile__c, Vendor_1_Phone__c,
+                   Vendor_2__c, Vendor_2__r.Name,
+                   House_Builder__c, House_Builder__r.Name
             FROM Opportunity
             WHERE Id = :opportunityId
             LIMIT 1
@@ -309,10 +356,119 @@ public with sharing class NHSCommunicationsController {
         ctx.put('vendor1Name', opp.Vendor_1__r != null ? opp.Vendor_1__r.Name : '');
         ctx.put('vendor1Email', opp.Vendor_1_Email__c);
         ctx.put('vendor1Mobile', opp.Vendor_1_Mobile__c);
+        ctx.put('vendor1Phone', opp.Vendor_1_Phone__c);
         ctx.put('vendor2Id', opp.Vendor_2__c);
         ctx.put('vendor2Name', opp.Vendor_2__r != null ? opp.Vendor_2__r.Name : '');
+        ctx.put('houseBuilderName', opp.House_Builder__r != null ? opp.House_Builder__r.Name : '');
 
         return ctx;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Map<String, String>> getAddressBook(Id opportunityId) {
+        List<Map<String, String>> contacts = new List<Map<String, String>>();
+
+        Opportunity opp = [
+            SELECT Id,
+                   Vendor_1__c, Vendor_1__r.Name, Vendor_1_Email__c,
+                   Vendor_2__c, Vendor_2__r.Name, Vendor_2_Email__c,
+                   Agent_1__c, Agent_1__r.Name, Agent_1_Email__c,
+                   Agent_2__c, Agent_2__r.Name, Agent_2_Email__c,
+                   Agent_3__c, Agent_3__r.Name, Agent_3_Email__c,
+                   House_Builder__c, House_Builder__r.Name, House_Builder__r.Email__c
+            FROM Opportunity
+            WHERE Id = :opportunityId
+            LIMIT 1
+        ];
+
+        // Vendor 1
+        if (opp.Vendor_1__c != null && String.isNotBlank(opp.Vendor_1_Email__c)) {
+            contacts.add(buildContact('Vendor 1', opp.Vendor_1__r.Name, opp.Vendor_1_Email__c, 'vendor'));
+        }
+
+        // Vendor 2
+        if (opp.Vendor_2__c != null && String.isNotBlank(opp.Vendor_2_Email__c)) {
+            contacts.add(buildContact('Vendor 2', opp.Vendor_2__r.Name, opp.Vendor_2_Email__c, 'vendor'));
+        }
+
+        // Agent accounts — add account-level email + related contacts
+        Set<Id> accountIds = new Set<Id>();
+        Map<Id, String> agentLabels = new Map<Id, String>();
+
+        if (opp.Agent_1__c != null) {
+            accountIds.add(opp.Agent_1__c);
+            agentLabels.put(opp.Agent_1__c, 'Agent 1');
+            if (String.isNotBlank(opp.Agent_1_Email__c)) {
+                contacts.add(buildContact('Agent 1', opp.Agent_1__r.Name, opp.Agent_1_Email__c, 'agent'));
+            }
+        }
+        if (opp.Agent_2__c != null) {
+            accountIds.add(opp.Agent_2__c);
+            agentLabels.put(opp.Agent_2__c, 'Agent 2');
+            if (String.isNotBlank(opp.Agent_2_Email__c)) {
+                contacts.add(buildContact('Agent 2', opp.Agent_2__r.Name, opp.Agent_2_Email__c, 'agent'));
+            }
+        }
+        if (opp.Agent_3__c != null) {
+            accountIds.add(opp.Agent_3__c);
+            agentLabels.put(opp.Agent_3__c, 'Agent 3');
+            if (String.isNotBlank(opp.Agent_3_Email__c)) {
+                contacts.add(buildContact('Agent 3', opp.Agent_3__r.Name, opp.Agent_3_Email__c, 'agent'));
+            }
+        }
+
+        // House Builder account
+        if (opp.House_Builder__c != null) {
+            accountIds.add(opp.House_Builder__c);
+            agentLabels.put(opp.House_Builder__c, 'Housebuilder');
+            if (opp.House_Builder__r != null && String.isNotBlank(opp.House_Builder__r.Email__c)) {
+                contacts.add(buildContact('Housebuilder', opp.House_Builder__r.Name, opp.House_Builder__r.Email__c, 'housebuilder'));
+            }
+        }
+
+        // Query related contacts for all agent + housebuilder accounts
+        if (!accountIds.isEmpty()) {
+            List<Contact> relatedContacts = [
+                SELECT Id, Name, Email, AccountId, Account.Name, Title
+                FROM Contact
+                WHERE AccountId IN :accountIds
+                AND Email != null
+                ORDER BY Name
+                LIMIT 50
+            ];
+
+            Set<String> addedEmails = new Set<String>();
+            for (Map<String, String> c : contacts) {
+                addedEmails.add(c.get('email').toLowerCase());
+            }
+
+            for (Contact con : relatedContacts) {
+                if (addedEmails.contains(con.Email.toLowerCase())) continue;
+                addedEmails.add(con.Email.toLowerCase());
+
+                String label = agentLabels.containsKey(con.AccountId) ? agentLabels.get(con.AccountId) : 'Contact';
+                String category = label == 'Housebuilder' ? 'housebuilder' : 'agent';
+                String displayName = con.Name + (String.isNotBlank(con.Title) ? ' (' + con.Title + ')' : '');
+                contacts.add(buildContact(label, displayName, con.Email, category));
+            }
+        }
+
+        return contacts;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Boolean isAdminUser() {
+        String profileName = [SELECT Profile.Name FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1].Profile.Name;
+        return profileName == 'System Administrator' || profileName == 'Super Admin';
+    }
+
+    private static Map<String, String> buildContact(String role, String name, String email, String category) {
+        Map<String, String> c = new Map<String, String>();
+        c.put('role', role);
+        c.put('name', name != null ? name : '');
+        c.put('email', email);
+        c.put('category', category);
+        return c;
     }
 
     // ── Helpers ──
