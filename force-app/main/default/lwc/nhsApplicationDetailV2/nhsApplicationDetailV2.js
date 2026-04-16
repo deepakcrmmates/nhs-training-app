@@ -1156,6 +1156,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get afCalRows() {
         const days = this.afCalDays;
         const now = new Date();
+        // Minimum booking time: current time + 1 hour (agents need 1 hour notice)
+        const minBookingTime = new Date(now.getTime() + 60 * 60 * 1000);
         const selectedKey = this.afSelectedSlot ? this.afSelectedSlot.subKey : null;
         return NhsApplicationDetailV2.BA_SLOT_LABELS.map((label, si) => {
             const isAm = si <= 3;
@@ -1164,10 +1166,11 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 const dateStr = day.dateStr;
                 const slotRec = this.baAvailSlots.find(s => s.date === dateStr);
                 const vendorAvail = slotRec && ((isAm && slotRec.am) || (!isAm && slotRec.pm));
-                const slotEnd = new Date(day.date);
-                slotEnd.setHours(hour + 1, 0, 0, 0);
-                const isPast = slotEnd.getTime() <= now.getTime();
-                const available = vendorAvail && !isPast;
+                // Slot start time must be at least 1 hour from now
+                const slotStart = new Date(day.date);
+                slotStart.setHours(hour, 0, 0, 0);
+                const tooSoon = slotStart.getTime() < minBookingTime.getTime();
+                const available = vendorAvail && !tooSoon;
 
                 const subSlots = ['00', '15', '30', '45'].map(m => {
                     const time = String(hour).padStart(2, '0') + ':' + m;
@@ -1878,6 +1881,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get baCalRows() {
         const days = this.baCalDays;
         const now = new Date();
+        // Minimum booking time: current time + 1 hour (agents need 1 hour notice)
+        const minBookingTime = new Date(now.getTime() + 60 * 60 * 1000);
         return NhsApplicationDetailV2.BA_SLOT_LABELS.map((label, si) => {
             const isAm = si <= 3;
             const hour = NhsApplicationDetailV2.BA_SLOT_HOURS[si];
@@ -1887,12 +1892,12 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 const slotRec = this.baAvailSlots.find(s => s.date === dateStr);
                 const vendorAvail = slotRec && ((isAm && slotRec.am) || (!isAm && slotRec.pm));
 
-                // Check if the entire hour slot is in the past
-                const slotEnd = new Date(day.date);
-                slotEnd.setHours(hour + 1, 0, 0, 0);
-                const isPast = slotEnd.getTime() <= now.getTime();
+                // Slot start must be at least 1 hour from now
+                const slotStart = new Date(day.date);
+                slotStart.setHours(hour, 0, 0, 0);
+                const tooSoon = slotStart.getTime() < minBookingTime.getTime();
 
-                const available = vendorAvail && !isPast;
+                const available = vendorAvail && !tooSoon;
 
                 const subSlots = ['00', '15', '30', '45'].map(m => {
                     const time = String(hour).padStart(2, '0') + ':' + m;

@@ -1513,20 +1513,20 @@
 
       <!-- Footer -->
       <div class="va-lb-footer">
-        <button class="btn-cancel" onclick={handleCloseVaLightbox}>Close</button>
+        <button class="va-lb-btn-close" onclick={handleCloseVaLightbox}>Close</button>
         <template if:false={isVaSaving}>
           <template if:false={vaSaveSuccess}>
-            <button class="btn-primary" onclick={handleVaSave}>Save Availability</button>
+            <button class="va-lb-btn-save" onclick={handleVaSave}>Save Availability</button>
           </template>
           <template if:true={vaSaveSuccess}>
-            <button class="btn-primary va-btn-saved" disabled>
+            <button class="va-lb-btn-save va-lb-btn-saved" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
               Saved
             </button>
           </template>
         </template>
         <template if:true={isVaSaving}>
-          <button class="btn-primary va-btn-saving" disabled>
+          <button class="va-lb-btn-save" disabled>
             <span class="save-spinner"></span>
             Saving...
           </button>

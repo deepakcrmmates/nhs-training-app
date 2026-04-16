@@ -222,16 +222,8 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
-    position: sticky;
-    top: 0;
     align-self: flex-start;
-    max-height: calc(100vh - 60px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--agent1-border) transparent;
 }
-.side-col::-webkit-scrollbar { width: 4px; }
-.side-col::-webkit-scrollbar-thumb { background: var(--agent1-border); border-radius: 2px; }
 
 .card-summary {
     display: flex;
@@ -1572,6 +1564,24 @@
     padding: 12px 20px; border-top: 1px solid var(--nhs-border);
     background: #F9FAFB; flex-shrink: 0;
 }
+.va-lb-btn-close {
+    padding: 9px 20px; border-radius: 6px;
+    border: 1.5px solid var(--nhs-border); background: #fff;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+    color: var(--nhs-text); cursor: pointer; transition: all 0.15s;
+}
+.va-lb-btn-close:hover { background: #F3F4F6; }
+.va-lb-btn-save {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 22px; border-radius: 6px; border: none;
+    background: var(--nhs-dk); font-family: var(--font-sans);
+    font-size: 13px; font-weight: 600; color: #fff;
+    cursor: pointer; transition: all 0.15s;
+}
+.va-lb-btn-save:hover { background: #3A5A4E; }
+.va-lb-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.va-lb-btn-saved { background: #059669; }
+.va-lb-btn-saved:hover { background: #059669; }
 
 /* ============================================================
    Edit Application Modal (Admin Only)
