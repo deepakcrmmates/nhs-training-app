@@ -4,7 +4,7 @@
 **Client:** New Home Solutions
 **Development Partner:** CRM Mates Ltd, London
 **Lead Salesforce Consultant:** Deepak K Rana
-**Last Updated:** 15 April 2026
+**Last Updated:** 16 April 2026
 
 ---
 
@@ -905,33 +905,62 @@ Validation is enforced in `nhsOpportunityDetailedView.handleStageChange()` with 
 
 ### Overview
 
-The Communications Hub (`nhsCommunicationsHub` LWC + `NHSCommunicationsController` Apex) provides centralised email and call management per Opportunity.
+The Communications Hub (`nhsCommunicationsHub` LWC + `NHSCommunicationsController` Apex) provides centralised multi-channel communication management per Opportunity. Opens as a right-side slide panel (1120px) from the bottom bar or Property Details Email button.
+
+### 4-Tab Layout
+
+| Tab | Layout | Features |
+|---|---|---|
+| **Email** | Split view: list left, detail right. Full-width compose mode | Inbox/Sent toggle, email detail with Reply/Forward, compose with template library, address book, CC/BCC, attachments |
+| **Calls** | Call list with filter bar | All/Incoming/Outgoing/Missed filters, Call Now (tel: link), Log Call form with type/status/subject/notes |
+| **SMS** | Sidebar + chat view | Conversation list, WhatsApp-style chat bubbles, inline send with character counter |
+| **WhatsApp** | Full chat view | WhatsApp-style green bubbles with double-check marks, contact header with online status, inline send via Twilio whatsapp: prefix |
+
+### Address Book
+
+Loads related contacts for the opportunity via `getAddressBook()`:
+- Vendor 1 & 2 (Contact email)
+- Agent 1, 2, 3 (Account-level email + related contacts with titles)
+- Housebuilder (Account-level email + related contacts)
+- De-duplicated by email. Search/filter. "To" and "CC" quick-add buttons.
+
+### Header Context
+
+Shows Property Address, Vendor Name, and Housebuilder Name. Accepts `@api` props from parent with Apex fallback via `getOpportunityContext()`.
 
 ### Capabilities
 
 | Feature | Detail |
 |---|---|
-| Email History | Queries `EmailMessage` records — sender, recipient, subject, status, timestamps |
-| SMS History | Queries `Twilio_SMS__c` records linked to opportunity — body, status, direction |
+| Email History | Queries `EmailMessage` records — full HtmlBody, sender, recipient, subject, status, timestamps |
+| SMS History | Queries `TwilioSF__Message__c` records — auto-detects WhatsApp via `whatsapp:` number prefix |
 | Call Logging | Creates `Task` records with CallType, duration, status |
 | Email Templates | Loads from "NHS Email Templates" folder. Dynamic merge field rendering via `Messaging.renderStoredEmailTemplate` |
-| Outbound Email | Sends via `Messaging.SingleEmailMessage` with file attachments |
+| Outbound Email | Sends via `Messaging.SingleEmailMessage` with file attachments, CC, and BCC |
 | Email Attachments | Upload files via `lightning-file-upload`, attached as `EmailFileAttachment` from `ContentDocument` |
-| SMS Send | Twilio REST API callout. Pre-fills vendor mobile. Character counter (1600 max) |
-| CC/BCC Support | `sendEmailWithBcc` method parses comma-separated CC and BCC lists |
+| SMS Send | Creates `TwilioSF__Message__c` record. Pre-fills vendor mobile |
+| WhatsApp Send | Creates `TwilioSF__Message__c` with `whatsapp:` prefix on To number |
+| CC/BCC Support | `sendEmailComplete` method supports CC, BCC, attachments in single call |
+| Address Book | `getAddressBook()` returns all related contacts with role/category |
+| Admin Check | `isAdminUser()` checks System Administrator or Super Admin profile |
 
 ### Apex Methods
 
 | Method | Purpose |
 |---|---|
-| `getCommunications(opportunityId)` | Returns email + SMS + call history (EmailMessage, Twilio_SMS__c, Task) |
+| `getCommunications(opportunityId)` | Returns email + SMS/WhatsApp + call history (EmailMessage, TwilioSF__Message__c, Task) |
 | `getEmailTemplates()` | Lists active templates from NHS folder |
 | `getRenderedTemplate(templateId, opportunityId)` | Renders template with vendor/opportunity merge fields |
 | `sendEmail(...)` | Basic email send (delegates to sendEmailWithAttachments) |
 | `sendEmailWithAttachments(...)` | Email send with file attachments from ContentDocument IDs |
-| `sendEmailWithBcc(...)` | Full email send with CC/BCC parsing |
-| `sendSms(opportunityId, toNumber, body)` | Sends SMS via Twilio API, creates Twilio_SMS__c tracking record |
+| `sendEmailWithBcc(...)` | Email send with CC/BCC (no attachments) |
+| `sendEmailComplete(...)` | Full email send with CC, BCC, and attachments |
+| `sendSms(opportunityId, toNumber, body)` | Sends SMS via TwilioSF managed package |
+| `sendWhatsApp(opportunityId, toNumber, body)` | Sends WhatsApp via TwilioSF with whatsapp: prefix |
 | `logCall(opportunityId, vendorContactId, subject, description, callType, status)` | Log call activity as Task |
+| `getOpportunityContext(opportunityId)` | Returns opp name, address, vendor/housebuilder details |
+| `getAddressBook(opportunityId)` | Returns all related contacts (vendors, agents, housebuilder + their contacts) |
+| `isAdminUser()` | Returns true if current user is System Administrator or Super Admin |
 
 ---
 
@@ -1100,6 +1129,26 @@ force-app/main/default/
 | 2026-04-14 | Box Browser updates | Reactive propertyAddress loading (setter), ensureAccessToken before folder creation (DML fix), handleRefresh exposed as @api, sage header styling matching V2 cards |
 | 2026-04-14 | uploadFileFromContentDoc Apex method | BoxOAuthController — reads ContentVersion, uploads to Box folder, cleans up ContentDocument |
 | 2026-04-14 | VendorAvailabilityService.syncHourlySlotsFromAmPm | Private helper: AM=true sets Hour_08-11, PM=true sets Hour_12-16, clears all other slots |
+| 2026-04-16 | Comms Hub rebuilt with 4-tab design | nhsCommunicationsHub — Email (split view + compose), Calls (filter + log), SMS (chat), WhatsApp (chat with green bubbles). Right-side slide panel (1120px) |
+| 2026-04-16 | Address Book for email compose | NHSCommunicationsController.getAddressBook — returns vendors, agents, housebuilder + related contacts. "To" and "CC" quick-add buttons |
+| 2026-04-16 | Comms Hub header with context | Shows Property Address, Vendor Name, Housebuilder Name. Accepts @api props with Apex fallback |
+| 2026-04-16 | WhatsApp channel detection and send | getCommunications detects whatsapp: prefix in Twilio numbers. sendWhatsApp Apex method added |
+| 2026-04-16 | sendEmailComplete Apex method | Full email send with CC, BCC, attachments, and template support in single call |
+| 2026-04-16 | Quick Actions card (stages 1–3) | Conditional buttons above Quick Summary: Set Vendor Availability, Assign Agent 1/2/3. Disappears when all actions complete |
+| 2026-04-16 | Vendor Availability lightbox | Opens from Quick Actions — full calendar modal with Mark buttons, week nav, AM/PM grid, Save button. Sets stage to Vendor Availability |
+| 2026-04-16 | Quick Call popup | Property Details Call button shows all stakeholders (Vendor 1/2, Agent 1/2/3) with phone numbers and tel: call buttons |
+| 2026-04-16 | Email button on Property Details | Opens Comms Hub with compose pre-opened via autoCompose @api prop |
+| 2026-04-16 | Agent reassignment (edit icons) | Edit pencil on Agent 1/2/3 headers (both Agent Details and Book Agents sections). Opens Assign Agent modal in reassign mode with full rebooking flow (calendar + email + submit) |
+| 2026-04-16 | Edit Application modal (admin only) | isAdminUser() Apex check. Editable fields: Vendor Expectations, ALCD, Received Date, Scheme, Development, Plot, Property Description, Property Address, Notes. Amber-themed modal |
+| 2026-04-16 | Property Description in Quick Summary | PROPERTY_DESCRIPTION_FIELD imported, added to formData and Quick Summary card |
+| 2026-04-16 | Property Description fixed in email templates | Templates 04a/04b/04c updated: replaced field ID reference (00NKG000003ykEj) with {{{Opportunity.Property_Description__c}}} |
+| 2026-04-16 | Vendor_Contact_Display__c formula field | Comma-separated email, mobile, phone (blanks skipped). Used in templates 04a/04b/04c replacing hardcoded `/ ` separator |
+| 2026-04-16 | Quick Notes card (side column) | Replaced Application Notes card with inline Quick Note textarea + Add Note button. Application Notes moved to Quick Summary as read-only |
+| 2026-04-16 | Quick Summary scrollbar removed | card-summary overflow changed from auto to visible |
+| 2026-04-16 | Agent email Step 4 redesign | Full-width TO with address book, CC/BCC side-by-side, proper SUBJECT and EMAIL PREVIEW layout |
+| 2026-04-16 | 1-hour booking notice rule | Book Agents and Assign Agent calendars: slots locked if start time < current time + 1 hour |
+| 2026-04-16 | NHS_Process__c picklist unrestricted | Changed restricted=false so stage changes work across all record types |
+| 2026-04-16 | Dropbox integration fully removed | Deleted DropboxFileService, DropboxBrowserController, DropboxOAuthController, DropboxTestDataFactory, nhsDropboxBrowser, nhsDropboxSetup, DropBox__mdt, DropboxCallback page, Dropbox_Setup tab |
 
 ---
 
