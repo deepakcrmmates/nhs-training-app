@@ -1,0 +1,227 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="hbd-loading"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div>
+    </template>
+
+    <template if:false={isLoading}>
+        <template if:true={error}>
+            <div class="hbd-error">{error}</div>
+        </template>
+
+        <template if:true={data}>
+            <!-- Hero header -->
+            <div class="hbd-hero">
+                <div class="hbd-hero-left">
+                    <template if:true={hasLogo}>
+                        <div class="hbd-logo-box">
+                            <img src={data.logoUrl} alt="Logo"/>
+                        </div>
+                    </template>
+                    <template if:false={hasLogo}>
+                        <div class="hbd-logo-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="28" height="28">
+                                <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>
+                            </svg>
+                        </div>
+                    </template>
+                    <div class="hbd-hero-info">
+                        <span class="hbd-kicker">Housebuilder</span>
+                        <h1>{data.name}</h1>
+                        <template if:true={hasAddress}>
+                            <a href={googleMapsUrl} target="_blank" class="hbd-address">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                {fullAddress}
+                            </a>
+                        </template>
+                    </div>
+                </div>
+                <div class="hbd-contact-strip">
+                    <template if:true={data.phone}>
+                        <a href={phoneHref} class="hbd-quick">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <span>{data.phone}</span>
+                        </a>
+                    </template>
+                    <template if:true={data.email}>
+                        <a href={emailHref} class="hbd-quick">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            <span>{data.email}</span>
+                        </a>
+                    </template>
+                    <template if:true={data.website}>
+                        <a href={websiteHref} target="_blank" class="hbd-quick">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                            <span>{data.website}</span>
+                        </a>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="hbd-tabs">
+                <button class={contactsTabClass} data-tab="contacts" onclick={handleTabClick}>
+                    Contacts <span class="hbd-tab-count">{contactCount}</span>
+                </button>
+                <button class={appsTabClass} data-tab="apps" onclick={handleTabClick}>
+                    Applications <span class="hbd-tab-count">{appCount}</span>
+                </button>
+                <button class={commsTabClass} data-tab="comms" onclick={handleTabClick}>
+                    Comms History <span class="hbd-tab-count">{commsCount}</span>
+                </button>
+            </div>
+
+            <!-- Contacts -->
+            <template if:true={isContactsTab}>
+                <div class="hbd-tab-body">
+                    <div class="hbd-tab-actions">
+                        <button class="hbd-btn-primary hbd-btn-sm" onclick={handleShowAddContact}>+ Add Contact</button>
+                    </div>
+                    <template if:true={hasContacts}>
+                        <div class="hbd-contact-list">
+                            <div class="hbd-contact-head">
+                                <div class="hbd-col-name">Name</div>
+                                <div class="hbd-col-title">Job Title</div>
+                                <div class="hbd-col-email">Email</div>
+                                <div class="hbd-col-mobile">Mobile</div>
+                                <div class="hbd-col-phone">Phone</div>
+                                <div class="hbd-col-action"></div>
+                            </div>
+                            <template for:each={contactsDisplay} for:item="c">
+                                <div class="hbd-contact-row" key={c.id} data-id={c.id} onclick={handleContactClick}>
+                                    <div class="hbd-col-name">
+                                        <div class="hbd-contact-avatar">{c.initials}</div>
+                                        <div class="hbd-contact-name">{c.fullName}</div>
+                                    </div>
+                                    <div class="hbd-col-title">
+                                        <template if:true={c.jobTitle}>{c.jobTitle}</template>
+                                        <template if:false={c.jobTitle}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-col-email">
+                                        <template if:true={c.email}>
+                                            <a href={c.emailHref} onclick={stopProp}>{c.email}</a>
+                                        </template>
+                                        <template if:false={c.email}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-col-mobile">
+                                        <template if:true={c.mobile}>
+                                            <a href={c.mobileHref} onclick={stopProp}>{c.mobile}</a>
+                                        </template>
+                                        <template if:false={c.mobile}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-col-phone">
+                                        <template if:true={c.phone}>
+                                            <a href={c.phoneHref} onclick={stopProp}>{c.phone}</a>
+                                        </template>
+                                        <template if:false={c.phone}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-col-action">
+                                        <button class="hbd-delete-btn" data-id={c.id} onclick={handleDeleteContact} title="Delete">&times;</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasContacts}>
+                        <div class="hbd-empty">No contacts added yet.</div>
+                    </template>
+
+                    <!-- Add contact modal -->
+                    <template if:true={showAddContact}>
+                        <div class="hbd-backdrop" onclick={handleCloseAddContact}></div>
+                        <div class="hbd-modal">
+                            <div class="hbd-modal-header">
+                                <h3>Add Contact</h3>
+                                <button class="hbd-modal-close" onclick={handleCloseAddContact}>&times;</button>
+                            </div>
+                            <div class="hbd-modal-body">
+                                <div class="hbd-modal-grid">
+                                    <div class="hbd-modal-field">
+                                        <label>First Name</label>
+                                        <input type="text" data-field="firstName" value={newContact.firstName} onchange={handleContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Last Name</label>
+                                        <input type="text" data-field="lastName" value={newContact.lastName} onchange={handleContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Email</label>
+                                        <input type="email" data-field="email" value={newContact.email} onchange={handleContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Mobile</label>
+                                        <input type="tel" data-field="mobile" value={newContact.mobile} onchange={handleContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field hbd-col-full">
+                                        <label>Job Title</label>
+                                        <input type="text" data-field="jobTitle" value={newContact.jobTitle} onchange={handleContactFieldChange}/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hbd-modal-footer">
+                                <button class="hbd-btn-secondary" onclick={handleCloseAddContact}>Cancel</button>
+                                <button class="hbd-btn-primary" onclick={handleSaveContact}>Add Contact</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Applications -->
+            <template if:true={isAppsTab}>
+                <div class="hbd-tab-body">
+                    <template if:true={hasApps}>
+                        <div class="hbd-app-list">
+                            <template for:each={appsDisplay} for:item="a">
+                                <div class="hbd-app-card" key={a.id} data-id={a.id} onclick={handleAppClick}>
+                                    <div class="hbd-app-top">
+                                        <span class="hbd-app-name">{a.name}</span>
+                                        <span class={a.stageClass}>{a.nhsProcess}</span>
+                                    </div>
+                                    <div class="hbd-app-addr">{a.propertyAddress}</div>
+                                    <div class="hbd-app-meta">
+                                        <template if:true={a.vendorName}><span>Vendor: {a.vendorName}</span></template>
+                                        <template if:true={a.development}><span>Dev: {a.development}</span></template>
+                                        <template if:true={a.plot}><span>Plot: {a.plot}</span></template>
+                                        <span class="hbd-app-date">{a.createdDateFormatted}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasApps}>
+                        <div class="hbd-empty">No applications for this housebuilder yet.</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Comms -->
+            <template if:true={isCommsTab}>
+                <div class="hbd-tab-body">
+                    <template if:true={hasComms}>
+                        <div class="hbd-comms-list">
+                            <template for:each={commsDisplay} for:item="c">
+                                <div class="hbd-comms-row" key={c.id}>
+                                    <div class={c.dirClass}>{c.direction}</div>
+                                    <div class="hbd-comms-body">
+                                        <div class="hbd-comms-subject">{c.subject}</div>
+                                        <div class="hbd-comms-preview">{c.preview}</div>
+                                        <div class="hbd-comms-meta">
+                                            <span>From: {c.from}</span>
+                                            <span>To: {c.to}</span>
+                                        </div>
+                                    </div>
+                                    <div class="hbd-comms-date">{c.dateFormatted}</div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasComms}>
+                        <div class="hbd-empty">No communications recorded yet.</div>
+                    </template>
+                </div>
+            </template>
+        </template>
+    </template>
+</template>

@@ -123,6 +123,10 @@ export default class NhsAccountList extends NavigationMixin(LightningElement) {
     }
 
     handleNewAccount() {
+        if (this.recordTypeDeveloperName === 'House_Builder') {
+            this.dispatchEvent(new CustomEvent('newhousebuilder'));
+            return;
+        }
         this[NavigationMixin.Navigate]({
             type: 'standard__objectPage',
             attributes: { objectApiName: this.objectType, actionName: 'new' },

@@ -1,0 +1,27 @@
+:host {
+    display: block;
+    font-family: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.hbl-back-wrap {
+    max-width: 900px;
+    margin: 16px auto 0 auto;
+    padding: 0 20px;
+}
+
+.hbl-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1.5px solid #C5DCCC;
+    border-radius: 6px;
+    color: #4A6B5E;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.hbl-back:hover { background: #EAF4EF; }
+.hbl-back svg { color: #4A6B5E; }
