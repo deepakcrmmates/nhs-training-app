@@ -1155,6 +1155,13 @@ force-app/main/default/
 | 2026-04-20 | Box file attachments in Compose Email | New "Attach from Box" button opens file picker overlay. Loads Opportunity's Box folder (by Property Address), groups files by subfolder (Root/Application/Valuations/Photos/Will Report), multi-select with checkboxes, shows file size. Selected files marked with blue Box badge in attachment list |
 | 2026-04-20 | getBoxFilesForOpportunity Apex method | NHSCommunicationsController — queries Opportunity.Property_Address__c, delegates to BoxBrowserController.getBoxFolder, returns files + subfolders |
 | 2026-04-20 | sendEmailWithBoxAttachments Apex method | Downloads each selected Box file server-side via Box API (/files/{id}/content with 302 redirect handling), attaches as Messaging.EmailFileAttachment alongside uploaded files. Callouts performed before DML |
+| 2026-04-20 | Box picker tree view redesign | Matches Box File Storage layout — root folder header, subfolder rows with `└─` connectors, folder icons, file count badges, click-to-drill-down navigation. Preferred folder order: Application, Valuations, Photos, Will Report. Back button to return to tree |
+| 2026-04-20 | Switched Box lookup to Box_Folder_Id__c | getBoxFilesForOpportunity now uses the cached Box folder ID on Opportunity (same as Box File Storage) instead of searching by property address. Fixes failures when address contains special characters |
+| 2026-04-20 | Split attachment layout in Compose Email | Left column: standard Upload Files with drop zone. Right column: "Browse Box Files" button. Vertical pipe divider. Responsive stacking on narrow screens |
+| 2026-04-20 | Box Download CDN Remote Sites | Added Box_Download_CDN (dl.boxcloud.com) and Box_Download_Public (public.boxcloud.com) — Box redirects file downloads to these CDN domains via 302 |
+| 2026-04-20 | Email attachments displayed in Comms Hub | getCommunications now queries ContentDocumentLinks and classic Attachments for all emails. Email detail view shows sage-themed chip list with file icon, name, size, download link |
+| 2026-04-20 | Post-send attachment linking | After Messaging.sendEmail success, the controller finds the auto-created EmailMessage, saves Box file blobs as ContentVersions, and inserts ContentDocumentLinks linking both uploaded and Box files to the EmailMessage |
+| 2026-04-20 | Email reply/forward format | Reply pre-fills body with separator + "On [date], [sender] wrote:" + original body as blockquote (left-border quote style). Forward includes "---------- Forwarded message ----------" header block with From/Date/Subject/To and original body |
 
 ---
 
