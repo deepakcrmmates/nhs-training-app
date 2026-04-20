@@ -4,7 +4,7 @@
 **Client:** New Home Solutions
 **Development Partner:** CRM Mates Ltd, London
 **Lead Salesforce Consultant:** Deepak K Rana
-**Last Updated:** 16 April 2026
+**Last Updated:** 20 April 2026
 
 ---
 
@@ -943,6 +943,7 @@ Shows Property Address, Vendor Name, and Housebuilder Name. Accepts `@api` props
 | CC/BCC Support | `sendEmailComplete` method supports CC, BCC, attachments in single call |
 | Address Book | `getAddressBook()` returns all related contacts with role/category |
 | Admin Check | `isAdminUser()` checks System Administrator or Super Admin profile |
+| Box Attachments | "Attach from Box" button in Compose Email — browse the Opportunity's Box folder tree, select files, attach to email alongside uploaded files |
 
 ### Apex Methods
 
@@ -961,6 +962,8 @@ Shows Property Address, Vendor Name, and Housebuilder Name. Accepts `@api` props
 | `getOpportunityContext(opportunityId)` | Returns opp name, address, vendor/housebuilder details |
 | `getAddressBook(opportunityId)` | Returns all related contacts (vendors, agents, housebuilder + their contacts) |
 | `isAdminUser()` | Returns true if current user is System Administrator or Super Admin |
+| `getBoxFilesForOpportunity(opportunityId)` | Returns Box folder contents for the Opportunity's property address (files grouped by subfolder) |
+| `sendEmailWithBoxAttachments(...)` | Full email send with CC, BCC, ContentDocument attachments, AND Box file attachments (downloaded server-side via Box API) |
 
 ---
 
@@ -1149,6 +1152,9 @@ force-app/main/default/
 | 2026-04-16 | 1-hour booking notice rule | Book Agents and Assign Agent calendars: slots locked if start time < current time + 1 hour |
 | 2026-04-16 | NHS_Process__c picklist unrestricted | Changed restricted=false so stage changes work across all record types |
 | 2026-04-16 | Dropbox integration fully removed | Deleted DropboxFileService, DropboxBrowserController, DropboxOAuthController, DropboxTestDataFactory, nhsDropboxBrowser, nhsDropboxSetup, DropBox__mdt, DropboxCallback page, Dropbox_Setup tab |
+| 2026-04-20 | Box file attachments in Compose Email | New "Attach from Box" button opens file picker overlay. Loads Opportunity's Box folder (by Property Address), groups files by subfolder (Root/Application/Valuations/Photos/Will Report), multi-select with checkboxes, shows file size. Selected files marked with blue Box badge in attachment list |
+| 2026-04-20 | getBoxFilesForOpportunity Apex method | NHSCommunicationsController — queries Opportunity.Property_Address__c, delegates to BoxBrowserController.getBoxFolder, returns files + subfolders |
+| 2026-04-20 | sendEmailWithBoxAttachments Apex method | Downloads each selected Box file server-side via Box API (/files/{id}/content with 302 redirect handling), attaches as Messaging.EmailFileAttachment alongside uploaded files. Callouts performed before DML |
 
 ---
 
