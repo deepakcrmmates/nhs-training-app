@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mapbox_Daily_Limit__c</fullName>
+    <description>Soft daily cap for Mapbox map loads. Free tier = 50k/month (~1600/day).</description>
+    <label>Mapbox Daily Limit</label>
+    <precision>10</precision>
+    <scale>0</scale>
+    <type>Number</type>
+    <externalId>false</externalId>
+    <required>false</required>
+    <unique>false</unique>
+    <defaultValue>1500</defaultValue>
+    <trackHistory>false</trackHistory>
+</CustomField>

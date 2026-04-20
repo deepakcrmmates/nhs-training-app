@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RemoteSiteSetting xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Box_Download_Public</fullName>
+    <isActive>true</isActive>
+    <url>https://public.boxcloud.com</url>
+    <description>Box public CDN for file downloads (302 redirect target from /files/{id}/content)</description>
+    <disableProtocolSecurity>false</disableProtocolSecurity>
+</RemoteSiteSetting>

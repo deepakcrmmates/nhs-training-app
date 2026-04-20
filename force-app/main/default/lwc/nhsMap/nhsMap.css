@@ -1,0 +1,87 @@
+:host {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+.nhs-map-loading {
+    padding: 40px;
+    text-align: center;
+}
+
+.nhs-map-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #FEF3C7;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+.nhs-map-notice lightning-icon { --slds-c-icon-color-foreground-default: #92400E; }
+
+.mapbox-container {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #E5E7EB;
+}
+
+.mapbox-frame {
+    display: block;
+    width: 100%;
+    min-height: 500px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    background: #F3F4F6;
+}
+
+.nhs-map-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 12px;
+    background: rgba(255,255,255,0.9);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #6B7280;
+    font-family: 'SF Mono', Consolas, monospace;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Mapbox pin styling (uses global styles since DOM elements are added programmatically) */
+:host .nhs-map-pin {
+    width: 28px;
+    height: 28px;
+    border-radius: 50% 50% 50% 0;
+    background: #2563EB;
+    transform: rotate(-45deg);
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+:host .nhs-map-pin-property {
+    background: #4A6B5E;
+    width: 32px;
+    height: 32px;
+}
+:host .pin-num, :host .pin-icon {
+    transform: rotate(45deg);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+:host .pin-icon {
+    font-size: 14px;
+}

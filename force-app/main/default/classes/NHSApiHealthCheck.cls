@@ -19,6 +19,8 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
                 when 'Twilio_SMS' { result = testTwilio(); }
                 when 'Airparser' { result = testAirparser(); }
                 when 'Postcodes_io' { result = testPostcodesIO(); }
+                when 'Mapbox' { result = testMapbox(); }
+                when 'Map_Provider' { result = testMapProvider(); }
                 when else {
                     result.put('status', 'unknown');
                     result.put('message', 'No test available for ' + apiName);
@@ -44,6 +46,7 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
         statuses.put('Twilio', getStatus(testTwilio()));
         statuses.put('Airparser', getStatus(testAirparser()));
         statuses.put('Postcodes.io', getStatus(testPostcodesIO()));
+        statuses.put('Mapbox', getStatus(testMapbox()));
 
         // Save as compact string: Box:ok,Google Maps:ok,...
         List<String> parts = new List<String>();
@@ -297,6 +300,60 @@ public class NHSApiHealthCheck implements Schedulable, Database.AllowsCallouts {
             }
             result.put('status', 'ok');
             result.put('message', 'Managed package configured');
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    private static Map<String, Object> testMapbox() {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            NHS_API_Config__c cfg = NHS_API_Config__c.getOrgDefaults();
+            if (cfg == null || String.isBlank(cfg.Mapbox_Public_Token__c)) {
+                result.put('status', 'error');
+                result.put('message', 'Mapbox token not configured');
+                return result;
+            }
+            // Test token with a lightweight geocoding call
+            HttpRequest req = new HttpRequest();
+            req.setEndpoint('https://api.mapbox.com/geocoding/v5/mapbox.places/London.json?limit=1&access_token=' + EncodingUtil.urlEncode(cfg.Mapbox_Public_Token__c, 'UTF-8'));
+            req.setMethod('GET');
+            req.setTimeout(10000);
+            HttpResponse resp = new Http().send(req);
+            if (resp.getStatusCode() == 200) {
+                Integer used = cfg.Mapbox_Requests_Today__c != null ? cfg.Mapbox_Requests_Today__c.intValue() : 0;
+                Integer limitVal = cfg.Mapbox_Daily_Limit__c != null ? cfg.Mapbox_Daily_Limit__c.intValue() : 1500;
+                result.put('status', 'ok');
+                result.put('message', 'Token valid. Usage today: ' + used + ' / ' + limitVal);
+            } else if (resp.getStatusCode() == 401) {
+                result.put('status', 'error');
+                result.put('message', 'Invalid token (401)');
+            } else {
+                result.put('status', 'error');
+                result.put('message', 'HTTP ' + resp.getStatusCode());
+            }
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    private static Map<String, Object> testMapProvider() {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            MapProviderResolver.ProviderInfo info = MapProviderResolver.resolve();
+            String msg = 'Preferred: ' + info.preferred + '. Active: ' + info.provider + '.';
+            if (String.isNotBlank(info.fallbackReason)) {
+                msg += ' ' + info.fallbackReason;
+                result.put('status', 'warning');
+            } else {
+                result.put('status', 'ok');
+            }
+            msg += ' Mapbox: ' + info.mapboxUsed + '/' + info.mapboxLimit + ' | Google: ' + info.googleUsed + '/' + info.googleLimit;
+            result.put('message', msg);
         } catch (Exception e) {
             result.put('status', 'error');
             result.put('message', e.getMessage());

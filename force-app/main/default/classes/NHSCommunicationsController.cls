@@ -17,6 +17,67 @@ public with sharing class NHSCommunicationsController {
             LIMIT 200
         ];
 
+        // Collect all email IDs (always query attachments — HasAttachment flag may not auto-update)
+        Set<Id> emailIdsWithAttachments = new Set<Id>();
+        for (EmailMessage em : emails) {
+            emailIdsWithAttachments.add(em.Id);
+        }
+
+        // Fetch attachments via ContentDocumentLink + ContentVersion
+        Map<Id, List<Map<String, Object>>> attachmentsByEmail = new Map<Id, List<Map<String, Object>>>();
+        if (!emailIdsWithAttachments.isEmpty()) {
+            List<ContentDocumentLink> links = [
+                SELECT ContentDocumentId, LinkedEntityId
+                FROM ContentDocumentLink
+                WHERE LinkedEntityId IN :emailIdsWithAttachments
+            ];
+            Set<Id> docIds = new Set<Id>();
+            Map<Id, Id> docToEmail = new Map<Id, Id>();
+            for (ContentDocumentLink link : links) {
+                docIds.add(link.ContentDocumentId);
+                docToEmail.put(link.ContentDocumentId, link.LinkedEntityId);
+            }
+
+            if (!docIds.isEmpty()) {
+                List<ContentVersion> versions = [
+                    SELECT Id, Title, FileExtension, ContentSize, ContentDocumentId
+                    FROM ContentVersion
+                    WHERE ContentDocumentId IN :docIds AND IsLatest = true
+                ];
+                for (ContentVersion cv : versions) {
+                    Id emailId = docToEmail.get(cv.ContentDocumentId);
+                    if (emailId == null) continue;
+                    if (!attachmentsByEmail.containsKey(emailId)) {
+                        attachmentsByEmail.put(emailId, new List<Map<String, Object>>());
+                    }
+                    Map<String, Object> att = new Map<String, Object>();
+                    att.put('id', cv.Id);
+                    att.put('documentId', cv.ContentDocumentId);
+                    att.put('name', cv.Title + (String.isNotBlank(cv.FileExtension) ? '.' + cv.FileExtension : ''));
+                    att.put('size', cv.ContentSize);
+                    attachmentsByEmail.get(emailId).add(att);
+                }
+            }
+
+            // Also check classic Attachment records (legacy)
+            List<Attachment> classicAttachments = [
+                SELECT Id, Name, BodyLength, ParentId
+                FROM Attachment
+                WHERE ParentId IN :emailIdsWithAttachments
+            ];
+            for (Attachment a : classicAttachments) {
+                if (!attachmentsByEmail.containsKey(a.ParentId)) {
+                    attachmentsByEmail.put(a.ParentId, new List<Map<String, Object>>());
+                }
+                Map<String, Object> att = new Map<String, Object>();
+                att.put('id', a.Id);
+                att.put('name', a.Name);
+                att.put('size', a.BodyLength);
+                att.put('isClassic', true);
+                attachmentsByEmail.get(a.ParentId).add(att);
+            }
+        }
+
         for (EmailMessage em : emails) {
             Map<String, Object> comm = new Map<String, Object>();
             comm.put('Id', em.Id);
@@ -30,6 +91,7 @@ public with sharing class NHSCommunicationsController {
             comm.put('Status__c', getEmailStatus(em));
             comm.put('Is_Unread__c', em.Incoming && em.Status == '0'); // New/unread
             comm.put('HasAttachment', em.HasAttachment);
+            comm.put('Attachments', attachmentsByEmail.containsKey(em.Id) ? attachmentsByEmail.get(em.Id) : new List<Map<String, Object>>());
             comm.put('FromAddress', em.FromAddress);
             comm.put('FromName', em.FromName);
             comm.put('ToAddress', em.ToAddress);
@@ -454,6 +516,329 @@ public with sharing class NHSCommunicationsController {
         }
 
         return contacts;
+    }
+
+    @AuraEnabled(cacheable=false)
+    public static Map<String, Object> getBoxFilesForOpportunity(Id opportunityId) {
+        Map<String, Object> result = new Map<String, Object>();
+        result.put('folderExists', false);
+        result.put('files', new List<Map<String, Object>>());
+        result.put('subfolders', new List<String>());
+
+        try {
+            Opportunity opp = [SELECT Id, Property_Address__c, Box_Folder_Id__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+
+            // Use cached Box folder ID (same as Box Browser)
+            String rootFolderId = opp.Box_Folder_Id__c;
+            if (String.isBlank(rootFolderId)) {
+                // Fallback: try to find by property address (for opps that haven't been backfilled)
+                if (String.isNotBlank(opp.Property_Address__c)) {
+                    Map<String, Object> fallback = BoxBrowserController.getBoxFolder(opp.Property_Address__c);
+                    return fallback;
+                }
+                result.put('error', 'No Box folder linked to this application. Create one from the Box File Storage section first.');
+                return result;
+            }
+
+            String accessToken = BoxOAuthController.refreshAccessToken();
+            if (accessToken == null) {
+                result.put('error', 'Not connected to Box.');
+                return result;
+            }
+
+            // Get root folder name
+            HttpRequest infoReq = new HttpRequest();
+            infoReq.setEndpoint('https://api.box.com/2.0/folders/' + rootFolderId + '?fields=name,id');
+            infoReq.setMethod('GET');
+            infoReq.setHeader('Authorization', 'Bearer ' + accessToken);
+            HttpResponse infoResp = new Http().send(infoReq);
+            if (infoResp.getStatusCode() == 200) {
+                Map<String, Object> folderInfo = (Map<String, Object>) JSON.deserializeUntyped(infoResp.getBody());
+                result.put('folderName', folderInfo.get('name'));
+            }
+
+            List<Map<String, Object>> allFiles = new List<Map<String, Object>>();
+            List<String> subfolderNames = new List<String>();
+
+            // List root folder items
+            List<Map<String, Object>> rootEntries = listBoxFolderItems(rootFolderId, accessToken);
+            Map<String, String> subfolderIds = new Map<String, String>();
+            for (Map<String, Object> entry : rootEntries) {
+                String entryType = (String) entry.get('type');
+                if (entryType == 'folder') {
+                    String name = (String) entry.get('name');
+                    subfolderNames.add(name);
+                    subfolderIds.put(name, (String) entry.get('id'));
+                } else if (entryType == 'file') {
+                    allFiles.add(buildBoxFileMap(entry, 'Root'));
+                }
+            }
+
+            // List each subfolder's items
+            for (String sfName : subfolderNames) {
+                String sfId = subfolderIds.get(sfName);
+                if (sfId == null) continue;
+                List<Map<String, Object>> subEntries = listBoxFolderItems(sfId, accessToken);
+                for (Map<String, Object> entry : subEntries) {
+                    if ((String) entry.get('type') == 'file') {
+                        allFiles.add(buildBoxFileMap(entry, sfName));
+                    }
+                }
+            }
+
+            result.put('folderExists', true);
+            result.put('folderId', rootFolderId);
+            result.put('files', allFiles);
+            result.put('subfolders', subfolderNames);
+        } catch (Exception e) {
+            result.put('error', e.getMessage());
+        }
+        return result;
+    }
+
+    private static List<Map<String, Object>> listBoxFolderItems(String folderId, String accessToken) {
+        List<Map<String, Object>> items = new List<Map<String, Object>>();
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.box.com/2.0/folders/' + folderId + '/items?fields=name,id,type,size,modified_at&limit=1000');
+        req.setMethod('GET');
+        req.setHeader('Authorization', 'Bearer ' + accessToken);
+
+        HttpResponse resp = new Http().send(req);
+        if (resp.getStatusCode() == 200) {
+            Map<String, Object> body = (Map<String, Object>) JSON.deserializeUntyped(resp.getBody());
+            List<Object> entries = (List<Object>) body.get('entries');
+            if (entries != null) {
+                for (Object entry : entries) {
+                    items.add((Map<String, Object>) entry);
+                }
+            }
+        }
+        return items;
+    }
+
+    private static Map<String, Object> buildBoxFileMap(Map<String, Object> entry, String subfolderLabel) {
+        Map<String, Object> fileMap = new Map<String, Object>();
+        fileMap.put('id', entry.get('id'));
+        fileMap.put('name', entry.get('name'));
+        fileMap.put('size', entry.get('size'));
+        fileMap.put('modified', entry.get('modified_at'));
+        fileMap.put('subfolder', subfolderLabel);
+        return fileMap;
+    }
+
+    @AuraEnabled
+    public static Map<String, String> sendEmailWithBoxAttachments(
+        Id opportunityId, String toAddress, String subject, String body,
+        String ccAddress, String bccAddress, Id templateId,
+        List<Id> contentDocumentIds, List<String> boxFileIds
+    ) {
+        Map<String, String> result = new Map<String, String>();
+
+        try {
+            Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+            email.setToAddresses(new List<String>{ toAddress });
+
+            if (String.isNotBlank(ccAddress)) {
+                List<String> ccList = new List<String>();
+                for (String addr : ccAddress.split(',')) {
+                    String trimmed = addr.trim();
+                    if (String.isNotBlank(trimmed)) ccList.add(trimmed);
+                }
+                if (!ccList.isEmpty()) email.setCcAddresses(ccList);
+            }
+            if (String.isNotBlank(bccAddress)) {
+                List<String> bccList = new List<String>();
+                for (String addr : bccAddress.split(',')) {
+                    String trimmed = addr.trim();
+                    if (String.isNotBlank(trimmed)) bccList.add(trimmed);
+                }
+                if (!bccList.isEmpty()) email.setBccAddresses(bccList);
+            }
+
+            email.setSubject(subject);
+            email.setHtmlBody(body);
+            email.setWhatId(opportunityId);
+            email.setSaveAsActivity(true);
+
+            List<Messaging.EmailFileAttachment> attachments = new List<Messaging.EmailFileAttachment>();
+
+            // Track Box file blobs + names so we can save them as ContentDocuments after send
+            List<Blob> boxBlobs = new List<Blob>();
+            List<String> boxNames = new List<String>();
+
+            // 1. CALLOUTS FIRST — Download Box files
+            List<String> boxErrors = new List<String>();
+            if (boxFileIds != null && !boxFileIds.isEmpty()) {
+                String accessToken = BoxOAuthController.refreshAccessToken();
+                if (accessToken == null) {
+                    result.put('status', 'error');
+                    result.put('message', 'Not connected to Box.');
+                    return result;
+                }
+
+                for (String boxFileId : boxFileIds) {
+                    try {
+                        Map<String, Object> fileInfo = getBoxFileInfo(boxFileId, accessToken);
+                        Blob fileBlob = downloadBoxFile(boxFileId, accessToken);
+                        if (fileBlob != null && fileInfo != null) {
+                            String fname = (String) fileInfo.get('name');
+                            Messaging.EmailFileAttachment att = new Messaging.EmailFileAttachment();
+                            att.setFileName(fname);
+                            att.setBody(fileBlob);
+                            attachments.add(att);
+                            boxBlobs.add(fileBlob);
+                            boxNames.add(fname);
+                        } else {
+                            boxErrors.add('Could not fetch Box file ' + boxFileId);
+                        }
+                    } catch (Exception e) {
+                        boxErrors.add('Box file ' + boxFileId + ': ' + e.getMessage());
+                    }
+                }
+            }
+
+            if (!boxErrors.isEmpty() && attachments.isEmpty() && boxFileIds != null && !boxFileIds.isEmpty()) {
+                result.put('status', 'error');
+                result.put('message', 'Failed to download Box files: ' + String.join(boxErrors, '; '));
+                return result;
+            }
+
+            // 2. Query uploaded files (SOQL, no DML)
+            if (contentDocumentIds != null && !contentDocumentIds.isEmpty()) {
+                List<ContentVersion> versions = [
+                    SELECT Id, Title, FileExtension, VersionData
+                    FROM ContentVersion
+                    WHERE ContentDocumentId IN :contentDocumentIds AND IsLatest = true
+                ];
+                for (ContentVersion cv : versions) {
+                    Messaging.EmailFileAttachment att = new Messaging.EmailFileAttachment();
+                    att.setFileName(cv.Title + '.' + cv.FileExtension);
+                    att.setBody(cv.VersionData);
+                    attachments.add(att);
+                }
+            }
+
+            if (!attachments.isEmpty()) email.setFileAttachments(attachments);
+
+            // 3. Send email
+            Messaging.SendEmailResult[] results = Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ email });
+
+            if (!results[0].isSuccess()) {
+                result.put('status', 'error');
+                result.put('message', results[0].getErrors()[0].getMessage());
+                return result;
+            }
+
+            // 4. Link attachments to the newly-created EmailMessage record
+            try {
+                // Find the EmailMessage created by setSaveAsActivity
+                List<EmailMessage> ems = [
+                    SELECT Id FROM EmailMessage
+                    WHERE RelatedToId = :opportunityId AND Incoming = false
+                    ORDER BY CreatedDate DESC LIMIT 1
+                ];
+                if (!ems.isEmpty()) {
+                    Id emailMessageId = ems[0].Id;
+                    List<Id> docIdsToLink = new List<Id>();
+
+                    // Link uploaded files directly (they're already ContentDocuments)
+                    if (contentDocumentIds != null) docIdsToLink.addAll(contentDocumentIds);
+
+                    // Save Box files as new ContentVersions (creates ContentDocuments)
+                    if (!boxBlobs.isEmpty()) {
+                        List<ContentVersion> toInsert = new List<ContentVersion>();
+                        for (Integer i = 0; i < boxBlobs.size(); i++) {
+                            ContentVersion cv = new ContentVersion();
+                            cv.Title = boxNames[i];
+                            cv.PathOnClient = boxNames[i];
+                            cv.VersionData = boxBlobs[i];
+                            toInsert.add(cv);
+                        }
+                        insert toInsert;
+                        // Get the ContentDocumentIds from the inserted versions
+                        Set<Id> cvIds = new Set<Id>();
+                        for (ContentVersion cv : toInsert) cvIds.add(cv.Id);
+                        List<ContentVersion> savedVersions = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id IN :cvIds];
+                        for (ContentVersion cv : savedVersions) docIdsToLink.add(cv.ContentDocumentId);
+                    }
+
+                    // Link all ContentDocuments to the EmailMessage
+                    if (!docIdsToLink.isEmpty()) {
+                        List<ContentDocumentLink> links = new List<ContentDocumentLink>();
+                        for (Id docId : docIdsToLink) {
+                            ContentDocumentLink link = new ContentDocumentLink();
+                            link.ContentDocumentId = docId;
+                            link.LinkedEntityId = emailMessageId;
+                            link.ShareType = 'V';
+                            link.Visibility = 'AllUsers';
+                            links.add(link);
+                        }
+                        insert links;
+                    }
+                }
+            } catch (Exception linkErr) {
+                // Email was sent successfully; just log the link error
+                System.debug('Failed to link attachments to EmailMessage: ' + linkErr.getMessage());
+            }
+
+            result.put('status', 'success');
+            result.put('message', 'Email sent successfully');
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    private static Map<String, Object> getBoxFileInfo(String fileId, String accessToken) {
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.box.com/2.0/files/' + fileId + '?fields=name,size');
+        req.setMethod('GET');
+        req.setHeader('Authorization', 'Bearer ' + accessToken);
+        HttpResponse resp = new Http().send(req);
+        if (resp.getStatusCode() == 200) {
+            return (Map<String, Object>) JSON.deserializeUntyped(resp.getBody());
+        }
+        return null;
+    }
+
+    private static Blob downloadBoxFile(String fileId, String accessToken) {
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('https://api.box.com/2.0/files/' + fileId + '/content');
+        req.setMethod('GET');
+        req.setHeader('Authorization', 'Bearer ' + accessToken);
+        req.setTimeout(60000);
+        HttpResponse resp = new Http().send(req);
+        Integer status = resp.getStatusCode();
+
+        // Direct content
+        if (status == 200) {
+            return resp.getBodyAsBlob();
+        }
+
+        // Box returns 302 redirect to CDN (dl.boxcloud.com) with signed download URL
+        if (status == 301 || status == 302 || status == 303 || status == 307) {
+            String downloadUrl = resp.getHeader('Location');
+            if (String.isBlank(downloadUrl)) downloadUrl = resp.getHeader('location');
+            if (String.isBlank(downloadUrl)) {
+                throw new CalloutException('Box returned ' + status + ' but no Location header');
+            }
+
+            HttpRequest downloadReq = new HttpRequest();
+            downloadReq.setEndpoint(downloadUrl);
+            downloadReq.setMethod('GET');
+            downloadReq.setTimeout(60000);
+            HttpResponse downloadResp = new Http().send(downloadReq);
+            if (downloadResp.getStatusCode() == 200) {
+                return downloadResp.getBodyAsBlob();
+            }
+            String host = downloadUrl.indexOf('?') > 0 ? downloadUrl.substring(0, downloadUrl.indexOf('?')) : downloadUrl;
+            throw new CalloutException('Box CDN download failed: HTTP ' + downloadResp.getStatusCode() + ' from ' + host);
+        }
+
+        String bodyPreview = resp.getBody();
+        if (bodyPreview != null && bodyPreview.length() > 200) bodyPreview = bodyPreview.substring(0, 200);
+        throw new CalloutException('Box download failed: HTTP ' + status + ' - ' + bodyPreview);
     }
 
     @AuraEnabled(cacheable=true)

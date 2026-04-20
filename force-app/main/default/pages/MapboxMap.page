@@ -1,0 +1,201 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>NHS Map</title>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css" rel="stylesheet"/>
+<style>
+  body,html { margin:0; padding:0; height:100%; width:100%; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif; }
+  #map { position:absolute; top:0; bottom:0; left:0; right:0; }
+  .nhs-pin {
+    width:28px; height:28px; border-radius:50% 50% 50% 0;
+    transform: rotate(-45deg); border:2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .nhs-pin.prop { width:34px; height:34px; }
+  .nhs-pin .lbl { transform:rotate(45deg); color:#fff; font-size:11px; font-weight:700; }
+  .nhs-pin.prop .lbl { font-size:14px; }
+  .nhs-popup strong { display:block; margin-bottom:3px; }
+  .nhs-popup { font-size:12px; color:#374151; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+(function() {
+  'use strict';
+  function qp(name) {
+    var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  var token = qp('token');
+  if (!token) { document.body.innerHTML = '<p style="padding:20px">Missing token</p>'; return; }
+
+  mapboxgl.accessToken = token;
+
+  var centerLng = parseFloat(qp('lng')) || -1.5491;
+  var centerLat = parseFloat(qp('lat')) || 53.8008;
+  var zoom = parseFloat(qp('zoom')) || 11;
+  var style = qp('style') || 'streets-v12';
+  var radiusMiles = parseFloat(qp('radius')) || 0;
+  var drawRoutes = qp('routes') === '1';
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/' + style,
+    center: [centerLng, centerLat],
+    zoom: zoom
+  });
+  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+  map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+
+  var markers = [];
+  var markerInstances = [];
+
+  // Parse markers from URL (base64-encoded JSON)
+  var encodedMarkers = qp('markers');
+  if (encodedMarkers) {
+    try {
+      var jsonStr = decodeURIComponent(escape(atob(encodedMarkers)));
+      var parsed = JSON.parse(jsonStr);
+      markers = parsed.map(function(m) {
+        return {
+          id: m.id,
+          lat: m.lat,
+          lng: m.lng,
+          title: m.t || '',
+          description: m.d || '',
+          color: m.c || null,
+          isProperty: m.p === 1,
+          label: m.l || ''
+        };
+      });
+    } catch (err) {
+      console.error('Failed to parse markers:', err);
+    }
+  }
+
+  function drawAll() {
+    markerInstances.forEach(function(m){ m.remove(); });
+    markerInstances = [];
+
+    // Group markers by rounded lat/lng to detect overlaps
+    var groupMap = {};
+    markers.forEach(function(m) {
+      var key = m.lat.toFixed(5) + ',' + m.lng.toFixed(5);
+      if (!groupMap[key]) groupMap[key] = [];
+      groupMap[key].push(m);
+    });
+
+    // Assign radial offset to overlapping non-property markers
+    var offsetRadius = 0.0005; // ~50m at UK latitudes
+    Object.keys(groupMap).forEach(function(key) {
+      var group = groupMap[key];
+      if (group.length <= 1) return;
+      // Leave property alone, fan out agents around it
+      var nonProp = group.filter(function(g){ return !g.isProperty; });
+      var count = nonProp.length;
+      nonProp.forEach(function(m, idx) {
+        var angle = (idx / count) * 2 * Math.PI;
+        m._offsetLng = offsetRadius * Math.cos(angle);
+        m._offsetLat = offsetRadius * Math.sin(angle);
+      });
+    });
+
+    markers.forEach(function(m, i) {
+      var el = document.createElement('div');
+      el.className = 'nhs-pin' + (m.isProperty ? ' prop' : '');
+      el.style.backgroundColor = m.color || (m.isProperty ? '#4A6B5E' : '#2563EB');
+      var labelText = m.label || (m.isProperty ? '\u2605' : String(i + 1));
+      el.innerHTML = '<span class="lbl">' + labelText + '</span>';
+
+      var popup = new mapboxgl.Popup({ offset: 24 }).setHTML(
+        '<div class="nhs-popup"><strong>' + (m.title || '') + '</strong>' +
+        (m.description ? '<span>' + m.description + '</span>' : '') + '</div>'
+      );
+
+      var lng = m.lng + (m._offsetLng || 0);
+      var lat = m.lat + (m._offsetLat || 0);
+      var marker = new mapboxgl.Marker(el).setLngLat([lng, lat]).setPopup(popup).addTo(map);
+
+      el.addEventListener('click', function() {
+        parent.postMessage({ source: 'nhsMapbox', type: 'markerclick', id: m.id }, '*');
+      });
+
+      markerInstances.push(marker);
+    });
+
+    if (markers.length > 1) {
+      var bounds = new mapboxgl.LngLatBounds();
+      markers.forEach(function(m){ bounds.extend([m.lng, m.lat]); });
+      map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+    }
+  }
+
+  function drawRadiusCircle() {
+    if (!radiusMiles) return;
+    var km = radiusMiles * 1.60934;
+    var points = 64;
+    var km360 = km / 111.32;
+    var distanceX = km360 / Math.cos((centerLat * Math.PI) / 180);
+    var distanceY = km360;
+    var coords = [];
+    for (var i = 0; i < points; i++) {
+      var theta = (i / points) * (2 * Math.PI);
+      coords.push([centerLng + distanceX * Math.cos(theta), centerLat + distanceY * Math.sin(theta)]);
+    }
+    coords.push(coords[0]);
+
+    if (map.getLayer('radius-fill')) map.removeLayer('radius-fill');
+    if (map.getLayer('radius-line')) map.removeLayer('radius-line');
+    if (map.getSource('radius-src')) map.removeSource('radius-src');
+
+    map.addSource('radius-src', { type:'geojson', data:{ type:'Feature', geometry:{ type:'Polygon', coordinates:[coords] } } });
+    map.addLayer({ id:'radius-fill', type:'fill', source:'radius-src', paint:{ 'fill-color':'#4A6B5E', 'fill-opacity':0.08 } });
+    map.addLayer({ id:'radius-line', type:'line', source:'radius-src', paint:{ 'line-color':'#4A6B5E', 'line-width':2, 'line-dasharray':[2,2] } });
+  }
+
+  function drawRouteLines() {
+    if (!drawRoutes) return;
+    var features = markers.filter(function(m){ return !m.isProperty; }).map(function(m){
+      return { type:'Feature', geometry:{ type:'LineString', coordinates:[[centerLng, centerLat], [m.lng, m.lat]] } };
+    });
+    if (!features.length) return;
+
+    if (map.getLayer('routes-line')) map.removeLayer('routes-line');
+    if (map.getSource('routes-src')) map.removeSource('routes-src');
+
+    map.addSource('routes-src', { type:'geojson', data:{ type:'FeatureCollection', features:features } });
+    map.addLayer({ id:'routes-line', type:'line', source:'routes-src',
+      paint:{ 'line-color':'#6B9080', 'line-width':1.5, 'line-opacity':0.5, 'line-dasharray':[1,2] } });
+  }
+
+  map.on('load', function() {
+    drawAll();
+    drawRadiusCircle();
+    drawRouteLines();
+    parent.postMessage({ source: 'nhsMapbox', type: 'ready' }, '*');
+  });
+
+  // Accept markers from parent via postMessage
+  window.addEventListener('message', function(evt) {
+    var data = evt.data || {};
+    if (data.source !== 'nhsMapboxParent') return;
+    if (data.type === 'setMarkers') {
+      markers = data.markers || [];
+      if (map.loaded()) {
+        drawAll();
+        drawRadiusCircle();
+        drawRouteLines();
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
+</apex:page>

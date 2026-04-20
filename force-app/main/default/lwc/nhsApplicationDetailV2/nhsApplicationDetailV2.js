@@ -64,6 +64,14 @@ import AGENT_1_VERBALLY_CONFIRMED_FIELD from '@salesforce/schema/Opportunity.Age
 import AGENT_1_INITIAL_PRICE_FIELD from '@salesforce/schema/Opportunity.Agent_1_Initial_Asking_Price__c';
 import AGENT_1_TARGET_SALE_FIELD from '@salesforce/schema/Opportunity.Agent_1_Target_Sale__c';
 import AGENT_1_BOTTOM_LINE_FIELD from '@salesforce/schema/Opportunity.Agent_1_Bottom_Line__c';
+import AGENT_1_VAL_REPORT_ID_FIELD from '@salesforce/schema/Opportunity.Agent_1_Valuation_Report_Box_Id__c';
+import AGENT_1_VAL_REPORT_NAME_FIELD from '@salesforce/schema/Opportunity.Agent_1_Valuation_Report_Name__c';
+import AGENT_2_VAL_REPORT_ID_FIELD from '@salesforce/schema/Opportunity.Agent_2_Valuation_Report_Box_Id__c';
+import AGENT_2_VAL_REPORT_NAME_FIELD from '@salesforce/schema/Opportunity.Agent_2_Valuation_Report_Name__c';
+import AGENT_3_VAL_REPORT_ID_FIELD from '@salesforce/schema/Opportunity.Agent_3_Valuation_Report_Box_Id__c';
+import AGENT_3_VAL_REPORT_NAME_FIELD from '@salesforce/schema/Opportunity.Agent_3_Valuation_Report_Name__c';
+import uploadValuationReport from '@salesforce/apex/BoxOAuthController.uploadValuationReport';
+import removeValuationReport from '@salesforce/apex/BoxOAuthController.removeValuationReport';
 
 // Agent 2
 import AGENT_2_FIELD from '@salesforce/schema/Opportunity.Agent_2__c';
@@ -108,9 +116,9 @@ const FIELDS = [
     APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD, PROPERTY_DESCRIPTION_FIELD,
     VENDOR_MOBILE_FIELD, VENDOR_EXPECTATIONS_FIELD, VENDOR_PHONE_FIELD, ETA_COMP_END_FIELD, VENDOR_EMAIL_FIELD, SCHEME_FIELD, STAGE_FIELD, NHS_PROCESS_FIELD,
     VENDOR_2_FIELD, VENDOR_2_NAME_FIELD, VENDOR_2_MOBILE_FIELD, VENDOR_2_PHONE_FIELD, VENDOR_2_EMAIL_FIELD,
-    AGENT_1_FIELD, AGENT_1_NAME_FIELD, AGENT_1_PHONE_FIELD, AGENT_1_EMAIL_FIELD, AGENT_1_APPT_FIELD, AGENT_1_EMAILED_FIELD, AGENT_1_VERBALLY_CONFIRMED_FIELD, AGENT_1_INITIAL_PRICE_FIELD, AGENT_1_TARGET_SALE_FIELD, AGENT_1_BOTTOM_LINE_FIELD,
-    AGENT_2_FIELD, AGENT_2_NAME_FIELD, AGENT_2_PHONE_FIELD, AGENT_2_EMAIL_FIELD, AGENT_2_APPT_FIELD, AGENT_2_EMAILED_FIELD, AGENT_2_VERBALLY_CONFIRMED_FIELD, AGENT_2_INITIAL_PRICE_FIELD, AGENT_2_TARGET_SALE_FIELD, AGENT_2_BOTTOM_LINE_FIELD,
-    AGENT_3_FIELD, AGENT_3_NAME_FIELD, AGENT_3_PHONE_FIELD, AGENT_3_EMAIL_FIELD, AGENT_3_APPT_FIELD, AGENT_3_EMAILED_FIELD, AGENT_3_VERBALLY_CONFIRMED_FIELD, AGENT_3_INITIAL_PRICE_FIELD, AGENT_3_TARGET_SALE_FIELD, AGENT_3_BOTTOM_LINE_FIELD,
+    AGENT_1_FIELD, AGENT_1_NAME_FIELD, AGENT_1_PHONE_FIELD, AGENT_1_EMAIL_FIELD, AGENT_1_APPT_FIELD, AGENT_1_EMAILED_FIELD, AGENT_1_VERBALLY_CONFIRMED_FIELD, AGENT_1_INITIAL_PRICE_FIELD, AGENT_1_TARGET_SALE_FIELD, AGENT_1_BOTTOM_LINE_FIELD, AGENT_1_VAL_REPORT_ID_FIELD, AGENT_1_VAL_REPORT_NAME_FIELD,
+    AGENT_2_FIELD, AGENT_2_NAME_FIELD, AGENT_2_PHONE_FIELD, AGENT_2_EMAIL_FIELD, AGENT_2_APPT_FIELD, AGENT_2_EMAILED_FIELD, AGENT_2_VERBALLY_CONFIRMED_FIELD, AGENT_2_INITIAL_PRICE_FIELD, AGENT_2_TARGET_SALE_FIELD, AGENT_2_BOTTOM_LINE_FIELD, AGENT_2_VAL_REPORT_ID_FIELD, AGENT_2_VAL_REPORT_NAME_FIELD,
+    AGENT_3_FIELD, AGENT_3_NAME_FIELD, AGENT_3_PHONE_FIELD, AGENT_3_EMAIL_FIELD, AGENT_3_APPT_FIELD, AGENT_3_EMAILED_FIELD, AGENT_3_VERBALLY_CONFIRMED_FIELD, AGENT_3_INITIAL_PRICE_FIELD, AGENT_3_TARGET_SALE_FIELD, AGENT_3_BOTTOM_LINE_FIELD, AGENT_3_VAL_REPORT_ID_FIELD, AGENT_3_VAL_REPORT_NAME_FIELD,
     RECOMMENDED_MARKET_FIELD, RECOMMENDED_TARGET_FIELD, RECOMMENDED_FORCED_FIELD,
     AGENT_1_DESKTOP_VAL_FIELD, AGENT_2_DESKTOP_VAL_FIELD, AGENT_3_DESKTOP_VAL_FIELD,
     LAST_AGENT_1_EMAILED_FIELD, LAST_AGENT_2_EMAILED_FIELD, LAST_AGENT_3_EMAILED_FIELD
@@ -246,6 +254,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             agent1InitialPrice:     this.currencyVal(f.Agent_1_Initial_Asking_Price__c?.value),
             agent1TargetSale:       this.currencyVal(f.Agent_1_Target_Sale__c?.value),
             agent1BottomLine:       this.currencyVal(f.Agent_1_Bottom_Line__c?.value),
+            agent1ValReportId:      f.Agent_1_Valuation_Report_Box_Id__c?.value || '',
+            agent1ValReportName:    f.Agent_1_Valuation_Report_Name__c?.value || '',
 
             // Agent 2
             agent2Id:               f.Agent_2__c?.value,
@@ -258,6 +268,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             agent2InitialPrice:     this.currencyVal(f.Agent_2_Initial_Asking_Price__c?.value),
             agent2TargetSale:       this.currencyVal(f.Agent_2_Target_Sale__c?.value),
             agent2BottomLine:       this.currencyVal(f.Agent_2_Bottom_Line__c?.value),
+            agent2ValReportId:      f.Agent_2_Valuation_Report_Box_Id__c?.value || '',
+            agent2ValReportName:    f.Agent_2_Valuation_Report_Name__c?.value || '',
 
             // Agent 3
             agent3Id:               f.Agent_3__c?.value,
@@ -270,6 +282,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             agent3InitialPrice:     this.currencyVal(f.Agent_3_Initial_Asking_Price__c?.value),
             agent3TargetSale:       this.currencyVal(f.Agent_3_Target_Sale__c?.value),
             agent3BottomLine:       this.currencyVal(f.Agent_3_Bottom_Line__c?.value),
+            agent3ValReportId:      f.Agent_3_Valuation_Report_Box_Id__c?.value || '',
+            agent3ValReportName:    f.Agent_3_Valuation_Report_Name__c?.value || '',
 
             // Desktop Valuations
             agent1DesktopVal: f.Agent_1_Desktop_Valuation__c
@@ -664,6 +678,123 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     // Assign Agent wizard
     @track showAssignAgent = false;
     @track nearbyAgents = [];
+    @track agentViewMode = 'list'; // 'list' | 'map'
+    @track propertyLat = null;
+    @track propertyLng = null;
+    @track propertyAddressSearched = '';
+
+    get isListView() { return this.agentViewMode === 'list'; }
+    get isMapView() { return this.agentViewMode === 'map'; }
+    get listViewBtnClass() { return 'af-view-btn' + (this.agentViewMode === 'list' ? ' af-view-active' : ''); }
+    get mapViewBtnClass() { return 'af-view-btn' + (this.agentViewMode === 'map' ? ' af-view-active' : ''); }
+
+    handleViewList() { this.agentViewMode = 'list'; }
+    handleViewMap() { this.agentViewMode = 'map'; }
+
+    get hasMapData() {
+        return this.propertyLat != null && this.propertyLng != null && this.nearbyAgents.length > 0;
+    }
+
+    get nhsMapMarkers() {
+        const list = [];
+        if (this.propertyLat != null && this.propertyLng != null) {
+            list.push({
+                id: 'property',
+                lat: Number(this.propertyLat),
+                lng: Number(this.propertyLng),
+                title: 'Property',
+                description: this.propertyAddressSearched || '',
+                color: '#4A6B5E',
+                isProperty: true,
+                label: '★'
+            });
+        }
+        let visibleNum = 1;
+        (this.nearbyAgents || []).forEach((a, idx) => {
+            if (a.latitude != null && a.longitude != null) {
+                const isAssigned = a.isAgent2 || a.isAgent3;
+                list.push({
+                    id: a.id,
+                    lat: Number(a.latitude),
+                    lng: Number(a.longitude),
+                    title: (idx + 1) + '. ' + a.name,
+                    description: (a.fullAddress || '') + (a.distanceLabel ? ' — ' + a.distanceLabel : ''),
+                    color: isAssigned ? '#D97706' : '#2563EB',
+                    label: String(visibleNum)
+                });
+                visibleNum++;
+            }
+        });
+        return list;
+    }
+
+    get nhsMapCenter() {
+        if (this.propertyLat != null && this.propertyLng != null) {
+            return { lat: Number(this.propertyLat), lng: Number(this.propertyLng) };
+        }
+        return null;
+    }
+
+    get mapMarkers() {
+        const markers = [];
+        // Google Maps marker path (teardrop/pin shape)
+        const pinPath = 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z';
+
+        // Property pin (sage)
+        if (this.propertyLat != null && this.propertyLng != null) {
+            markers.push({
+                location: { Latitude: Number(this.propertyLat), Longitude: Number(this.propertyLng) },
+                title: 'Property',
+                description: this.propertyAddressSearched || 'Property Location',
+                mapIcon: {
+                    path: pinPath,
+                    fillColor: '#4A6B5E',
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: '#FFFFFF',
+                    scale: 1.2
+                }
+            });
+        }
+
+        // Agent pins
+        this.nearbyAgents.forEach((a, idx) => {
+            if (a.latitude != null && a.longitude != null) {
+                const isAssigned = a.isAgent2 || a.isAgent3;
+                markers.push({
+                    location: { Latitude: Number(a.latitude), Longitude: Number(a.longitude) },
+                    title: (idx + 1) + '. ' + a.name,
+                    description: (a.fullAddress || '') + (a.distanceLabel ? ' — ' + a.distanceLabel : ''),
+                    value: a.id,
+                    mapIcon: {
+                        path: pinPath,
+                        fillColor: isAssigned ? '#D97706' : '#2563EB',
+                        fillOpacity: 1,
+                        strokeWeight: 2,
+                        strokeColor: '#FFFFFF',
+                        scale: 1.0
+                    }
+                });
+            }
+        });
+        return markers;
+    }
+
+    get mapCenter() {
+        if (this.propertyLat != null && this.propertyLng != null) {
+            return { location: { Latitude: this.propertyLat, Longitude: this.propertyLng } };
+        }
+        return null;
+    }
+
+    get mapZoomLevel() {
+        const r = parseFloat(this.assignRadius);
+        if (r <= 1) return 14;
+        if (r <= 3) return 12;
+        if (r <= 5) return 11;
+        if (r <= 10) return 10;
+        return 9;
+    }
     @track isLoadingAgents = false;
     @track isAssigning = false;
     @track assignAgentInfo = '';
@@ -962,6 +1093,9 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         try {
             const result = await findNearestAgents({ opportunityId: this.recordId, maxDistanceMiles: parseFloat(this.assignRadius) });
             if (result.status === 'success') {
+                this.propertyLat = result.propertyLatitude;
+                this.propertyLng = result.propertyLongitude;
+                this.propertyAddressSearched = result.propertyAddress || this.formData.propertyAddress || '';
                 this.nearbyAgents = (result.agents || []).map(a => {
                     // Build search URLs from agent name + postcode
                     const outcode = a.postcode ? a.postcode.split(' ')[0] : '';
@@ -1563,6 +1697,86 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ── Desktop Valuation Toggle ───────────────────────────────────────────────
+    // ── Valuation Report Upload ──────────────────────────────────────────────
+    @track valReportUploading = { 1: false, 2: false, 3: false };
+
+    get showValReport1() { return !!this.formData.agent1ValReportId; }
+    get showValReport2() { return !!this.formData.agent2ValReportId; }
+    get showValReport3() { return !!this.formData.agent3ValReportId; }
+    get valReport1Uploading() { return this.valReportUploading[1]; }
+    get valReport2Uploading() { return this.valReportUploading[2]; }
+    get valReport3Uploading() { return this.valReportUploading[3]; }
+
+    handleValReportClick(event) {
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        const input = this.template.querySelector('input[data-val-file="' + agentNum + '"]');
+        if (input) input.click();
+    }
+
+    async handleValReportUpload(event) {
+        const agentNum = parseInt(event.target.dataset.valFile, 10);
+        const file = event.target.files[0];
+        if (!file) return;
+
+        this.valReportUploading = { ...this.valReportUploading, [agentNum]: true };
+
+        try {
+            const base64 = await this._fileToBase64(file);
+            const result = await uploadValuationReport({
+                opportunityId: this.recordId,
+                agentNum,
+                fileName: file.name,
+                base64Content: base64
+            });
+
+            if (result.status === 'success') {
+                this.formData = {
+                    ...this.formData,
+                    ['agent' + agentNum + 'ValReportId']: result.fileId,
+                    ['agent' + agentNum + 'ValReportName']: result.fileName
+                };
+                this.dispatchEvent(new ShowToastEvent({ title: 'Uploaded', message: 'Valuation report uploaded for Agent ' + agentNum, variant: 'success' }));
+            } else {
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
+            }
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || e.message || 'Upload failed', variant: 'error' }));
+        } finally {
+            this.valReportUploading = { ...this.valReportUploading, [agentNum]: false };
+            event.target.value = ''; // reset so same file can be re-uploaded
+        }
+    }
+
+    async handleValReportRemove(event) {
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        if (!confirm('Remove the uploaded valuation report for Agent ' + agentNum + '? (The file will remain in Box.)')) return;
+
+        try {
+            await removeValuationReport({ opportunityId: this.recordId, agentNum });
+            this.formData = {
+                ...this.formData,
+                ['agent' + agentNum + 'ValReportId']: '',
+                ['agent' + agentNum + 'ValReportName']: ''
+            };
+            this.dispatchEvent(new ShowToastEvent({ title: 'Removed', message: 'Valuation report reference removed', variant: 'success' }));
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: e.body?.message || 'Failed to remove', variant: 'error' }));
+        }
+    }
+
+    _fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result;
+                const base64 = result.substring(result.indexOf(',') + 1);
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
     handleDesktopValToggle(event) {
         const agent = event.currentTarget.querySelector('input')?.dataset?.agent || event.target.dataset.agent;
         const checked = event.target.checked;

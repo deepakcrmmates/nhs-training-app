@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Mapbox_Last_Reset_Date__c</fullName>
+    <description>Date the Mapbox counter was last reset.</description>
+    <label>Mapbox Last Reset Date</label>
+    <type>Date</type>
+    <externalId>false</externalId>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+</CustomField>

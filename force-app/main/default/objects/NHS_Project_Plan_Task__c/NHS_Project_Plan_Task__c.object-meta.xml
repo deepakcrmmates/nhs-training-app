@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description>Tasks within an NHS Project Plan</description>
+    <enableActivities>true</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableLicensing>false</enableLicensing>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
+    <label>NHS Project Task</label>
+    <nameField>
+        <label>Task Number</label>
+        <trackHistory>false</trackHistory>
+        <type>AutoNumber</type>
+        <displayFormat>TSK-{00000}</displayFormat>
+        <startingNumber>1</startingNumber>
+    </nameField>
+    <pluralLabel>NHS Project Tasks</pluralLabel>
+    <sharingModel>ControlledByParent</sharingModel>
+</CustomObject>

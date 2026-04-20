@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>NHS Account Geo Access</label>
+    <description>Read/write access to Account geo fields and valuation report fields</description>
+    <fieldPermissions><editable>true</editable><field>Account.Geo_Latitude__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Account.Geo_Longitude__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_1_Valuation_Report_Box_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_1_Valuation_Report_Name__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_2_Valuation_Report_Box_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_2_Valuation_Report_Name__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_3_Valuation_Report_Box_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>Opportunity.Agent_3_Valuation_Report_Name__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_API_Config__c.Map_Provider__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_API_Config__c.Mapbox_Public_Token__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_API_Config__c.Mapbox_Requests_Today__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_API_Config__c.Mapbox_Daily_Limit__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_API_Config__c.Mapbox_Last_Reset_Date__c</field><readable>true</readable></fieldPermissions>
+</PermissionSet>

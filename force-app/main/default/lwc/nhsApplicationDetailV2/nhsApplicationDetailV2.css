@@ -1768,6 +1768,80 @@
 }
 
 /* ============================================================
+   Valuation Report Upload (per agent)
+   ============================================================ */
+.vr-section { padding-top: 12px; border-top: 1px solid rgba(0,0,0,0.06); }
+.vr-hidden-input { display: none; }
+.vr-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px dashed var(--nhs-mid);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.6);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--nhs-dk);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.vr-upload-btn:hover {
+    background: var(--nhs-pale);
+    border-color: var(--nhs-dk);
+    border-style: solid;
+}
+.vr-upload-btn lightning-icon { --slds-c-icon-color-foreground-default: var(--nhs-dk); }
+
+.vr-uploading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--nhs-border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--nhs-text-muted);
+}
+
+.vr-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid var(--nhs-border);
+    border-radius: 6px;
+}
+.vr-file lightning-icon { --slds-c-icon-color-foreground-default: var(--nhs-dk); flex-shrink: 0; }
+.vr-file-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--nhs-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.vr-remove-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--nhs-text-muted);
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.vr-remove-btn:hover { color: #DC2626; }
+
+/* ============================================================
    Quick Call Popup
    ============================================================ */
 .cc-wrap { position: relative; display: inline-block; }
@@ -2016,6 +2090,79 @@
 .af-loading { padding: 40px; text-align: center; }
 .af-empty { padding: 30px 20px; text-align: center; color: var(--nhs-text-muted); font-size: 13px; }
 
+/* View toggle and Map */
+.af-info-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px 0;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.af-view-toggle {
+    display: flex;
+    border: 1.5px solid var(--nhs-border);
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.af-view-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: none;
+    background: #fff;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--nhs-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.af-view-btn:hover { background: var(--nhs-pale); color: var(--nhs-dk); }
+.af-view-btn + .af-view-btn { border-left: 1px solid var(--nhs-border); }
+.af-view-active { background: var(--nhs-dk); color: #fff; }
+.af-view-active:hover { background: #3D5A4F; color: #fff; }
+.af-view-active lightning-icon { --slds-c-icon-color-foreground-default: #fff; }
+
+.af-map-wrap {
+    position: relative;
+    padding: 12px 20px;
+}
+.af-map-wrap lightning-map {
+    display: block;
+    height: 500px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--nhs-border);
+}
+.af-map-legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    padding: 10px 0 0;
+    flex-wrap: wrap;
+}
+.af-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--nhs-text-muted);
+    font-weight: 600;
+}
+.af-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+}
+.af-legend-prop     { background: #4A6B5E; }
+.af-legend-agent    { background: #2563EB; }
+.af-legend-assigned { background: #D97706; }
+
 .af-list { max-height: 400px; overflow-y: auto; }
 .af-row {
     display: flex; align-items: center; justify-content: space-between;
@@ -2244,14 +2391,14 @@
     font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 4px;
     cursor: pointer; font-family: var(--font-sans); transition: all 0.15s;
 }
-.va-bulk-all { border: 1px solid var(--nhs-dk); background: var(--nhs-dk); color: #fff; }
-.va-bulk-all:hover { background: #3D5A4F; }
-.va-bulk-am { border: 1px solid #B45309; background: #B45309; color: #fff; }
-.va-bulk-am:hover { background: #92400E; }
-.va-bulk-pm { border: 1px solid #0E7490; background: #0E7490; color: #fff; }
-.va-bulk-pm:hover { background: #155E75; }
-.va-bulk-clear { border: 1px solid #DC2626; background: #fff; color: #DC2626; }
-.va-bulk-clear:hover { background: #FEF2F2; }
+.va-bulk-all { border: 1.5px solid var(--nhs-dk); background: var(--nhs-dk); color: #fff; }
+.va-bulk-all:hover { background: #3D5A4F; border-color: #3D5A4F; }
+.va-bulk-am { border: 1.5px solid #F3D5B5; background: #FEF3E2; color: #B45309; }
+.va-bulk-am:hover { background: #F3D5B5; }
+.va-bulk-pm { border: 1.5px solid #B2EBF2; background: #E0F7FA; color: #0E7490; }
+.va-bulk-pm:hover { background: #B2EBF2; }
+.va-bulk-clear { border: 1.5px solid #FCA5A5; background: #fff; color: #DC2626; }
+.va-bulk-clear:hover { background: #FEF2F2; border-color: #EF4444; }
 
 .va-vendor-strip {
     padding: 12px 20px; background: var(--nhs-pale); border-bottom: 1px solid var(--nhs-border);

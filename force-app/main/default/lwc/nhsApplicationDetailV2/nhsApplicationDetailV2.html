@@ -969,6 +969,32 @@
                       <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1BottomLine} data-field="agent1BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
                     </div>
                   </div>
+                  <!-- Valuation Report Upload -->
+                  <div class="agent-section vr-section">
+                    <h4>Valuation Report</h4>
+                    <input type="file" class="vr-hidden-input" data-val-file="1" onchange={handleValReportUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"/>
+                    <template if:true={showValReport1}>
+                      <div class="vr-file">
+                        <lightning-icon icon-name="utility:file" size="xx-small"></lightning-icon>
+                        <span class="vr-file-name">{formData.agent1ValReportName}</span>
+                        <button class="vr-remove-btn" data-agent="1" onclick={handleValReportRemove} title="Remove">&times;</button>
+                      </div>
+                    </template>
+                    <template if:false={showValReport1}>
+                      <template if:false={valReport1Uploading}>
+                        <button class="vr-upload-btn" data-agent="1" onclick={handleValReportClick}>
+                          <lightning-icon icon-name="utility:upload" size="xx-small"></lightning-icon>
+                          Upload Valuation Report
+                        </button>
+                      </template>
+                      <template if:true={valReport1Uploading}>
+                        <div class="vr-uploading">
+                          <lightning-spinner alternative-text="Uploading" size="x-small"></lightning-spinner>
+                          <span>Uploading...</span>
+                        </div>
+                      </template>
+                    </template>
+                  </div>
                 </div>
               </div>
 
@@ -1038,6 +1064,32 @@
                       <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2BottomLine} data-field="agent2BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
                     </div>
                   </div>
+                  <!-- Valuation Report Upload -->
+                  <div class="agent-section vr-section">
+                    <h4>Valuation Report</h4>
+                    <input type="file" class="vr-hidden-input" data-val-file="2" onchange={handleValReportUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"/>
+                    <template if:true={showValReport2}>
+                      <div class="vr-file">
+                        <lightning-icon icon-name="utility:file" size="xx-small"></lightning-icon>
+                        <span class="vr-file-name">{formData.agent2ValReportName}</span>
+                        <button class="vr-remove-btn" data-agent="2" onclick={handleValReportRemove} title="Remove">&times;</button>
+                      </div>
+                    </template>
+                    <template if:false={showValReport2}>
+                      <template if:false={valReport2Uploading}>
+                        <button class="vr-upload-btn" data-agent="2" onclick={handleValReportClick}>
+                          <lightning-icon icon-name="utility:upload" size="xx-small"></lightning-icon>
+                          Upload Valuation Report
+                        </button>
+                      </template>
+                      <template if:true={valReport2Uploading}>
+                        <div class="vr-uploading">
+                          <lightning-spinner alternative-text="Uploading" size="x-small"></lightning-spinner>
+                          <span>Uploading...</span>
+                        </div>
+                      </template>
+                    </template>
+                  </div>
                 </div>
               </div>
 
@@ -1106,6 +1158,32 @@
                       <span class="val-label">Bottom Line</span>
                       <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3BottomLine} data-field="agent3BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
                     </div>
+                  </div>
+                  <!-- Valuation Report Upload -->
+                  <div class="agent-section vr-section">
+                    <h4>Valuation Report</h4>
+                    <input type="file" class="vr-hidden-input" data-val-file="3" onchange={handleValReportUpload} accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"/>
+                    <template if:true={showValReport3}>
+                      <div class="vr-file">
+                        <lightning-icon icon-name="utility:file" size="xx-small"></lightning-icon>
+                        <span class="vr-file-name">{formData.agent3ValReportName}</span>
+                        <button class="vr-remove-btn" data-agent="3" onclick={handleValReportRemove} title="Remove">&times;</button>
+                      </div>
+                    </template>
+                    <template if:false={showValReport3}>
+                      <template if:false={valReport3Uploading}>
+                        <button class="vr-upload-btn" data-agent="3" onclick={handleValReportClick}>
+                          <lightning-icon icon-name="utility:upload" size="xx-small"></lightning-icon>
+                          Upload Valuation Report
+                        </button>
+                      </template>
+                      <template if:true={valReport3Uploading}>
+                        <div class="vr-uploading">
+                          <lightning-spinner alternative-text="Uploading" size="x-small"></lightning-spinner>
+                          <span>Uploading...</span>
+                        </div>
+                      </template>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -1662,12 +1740,51 @@
         <!-- Step 2: Agent List -->
         <template if:true={isStep2}>
           <template if:true={assignAgentInfo}>
-            <div class="af-info">{assignAgentInfo}</div>
+            <div class="af-info-bar">
+              <span class="af-info">{assignAgentInfo}</span>
+              <template if:true={hasNearbyAgents}>
+                <div class="af-view-toggle">
+                  <button class={listViewBtnClass} onclick={handleViewList}>
+                    <lightning-icon icon-name="utility:rows" size="xx-small"></lightning-icon>
+                    List
+                  </button>
+                  <button class={mapViewBtnClass} onclick={handleViewMap}>
+                    <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                    Map
+                  </button>
+                </div>
+              </template>
+            </div>
           </template>
           <template if:true={isLoadingAgents}>
             <div class="af-loading"><lightning-spinner alternative-text="Searching" size="medium"></lightning-spinner></div>
           </template>
           <template if:false={isLoadingAgents}>
+            <!-- Map View -->
+            <template if:true={isMapView}>
+              <template if:true={hasMapData}>
+                <div class="af-map-wrap">
+                  <c-nhs-map
+                    markers={nhsMapMarkers}
+                    center={nhsMapCenter}
+                    zoom={mapZoomLevel}
+                    draw-radius={assignRadius}
+                    draw-routes>
+                  </c-nhs-map>
+                  <div class="af-map-legend">
+                    <span class="af-legend-item"><span class="af-legend-dot af-legend-prop"></span>Property</span>
+                    <span class="af-legend-item"><span class="af-legend-dot af-legend-agent"></span>Available Agent</span>
+                    <span class="af-legend-item"><span class="af-legend-dot af-legend-assigned"></span>Assigned</span>
+                  </div>
+                </div>
+              </template>
+              <template if:false={hasMapData}>
+                <div class="af-empty">Map data unavailable. Switch to List view.</div>
+              </template>
+            </template>
+
+            <!-- List View -->
+            <template if:true={isListView}>
             <template if:true={hasNearbyAgents}>
               <div class="af-list">
                 <template for:each={nearbyAgents} for:item="agent">
@@ -1714,6 +1831,7 @@
             <template if:false={hasNearbyAgents}>
               <div class="af-empty">No agents found within {assignRadius} miles.</div>
             </template>
+            </template><!-- /isListView -->
             <div class="af-actions">
               <button class="af-btn-cancel" onclick={handleBackToStep1}>Back</button>
               <template if:true={assignedAgent2Name}><span class="af-sel-badge af-sel-2">Agent 2: {assignedAgent2Name}</span></template>

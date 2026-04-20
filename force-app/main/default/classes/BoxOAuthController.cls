@@ -313,6 +313,85 @@ public with sharing class BoxOAuthController {
     }
 
     @AuraEnabled
+    public static Map<String, Object> uploadValuationReport(Id opportunityId, Integer agentNum, String fileName, String base64Content) {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            Opportunity opp = [SELECT Id, Box_Folder_Id__c FROM Opportunity WHERE Id = :opportunityId LIMIT 1];
+            if (String.isBlank(opp.Box_Folder_Id__c)) {
+                result.put('status', 'error');
+                result.put('message', 'No Box folder linked to this application.');
+                return result;
+            }
+
+            String accessToken = refreshAccessToken();
+            if (accessToken == null) {
+                result.put('status', 'error');
+                result.put('message', 'Not connected to Box.');
+                return result;
+            }
+
+            // Find or create Valuations subfolder
+            String valuationsFolderId = BoxFileService.getOrCreateFolder('Valuations', opp.Box_Folder_Id__c, accessToken);
+            if (valuationsFolderId == null) {
+                result.put('status', 'error');
+                result.put('message', 'Could not access Valuations folder.');
+                return result;
+            }
+
+            // Prefix filename with agent number for clarity
+            String prefixedName = 'Agent ' + agentNum + ' - ' + fileName;
+
+            String fileId = BoxFileService.uploadFile(valuationsFolderId, prefixedName, base64Content, accessToken);
+            if (fileId == null) {
+                result.put('status', 'error');
+                result.put('message', 'Failed to upload file to Box.');
+                return result;
+            }
+
+            // Save Box file ID and name to the relevant agent field on Opportunity
+            Opportunity toUpdate = new Opportunity(Id = opportunityId);
+            if (agentNum == 1) {
+                toUpdate.Agent_1_Valuation_Report_Box_Id__c = fileId;
+                toUpdate.Agent_1_Valuation_Report_Name__c = prefixedName;
+            } else if (agentNum == 2) {
+                toUpdate.Agent_2_Valuation_Report_Box_Id__c = fileId;
+                toUpdate.Agent_2_Valuation_Report_Name__c = prefixedName;
+            } else if (agentNum == 3) {
+                toUpdate.Agent_3_Valuation_Report_Box_Id__c = fileId;
+                toUpdate.Agent_3_Valuation_Report_Name__c = prefixedName;
+            }
+            update toUpdate;
+
+            saveRotatedToken();
+
+            result.put('status', 'success');
+            result.put('fileId', fileId);
+            result.put('fileName', prefixedName);
+            result.put('message', 'Valuation report uploaded.');
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static void removeValuationReport(Id opportunityId, Integer agentNum) {
+        Opportunity toUpdate = new Opportunity(Id = opportunityId);
+        if (agentNum == 1) {
+            toUpdate.Agent_1_Valuation_Report_Box_Id__c = null;
+            toUpdate.Agent_1_Valuation_Report_Name__c = null;
+        } else if (agentNum == 2) {
+            toUpdate.Agent_2_Valuation_Report_Box_Id__c = null;
+            toUpdate.Agent_2_Valuation_Report_Name__c = null;
+        } else if (agentNum == 3) {
+            toUpdate.Agent_3_Valuation_Report_Box_Id__c = null;
+            toUpdate.Agent_3_Valuation_Report_Name__c = null;
+        }
+        update toUpdate;
+    }
+
+    @AuraEnabled
     public static Map<String, Object> uploadFileFromContentDoc(String folderId, String contentDocumentId) {
         Map<String, Object> result = new Map<String, Object>();
         try {

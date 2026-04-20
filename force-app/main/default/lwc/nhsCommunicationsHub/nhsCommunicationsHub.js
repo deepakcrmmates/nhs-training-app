@@ -10,6 +10,8 @@ import sendWhatsApp from '@salesforce/apex/NHSCommunicationsController.sendWhats
 import getEmailTemplates from '@salesforce/apex/NHSCommunicationsController.getEmailTemplates';
 import getRenderedTemplate from '@salesforce/apex/NHSCommunicationsController.getRenderedTemplate';
 import getAddressBook from '@salesforce/apex/NHSCommunicationsController.getAddressBook';
+import getBoxFilesForOpportunity from '@salesforce/apex/NHSCommunicationsController.getBoxFilesForOpportunity';
+import sendEmailWithBoxAttachments from '@salesforce/apex/NHSCommunicationsController.sendEmailWithBoxAttachments';
 
 export default class NhsCommunicationsHub extends LightningElement {
     @api recordId;
@@ -58,6 +60,18 @@ export default class NhsCommunicationsHub extends LightningElement {
     @track templateSearchQuery = '';
     @track attachmentFiles = [];
     @track isSending = false;
+
+    // ── Box file picker ──
+    @track showBoxPicker = false;
+    @track boxFiles = [];
+    @track boxSubfolders = [];
+    @track boxFolderExists = false;
+    @track boxLoadError = '';
+    @track boxIsLoading = false;
+    @track selectedBoxFileIds = [];
+    @track boxSelectedFiles = []; // { id, name, size, subfolder }
+    @track boxViewFolder = null;  // null = tree view, folder name = file list view
+    @track boxRootName = '';
 
     // ── Address book ──
     @track showAddressBook = false;
@@ -136,6 +150,16 @@ export default class NhsCommunicationsHub extends LightningElement {
                 isUnread: item.Is_Unread__c || false,
                 duration: item.Duration__c || null,
                 hasAttachment: item.HasAttachment || false,
+                attachments: (item.Attachments || []).map(a => ({
+                    id: a.id,
+                    documentId: a.documentId,
+                    name: a.name,
+                    size: a.size,
+                    sizeLabel: this._formatFileSize(a.size),
+                    downloadUrl: a.documentId
+                        ? '/sfc/servlet.shepherd/document/download/' + a.documentId
+                        : '/servlet/servlet.FileDownload?file=' + a.id
+                })),
                 toAddress: item.ToAddress || '',
                 fromAddress: item.FromAddress || '',
                 fromName: item.FromName || '',
@@ -239,6 +263,7 @@ export default class NhsCommunicationsHub extends LightningElement {
         if (!this.selectedEmailId) return null;
         const email = this.communications.find(c => c.id === this.selectedEmailId);
         if (!email) return null;
+        const attachments = email.attachments || [];
         return {
             ...email,
             dateFormatted: this._fmtFullDateTime(email.dateTime),
@@ -246,7 +271,11 @@ export default class NhsCommunicationsHub extends LightningElement {
             senderName: email.direction === 'Inbound' ? (email.fromName || email.contactName) : 'You',
             senderEmail: email.direction === 'Inbound' ? email.fromAddress : email.toAddress,
             statusClass: 'em-status-badge em-status-' + email.status.toLowerCase(),
-            isReceived: email.direction === 'Inbound'
+            isReceived: email.direction === 'Inbound',
+            attachments,
+            hasAttachmentsList: attachments.length > 0,
+            attachmentCount: attachments.length,
+            attachmentCountLabel: attachments.length === 1 ? '1 attachment' : attachments.length + ' attachments'
         };
     }
 
@@ -269,11 +298,14 @@ export default class NhsCommunicationsHub extends LightningElement {
         if (!email) return;
         this.composeTo = email.fromAddress || email.toAddress;
         this.composeCc = '';
+        this.composeBcc = '';
         this.composeSubject = email.subject.startsWith('Re:') ? email.subject : 'Re: ' + email.subject;
-        this.composeBody = '';
+        this.composeBody = this._buildReplyBody(email);
         this.selectedTemplateId = '';
         this.selectedTemplateName = '';
         this.attachmentFiles = [];
+        this.boxSelectedFiles = [];
+        this.selectedBoxFileIds = [];
         this.showComposeEmail = true;
     }
 
@@ -282,12 +314,48 @@ export default class NhsCommunicationsHub extends LightningElement {
         if (!email) return;
         this.composeTo = '';
         this.composeCc = '';
+        this.composeBcc = '';
         this.composeSubject = email.subject.startsWith('Fwd:') ? email.subject : 'Fwd: ' + email.subject;
-        this.composeBody = email.body || '';
+        this.composeBody = this._buildForwardBody(email);
         this.selectedTemplateId = '';
         this.selectedTemplateName = '';
         this.attachmentFiles = [];
+        this.boxSelectedFiles = [];
+        this.selectedBoxFileIds = [];
         this.showComposeEmail = true;
+    }
+
+    _buildReplyBody(email) {
+        const senderName = email.senderName || email.contactName || email.fromAddress || '';
+        const senderEmail = email.fromAddress || email.toAddress || '';
+        const dateStr = this._fmtFullDateTime(email.dateTime);
+        const originalBody = email.body || '';
+        const senderDisplay = senderEmail ? `${senderName} &lt;${senderEmail}&gt;` : senderName;
+
+        return `<p><br></p><p><br></p>`
+            + `<hr style="border: none; border-top: 1px solid #ccc; margin: 16px 0;">`
+            + `<p style="color: #666; font-size: 13px;">On ${dateStr}, <strong>${senderDisplay}</strong> wrote:</p>`
+            + `<blockquote style="border-left: 3px solid #ccc; padding-left: 12px; margin-left: 0; color: #555;">`
+            + originalBody
+            + `</blockquote>`;
+    }
+
+    _buildForwardBody(email) {
+        const senderName = email.senderName || email.contactName || email.fromAddress || '';
+        const senderEmail = email.fromAddress || '';
+        const toAddress = email.toAddress || '';
+        const dateStr = this._fmtFullDateTime(email.dateTime);
+        const subject = email.subject || '';
+        const originalBody = email.body || '';
+
+        return `<p><br></p><p><br></p>`
+            + `<hr style="border: none; border-top: 1px solid #ccc; margin: 16px 0;">`
+            + `<p style="color: #666; font-size: 13px;"><strong>---------- Forwarded message ----------</strong><br>`
+            + `<strong>From:</strong> ${senderName} &lt;${senderEmail}&gt;<br>`
+            + `<strong>Date:</strong> ${dateStr}<br>`
+            + `<strong>Subject:</strong> ${subject}<br>`
+            + `<strong>To:</strong> ${toAddress}</p>`
+            + `<div>` + originalBody + `</div>`;
     }
 
     // ── Compose Email ──
@@ -301,6 +369,8 @@ export default class NhsCommunicationsHub extends LightningElement {
         this.selectedTemplateId = '';
         this.selectedTemplateName = '';
         this.attachmentFiles = [];
+        this.boxSelectedFiles = [];
+        this.selectedBoxFileIds = [];
         this.showComposeEmail = true;
 
         if (!this._templatesLoaded) {
@@ -331,6 +401,133 @@ export default class NhsCommunicationsHub extends LightningElement {
         const removeId = event.currentTarget.dataset.id;
         this.attachmentFiles = this.attachmentFiles.filter(f => f.documentId !== removeId);
     }
+
+    // ── Box File Picker ──
+    async handleOpenBoxPicker() {
+        this.showBoxPicker = true;
+        this.boxViewFolder = null;
+        this.boxIsLoading = true;
+        this.boxLoadError = '';
+        try {
+            const result = await getBoxFilesForOpportunity({ opportunityId: this.recordId });
+            if (result.error) {
+                this.boxLoadError = result.error;
+                this.boxFiles = [];
+                this.boxFolderExists = false;
+            } else {
+                this.boxFolderExists = result.folderExists;
+                this.boxFiles = result.files || [];
+                this.boxSubfolders = result.subfolders || [];
+                this.boxRootName = result.folderName || this.ctxPropertyAddress || 'Application Folder';
+            }
+        } catch (e) {
+            this.boxLoadError = e.body?.message || 'Failed to load Box files';
+        } finally {
+            this.boxIsLoading = false;
+        }
+    }
+
+    handleOpenBoxSubfolder(event) {
+        this.boxViewFolder = event.currentTarget.dataset.folder;
+    }
+
+    handleBoxBack() {
+        this.boxViewFolder = null;
+    }
+
+    handleCloseBoxPicker() { this.showBoxPicker = false; }
+
+    handleToggleBoxFile(event) {
+        const fileId = event.currentTarget.dataset.id;
+        if (this.selectedBoxFileIds.includes(fileId)) {
+            this.selectedBoxFileIds = this.selectedBoxFileIds.filter(id => id !== fileId);
+        } else {
+            this.selectedBoxFileIds = [...this.selectedBoxFileIds, fileId];
+        }
+    }
+
+    handleAddBoxFiles() {
+        const selected = this.boxFiles.filter(f => this.selectedBoxFileIds.includes(f.id));
+        this.boxSelectedFiles = selected.map(f => ({
+            id: f.id,
+            name: f.name,
+            size: f.size,
+            subfolder: f.subfolder || 'Root',
+            sizeLabel: this._formatFileSize(f.size)
+        }));
+        this.showBoxPicker = false;
+    }
+
+    handleRemoveBoxFile(event) {
+        const removeId = event.currentTarget.dataset.id;
+        this.boxSelectedFiles = this.boxSelectedFiles.filter(f => f.id !== removeId);
+        this.selectedBoxFileIds = this.selectedBoxFileIds.filter(id => id !== removeId);
+    }
+
+    _formatFileSize(bytes) {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    get boxTree() {
+        // Tree: list of subfolders with file counts
+        const groups = {};
+        (this.boxSubfolders || []).forEach(sf => { groups[sf] = 0; });
+        this.boxFiles.forEach(f => {
+            const key = f.subfolder || 'Root';
+            if (key === 'Root') return;
+            groups[key] = (groups[key] || 0) + 1;
+        });
+
+        const preferredOrder = ['Application', 'Valuations', 'Photos', 'Will Report'];
+        const allNames = Object.keys(groups);
+        const ordered = [
+            ...preferredOrder.filter(n => allNames.includes(n)),
+            ...allNames.filter(n => !preferredOrder.includes(n)).sort()
+        ];
+
+        return ordered.map(name => ({
+            name,
+            key: 'bt-' + name,
+            fileCount: groups[name],
+            countLabel: groups[name] === 1 ? '1 file' : groups[name] + ' files'
+        }));
+    }
+
+    get boxRootFiles() {
+        return this.boxFiles
+            .filter(f => !f.subfolder || f.subfolder === 'Root')
+            .map(f => ({
+                ...f,
+                sizeLabel: this._formatFileSize(f.size),
+                isSelected: this.selectedBoxFileIds.includes(f.id),
+                rowClass: 'box-file-row' + (this.selectedBoxFileIds.includes(f.id) ? ' box-file-row-selected' : '')
+            }));
+    }
+
+    get boxCurrentFolderFiles() {
+        if (!this.boxViewFolder) return [];
+        return this.boxFiles
+            .filter(f => f.subfolder === this.boxViewFolder)
+            .map(f => ({
+                ...f,
+                sizeLabel: this._formatFileSize(f.size),
+                isSelected: this.selectedBoxFileIds.includes(f.id),
+                rowClass: 'box-file-row' + (this.selectedBoxFileIds.includes(f.id) ? ' box-file-row-selected' : '')
+            }));
+    }
+
+    get isBoxTreeView() { return this.boxViewFolder === null; }
+    get isBoxFolderView() { return this.boxViewFolder !== null; }
+    get boxCurrentFolderName() { return this.boxViewFolder || ''; }
+    get boxCurrentFolderEmpty() { return this.boxCurrentFolderFiles.length === 0; }
+    get hasBoxRootFiles() { return this.boxRootFiles.length > 0; }
+    get hasBoxTree() { return this.boxTree.length > 0 || this.boxRootFiles.length > 0; }
+    get hasSelectedBoxFiles() { return this.selectedBoxFileIds.length > 0; }
+    get boxSelectedCount() { return this.selectedBoxFileIds.length; }
+    get hasBoxAttachments() { return this.boxSelectedFiles.length > 0; }
 
     // Template library
     handleOpenTemplateLibrary() { this.showTemplateLibrary = true; this.templateSearchQuery = ''; }
@@ -454,7 +651,8 @@ export default class NhsCommunicationsHub extends LightningElement {
         this.isSending = true;
         try {
             const attachmentIds = this.attachmentFiles.map(f => f.documentId);
-            const result = await sendEmailComplete({
+            const boxIds = this.boxSelectedFiles.map(f => f.id);
+            const result = await sendEmailWithBoxAttachments({
                 opportunityId: this.recordId,
                 toAddress: this.composeTo,
                 subject: this.composeSubject,
@@ -462,7 +660,8 @@ export default class NhsCommunicationsHub extends LightningElement {
                 ccAddress: this.composeCc,
                 bccAddress: this.composeBcc,
                 templateId: this.selectedTemplateId || null,
-                contentDocumentIds: attachmentIds
+                contentDocumentIds: attachmentIds,
+                boxFileIds: boxIds
             });
 
             if (result.status === 'success') {

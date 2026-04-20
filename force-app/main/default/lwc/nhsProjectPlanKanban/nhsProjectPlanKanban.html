@@ -1,0 +1,267 @@
+<template>
+    <div class="ppk-wrap">
+        <!-- Header -->
+        <header class="ppk-header">
+            <div class="ppk-header-left">
+                <h1 class="ppk-title">Project Plans</h1>
+                <template if:true={hasPlans}>
+                    <lightning-combobox
+                        name="plan"
+                        value={selectedPlanId}
+                        options={planOptions}
+                        onchange={handlePlanChange}
+                        variant="label-hidden"
+                        class="ppk-plan-dd">
+                    </lightning-combobox>
+                    <button class="ppk-icon-btn" onclick={handleEditPlan} title="Edit Plan">
+                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                    </button>
+                </template>
+            </div>
+            <div class="ppk-header-right">
+                <button class="ppk-btn ppk-btn-secondary" onclick={handleNewPlan}>
+                    <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                    New Plan
+                </button>
+                <template if:true={selectedPlanId}>
+                    <button class="ppk-btn ppk-btn-primary" onclick={handleNewTask}>
+                        <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                        New Task
+                    </button>
+                </template>
+            </div>
+        </header>
+
+        <template if:false={hasPlans}>
+            <div class="ppk-empty">
+                <p>No project plans yet.</p>
+                <button class="ppk-btn ppk-btn-primary" onclick={handleNewPlan}>Create First Plan</button>
+            </div>
+        </template>
+
+        <template if:true={hasPlans}>
+            <!-- Tabs -->
+            <div class="ppk-tabs">
+                <button class={activeTabClass} data-tab="active" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:kanban" size="xx-small"></lightning-icon>
+                    Active Tasks
+                </button>
+                <button class={historyTabClass} data-tab="history" onclick={handleTabClick}>
+                    <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                    History
+                </button>
+            </div>
+
+            <!-- Kanban view (active) -->
+            <template if:true={isActiveTab}>
+                <template if:true={isLoading}>
+                    <div class="ppk-loading">
+                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                    </div>
+                </template>
+                <div class="kanban-board">
+                    <template for:each={priorityColumns} for:item="col">
+                        <div class={col.columnClass} key={col.key}
+                             data-priority={col.priority}
+                             ondragover={handleDragOver}
+                             ondrop={handleDrop}>
+                            <div class={col.headerClass}>
+                                <span class="col-label">{col.label}</span>
+                                <span class="col-count">{col.count}</span>
+                            </div>
+                            <div class="col-body">
+                                <template for:each={col.tasks} for:item="task">
+                                    <div class={task.cardClass} key={task.Id} data-id={task.Id}
+                                         draggable="true"
+                                         ondragstart={handleDragStart}
+                                         onclick={handleEditTask}>
+                                        <div class="task-top">
+                                            <span class="task-name">{task.Name}</span>
+                                            <template if:true={task.hasCategory}>
+                                                <span class={task.categoryClass}>{task.Category__c}</span>
+                                            </template>
+                                        </div>
+                                        <div class="task-title">{task.Title__c}</div>
+                                        <template if:true={task.Description__c}>
+                                            <div class="task-desc">{task.Description__c}</div>
+                                        </template>
+                                        <div class="task-meta">
+                                            <span class={task.statusClass}>{task.Status__c}</span>
+                                            <template if:true={task.hasDue}>
+                                                <span class="task-due {task.overdueClass}">
+                                                    <lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon>
+                                                    {task.dueLabel}
+                                                </span>
+                                            </template>
+                                            <template if:true={task.hasAssignee}>
+                                                <span class="task-assignee">{task.AssignedToName}</span>
+                                            </template>
+                                        </div>
+                                        <div class="task-actions" onclick={handleDragOver}>
+                                            <button class="task-action-btn task-action-done" data-id={task.Id} data-status="Done" onclick={handleQuickStatus} title="Mark Done">
+                                                <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                                            </button>
+                                            <button class="task-action-btn task-action-progress" data-id={task.Id} data-status="In Progress" onclick={handleQuickStatus} title="In Progress">
+                                                <lightning-icon icon-name="utility:play" size="xx-small"></lightning-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- History view -->
+            <template if:true={isHistoryTab}>
+                <template if:true={isLoading}>
+                    <div class="ppk-loading">
+                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                    </div>
+                </template>
+                <template if:false={isLoading}>
+                    <template if:true={hasHistory}>
+                        <div class="history-list">
+                            <template for:each={historyTasks} for:item="task">
+                                <div class="history-row" key={task.Id} data-id={task.Id} onclick={handleEditTask}>
+                                    <div class="history-left">
+                                        <span class="task-name">{task.Name}</span>
+                                        <span class={task.statusClass}>{task.Status__c}</span>
+                                        <template if:true={task.hasCategory}>
+                                            <span class={task.categoryClass}>{task.Category__c}</span>
+                                        </template>
+                                    </div>
+                                    <div class="history-middle">
+                                        <div class="history-title">{task.Title__c}</div>
+                                        <template if:true={task.Description__c}>
+                                            <div class="task-desc">{task.Description__c}</div>
+                                        </template>
+                                    </div>
+                                    <div class="history-right">
+                                        <template if:true={task.completedLabel}>
+                                            <span class="history-closed">Closed: {task.completedLabel}</span>
+                                        </template>
+                                        <template if:true={task.hasAssignee}>
+                                            <span class="task-assignee">{task.AssignedToName}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasHistory}>
+                        <div class="ppk-empty">
+                            <p>No closed tasks yet.</p>
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </template>
+
+        <!-- Task Modal -->
+        <template if:true={showTaskModal}>
+            <div class="ppk-backdrop" onclick={handleCloseTaskModal}></div>
+            <div class="ppk-modal">
+                <div class="ppk-modal-header">
+                    <h3>
+                        <template if:true={isEditingTask}>Edit Task</template>
+                        <template if:false={isEditingTask}>New Task</template>
+                    </h3>
+                    <button class="ppk-modal-close" onclick={handleCloseTaskModal}>&times;</button>
+                </div>
+                <div class="ppk-modal-body">
+                    <div class="ppk-field">
+                        <label>Title *</label>
+                        <input type="text" data-field="Title__c" value={editingTask.Title__c} onchange={handleTaskFieldChange}>
+                    </div>
+                    <div class="ppk-field">
+                        <label>Description</label>
+                        <textarea data-field="Description__c" onchange={handleTaskFieldChange} rows="3">{editingTask.Description__c}</textarea>
+                    </div>
+                    <div class="ppk-field-row">
+                        <div class="ppk-field">
+                            <label>Priority</label>
+                            <lightning-combobox data-field="Priority__c" value={editingTask.Priority__c} options={priorityOptions} onchange={handleTaskFieldChange} variant="label-hidden"></lightning-combobox>
+                        </div>
+                        <div class="ppk-field">
+                            <label>Status</label>
+                            <lightning-combobox data-field="Status__c" value={editingTask.Status__c} options={statusOptions} onchange={handleTaskFieldChange} variant="label-hidden"></lightning-combobox>
+                        </div>
+                        <div class="ppk-field">
+                            <label>Category</label>
+                            <lightning-combobox data-field="Category__c" value={editingTask.Category__c} options={categoryOptions} onchange={handleTaskFieldChange} variant="label-hidden"></lightning-combobox>
+                        </div>
+                    </div>
+                    <div class="ppk-field-row">
+                        <div class="ppk-field">
+                            <label>Due Date</label>
+                            <input type="date" data-field="Due_Date__c" value={editingTask.Due_Date__c} onchange={handleTaskFieldChange}>
+                        </div>
+                        <div class="ppk-field">
+                            <label>Assigned To (User ID)</label>
+                            <input type="text" data-field="Assigned_To__c" value={editingTask.Assigned_To__c} onchange={handleTaskFieldChange} placeholder="005...">
+                        </div>
+                    </div>
+                    <div class="ppk-field">
+                        <label>Notes</label>
+                        <textarea data-field="Notes__c" onchange={handleTaskFieldChange} rows="3">{editingTask.Notes__c}</textarea>
+                    </div>
+                </div>
+                <div class="ppk-modal-footer">
+                    <template if:true={isEditingTask}>
+                        <button class="ppk-btn ppk-btn-danger" onclick={handleDeleteTask}>Delete</button>
+                    </template>
+                    <div class="ppk-modal-footer-right">
+                        <button class="ppk-btn ppk-btn-secondary" onclick={handleCloseTaskModal}>Cancel</button>
+                        <button class="ppk-btn ppk-btn-primary" onclick={handleSaveTask}>Save</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Plan Modal -->
+        <template if:true={showPlanModal}>
+            <div class="ppk-backdrop" onclick={handleClosePlanModal}></div>
+            <div class="ppk-modal">
+                <div class="ppk-modal-header">
+                    <h3>
+                        <template if:true={isEditingPlan}>Edit Project Plan</template>
+                        <template if:false={isEditingPlan}>New Project Plan</template>
+                    </h3>
+                    <button class="ppk-modal-close" onclick={handleClosePlanModal}>&times;</button>
+                </div>
+                <div class="ppk-modal-body">
+                    <div class="ppk-field">
+                        <label>Title *</label>
+                        <input type="text" data-field="Title__c" value={editingPlan.Title__c} onchange={handlePlanFieldChange}>
+                    </div>
+                    <div class="ppk-field">
+                        <label>Description</label>
+                        <textarea data-field="Description__c" onchange={handlePlanFieldChange} rows="3">{editingPlan.Description__c}</textarea>
+                    </div>
+                    <div class="ppk-field-row">
+                        <div class="ppk-field">
+                            <label>Status</label>
+                            <lightning-combobox data-field="Status__c" value={editingPlan.Status__c} options={planStatusOptions} onchange={handlePlanFieldChange} variant="label-hidden"></lightning-combobox>
+                        </div>
+                        <div class="ppk-field">
+                            <label>Start Date</label>
+                            <input type="date" data-field="Start_Date__c" value={editingPlan.Start_Date__c} onchange={handlePlanFieldChange}>
+                        </div>
+                        <div class="ppk-field">
+                            <label>Target End Date</label>
+                            <input type="date" data-field="Target_End_Date__c" value={editingPlan.Target_End_Date__c} onchange={handlePlanFieldChange}>
+                        </div>
+                    </div>
+                </div>
+                <div class="ppk-modal-footer">
+                    <div class="ppk-modal-footer-right">
+                        <button class="ppk-btn ppk-btn-secondary" onclick={handleClosePlanModal}>Cancel</button>
+                        <button class="ppk-btn ppk-btn-primary" onclick={handleSavePlan}>Save</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

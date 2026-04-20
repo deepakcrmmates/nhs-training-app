@@ -1,0 +1,33 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="nhs-map-loading">
+            <lightning-spinner alternative-text="Loading map" size="small"></lightning-spinner>
+        </div>
+    </template>
+
+    <template if:false={isLoading}>
+        <template if:true={fallbackMessage}>
+            <div class="nhs-map-notice">
+                <lightning-icon icon-name="utility:info" size="xx-small"></lightning-icon>
+                <span>{fallbackMessage}</span>
+            </div>
+        </template>
+
+        <template if:true={isMapbox}>
+            <iframe class="mapbox-frame" src={iframeSrc} frameborder="0" title="Mapbox Map"></iframe>
+        </template>
+
+        <template if:true={isGoogleMaps}>
+            <lightning-map
+                map-markers={googleMarkers}
+                center={googleCenter}
+                zoom-level={zoom}
+                list-view="hidden">
+            </lightning-map>
+        </template>
+
+        <template if:true={providerLabel}>
+            <div class="nhs-map-badge">Powered by {providerLabel}</div>
+        </template>
+    </template>
+</template>

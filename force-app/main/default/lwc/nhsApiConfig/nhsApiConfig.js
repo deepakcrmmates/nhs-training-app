@@ -34,6 +34,19 @@ export default class NhsApiConfig extends LightningElement {
         ];
     }
 
+    get mapProviderOptions() {
+        return [
+            { label: 'Auto (prefer Mapbox, fall back to Google Maps on quota)', value: 'Auto' },
+            { label: 'Mapbox', value: 'Mapbox' },
+            { label: 'Google Maps', value: 'Google Maps' }
+        ];
+    }
+
+    pickOptions(apiName) {
+        if (apiName === 'Map_Provider__c') return this.mapProviderOptions;
+        return this.distanceMethodOptions;
+    }
+
     connectedCallback() {
         this.loadConfigs();
     }
@@ -77,6 +90,7 @@ export default class NhsApiConfig extends LightningElement {
                 isNumber: f.fieldType === 'number',
                 isReadonly: f.fieldType === 'readonly',
                 isPicklist: f.fieldType === 'picklist',
+                pickerOptions: f.fieldType === 'picklist' ? this.pickOptions(f.apiName) : [],
                 inputType: f.fieldType === 'password' ? 'password' : (f.fieldType === 'number' ? 'number' : 'text')
             });
         }
@@ -136,6 +150,27 @@ export default class NhsApiConfig extends LightningElement {
         try {
             const result = await testApi({ apiName: this.editConfig.key });
             this.testResult = result;
+            // Update the card's status bulb locally
+            const editKey = this.editConfig.key;
+            const now = new Date();
+            const stamp = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear() + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            this.configs = this.configs.map(c => {
+                if (c.key !== editKey) return c;
+                return {
+                    ...c,
+                    healthStatus: result.status,
+                    healthMessage: result.message,
+                    lastCheck: stamp,
+                    statusClass: 'status-bulb status-' + (result.status || 'unknown'),
+                    statusTooltip: (result.message || '') + ' | Last check: ' + stamp
+                };
+            });
+            // Also keep editConfig in sync so re-open shows the same bulb
+            this.editConfig = {
+                ...this.editConfig,
+                healthStatus: result.status,
+                statusClass: 'status-bulb status-' + (result.status || 'unknown')
+            };
         } catch (error) {
             this.testResult = { status: 'error', message: error.body?.message || 'Test failed' };
         }

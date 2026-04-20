@@ -49,9 +49,25 @@ public with sharing class NHSApiConfigController {
         }
 
         // NHS API Config
-        List<NHS_API_Config__c> nhsConfigs = [SELECT Id, Ideal_Postcodes_Key__c, RapidAPI_Key__c, Street_Data_Endpoint__c, TinyURL_Endpoint__c, Airparser_API_Key__c, Airparser_Inbox_Id__c FROM NHS_API_Config__c LIMIT 1];
+        List<NHS_API_Config__c> nhsConfigs = [
+            SELECT Id, Ideal_Postcodes_Key__c, RapidAPI_Key__c, Street_Data_Endpoint__c, TinyURL_Endpoint__c,
+                   Airparser_API_Key__c, Airparser_Inbox_Id__c,
+                   Map_Provider__c, Mapbox_Public_Token__c, Mapbox_Requests_Today__c, Mapbox_Daily_Limit__c, Mapbox_Last_Reset_Date__c
+            FROM NHS_API_Config__c LIMIT 1
+        ];
         if (!nhsConfigs.isEmpty()) {
             NHS_API_Config__c n = nhsConfigs[0];
+
+            configs.add(buildConfig('Map Provider', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
+                field('Provider', 'Map_Provider__c', String.isNotBlank(n.Map_Provider__c) ? n.Map_Provider__c : 'Auto', 'picklist')
+            }));
+
+            configs.add(buildConfig('Mapbox', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
+                field('Public Token', 'Mapbox_Public_Token__c', maskValue(n.Mapbox_Public_Token__c), 'password'),
+                field('Daily Limit', 'Mapbox_Daily_Limit__c', n.Mapbox_Daily_Limit__c != null ? String.valueOf(n.Mapbox_Daily_Limit__c.intValue()) : '1500', 'number'),
+                field('Requests Today', 'Mapbox_Requests_Today__c', n.Mapbox_Requests_Today__c != null ? String.valueOf(n.Mapbox_Requests_Today__c.intValue()) : '0', 'readonly'),
+                field('Last Reset Date', 'Mapbox_Last_Reset_Date__c', n.Mapbox_Last_Reset_Date__c != null ? String.valueOf(n.Mapbox_Last_Reset_Date__c) : '', 'readonly')
+            }));
             configs.add(buildConfig('Ideal Postcodes', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
                 field('API Key', 'Ideal_Postcodes_Key__c', maskValue(n.Ideal_Postcodes_Key__c), 'password')
             }));

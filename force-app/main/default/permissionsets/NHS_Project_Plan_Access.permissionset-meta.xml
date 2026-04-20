@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>NHS Project Plan Access</label>
+    <description>Full access to NHS Project Plan and Task objects and their fields</description>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>NHS_Project_Plan__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>true</modifyAllRecords>
+        <object>NHS_Project_Plan_Task__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan__c.Description__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan__c.Start_Date__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan__c.Target_End_Date__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Assigned_To__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Category__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Completed_Date__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Description__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Due_Date__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Notes__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Priority__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Sort_Order__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>true</editable><field>NHS_Project_Plan_Task__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <tabSettings>
+        <tab>NHS_Project_Plan__c</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Project_Plan_Kanban</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+</PermissionSet>

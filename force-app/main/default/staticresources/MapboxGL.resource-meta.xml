@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Public</cacheControl>
+    <contentType>application/zip</contentType>
+    <description>Mapbox GL JS library (v3.0+) — upload mapbox-gl.js + mapbox-gl.css as a zip bundle</description>
+</StaticResource>

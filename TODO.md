@@ -1,23 +1,27 @@
-# NHS Training App - To-Do List (16 April 2026)
+# NHS Training App - To-Do List (20 April 2026)
 
-## High Priority - Config & Core
+## High Priority - Fixes & Core
 
-- [ ] NHS Config (update) review and testing
-- [ ] Save Application (update all settings) review and testing
-- [ ] Kanban view review and testing
-- [ ] Generate PDF review and testing
+- [ ] 3CX integration
+- [ ] Fix Generate PDF
+- [ ] Audit Twilio SMS — sending too many emails
+- [ ] Test Refresh Button
+- [ ] Vendor Availability top colors adjustments
+- [ ] Latest notes should show up on the top
 
-## Medium Priority - Communication & Data
+## Medium Priority - UI / UX Improvements
 
-- [ ] Property Description field in email and Quick Summary review and testing
-- [ ] Email review and testing
-- [ ] Email with Attachment review and testing
-- [ ] Comms Hub review and testing
-- [ ] Placeholder for each Report type upload setting for Agent 1, Agent 2, Agent 3
+- [ ] Assign Agents — Email page, show the phonebook icon
+- [ ] Assign Estate agent — must have a list view and map view
+- [ ] Placeholder for the Agent 1, 2, 3 Report upload with value
+- [ ] Will Report button on the Kanban view on the "Valuation Ready"
+- [ ] Final Checks — show template 9, configurable at NHS Config
 
-## Lower Priority - New Features & Integrations
+## New Features & Integrations
 
-- [ ] Twilio SMS
-- [ ] Estate Agents view on Google Maps in Assign Agents
-- [ ] Schemes
-- [ ] Cloudflare Images - Photographer app
+- [ ] Housebuilder — new record creation page with contacts (+) and Lightning record page layout for detail view
+- [ ] Agents — new record creation page with contacts (+) and Lightning record page layout for detail view
+- [ ] Housebuilder Related Lists — Contact, Applications, Preferred Estate Agents, Comms History
+- [ ] Notification system (analyse Chatter option)
+- [ ] Schemes — conditional list (differs per Housebuilder)
+- [ ] Cloudflare Images API integration

@@ -232,6 +232,8 @@ public with sharing class AgentFinderController {
                 agentMap.put('isAgent2', agent.Id == opp.Agent_2__c);
                 agentMap.put('isAgent3', agent.Id == opp.Agent_3__c);
                 agentMap.put('isAssigned', agent.Id == opp.Agent_2__c || agent.Id == opp.Agent_3__c);
+                agentMap.put('latitude', agent.Geo_Latitude__c);
+                agentMap.put('longitude', agent.Geo_Longitude__c);
                 agentList.add(agentMap);
             }
 
@@ -246,6 +248,9 @@ public with sharing class AgentFinderController {
 
             result.put('status', 'success');
             result.put('agents', agentList);
+            result.put('propertyLatitude', propertyCoords.get('lat'));
+            result.put('propertyLongitude', propertyCoords.get('lng'));
+            result.put('propertyAddress', opp.Property_Address__c);
             result.put('requestsUsed', config.Requests_Today__c);
             result.put('dailyLimit', dailyLimit);
             result.put('distanceMethod', usePostcodesIo ? 'Postcodes.io' : (useDistanceMatrix ? 'Distance Matrix' : 'Geocoding'));

@@ -113,7 +113,7 @@
                                 <input type="number" class="api-edit-input" data-field={f.apiName} value={f.actualValue} onchange={handleFieldChange}>
                             </template>
                             <template if:true={f.isPicklist}>
-                                <lightning-radio-group name={f.apiName} value={f.actualValue} options={distanceMethodOptions} data-field={f.apiName} onchange={handleFieldChange} type="radio"></lightning-radio-group>
+                                <lightning-radio-group name={f.apiName} value={f.actualValue} options={f.pickerOptions} data-field={f.apiName} onchange={handleFieldChange} type="radio"></lightning-radio-group>
                             </template>
                         </div>
                     </template>
