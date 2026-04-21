@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAllConfigs from '@salesforce/apex/NHSApiConfigController.getAllConfigs';
 import updateConfig from '@salesforce/apex/NHSApiConfigController.updateConfig';
 import getFieldValue from '@salesforce/apex/NHSApiConfigController.getFieldValue';
+import getEmailTemplates from '@salesforce/apex/NHSCommunicationsController.getEmailTemplates';
 import testApi from '@salesforce/apex/NHSApiHealthCheck.testApi';
 
 export default class NhsApiConfig extends LightningElement {
@@ -14,6 +15,7 @@ export default class NhsApiConfig extends LightningElement {
     @track editFields = [];
     @track isSaving = false;
     @track viewMode = 'blocks'; // 'list' or 'blocks'
+    @track emailTemplateOptions = [];
 
     get hasConfigs() { return this.configs.length > 0; }
     get showEditModal() { return this.editConfig !== null; }
@@ -44,11 +46,22 @@ export default class NhsApiConfig extends LightningElement {
 
     pickOptions(apiName) {
         if (apiName === 'Map_Provider__c') return this.mapProviderOptions;
+        if (apiName === 'Final_Checks_Email_Template_Id__c') return this.emailTemplateOptions;
         return this.distanceMethodOptions;
     }
 
     connectedCallback() {
         this.loadConfigs();
+        this.loadEmailTemplateOptions();
+    }
+
+    async loadEmailTemplateOptions() {
+        try {
+            const tpls = await getEmailTemplates();
+            this.emailTemplateOptions = (tpls || []).map(t => ({ label: t.name, value: t.id }));
+        } catch (e) {
+            // silent — field simply shows empty picker
+        }
     }
 
     async loadConfigs() {
@@ -89,8 +102,8 @@ export default class NhsApiConfig extends LightningElement {
                 isPassword: f.fieldType === 'password',
                 isNumber: f.fieldType === 'number',
                 isReadonly: f.fieldType === 'readonly',
-                isPicklist: f.fieldType === 'picklist',
-                pickerOptions: f.fieldType === 'picklist' ? this.pickOptions(f.apiName) : [],
+                isPicklist: f.fieldType === 'picklist' || f.fieldType === 'email-template',
+                pickerOptions: (f.fieldType === 'picklist' || f.fieldType === 'email-template') ? this.pickOptions(f.apiName) : [],
                 inputType: f.fieldType === 'password' ? 'password' : (f.fieldType === 'number' ? 'number' : 'text')
             });
         }

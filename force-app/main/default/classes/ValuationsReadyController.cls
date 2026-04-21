@@ -5,7 +5,7 @@ public with sharing class ValuationsReadyController {
         String query =
             'SELECT Id, Name, Property_Address__c, Development__c, Plot__c, ' +
             'NHS_Process__c, House_Builder__r.Name, Owner.Name, Vendor_1__r.Name, ' +
-            'Agent_1__r.Name, Agent_1_Appointment__c, Agent_1_Initial_Asking_Price__c, ' +
+            'Agent_1__c, Agent_1__r.Name, Agent_1_Appointment__c, Agent_1_Initial_Asking_Price__c, ' +
             'Agent_1_Target_Sale__c, Agent_1_Bottom_Line__c, ' +
             'Agent_2__r.Name, Agent_2_Appointment__c, Agent_2_Initial_Asking_Price__c, ' +
             'Agent_2_Target_Sale__c, Agent_2_Bottom_Line__c, ' +
@@ -29,15 +29,30 @@ public with sharing class ValuationsReadyController {
         List<AppWrapper> results = new List<AppWrapper>();
 
         for (Opportunity opp : Database.query(query)) {
-            // All 3 must have visited and all 3 figures must be submitted
-            Boolean a1Visited = opp.Agent_1_Appointment__c != null && opp.Agent_1_Appointment__c < now;
-            Boolean a2Visited = opp.Agent_2_Appointment__c != null && opp.Agent_2_Appointment__c < now;
-            Boolean a3Visited = opp.Agent_3_Appointment__c != null && opp.Agent_3_Appointment__c < now;
+            // Unassigned Agent 1 => not ready
+            if (opp.Agent_1__c == null) continue;
 
-            if (!a1Visited || !a2Visited || !a3Visited) continue;
-            if (opp.Agent_1_Initial_Asking_Price__c == null) continue;
-            if (opp.Agent_2_Initial_Asking_Price__c == null) continue;
-            if (opp.Agent_3_Initial_Asking_Price__c == null) continue;
+            // Agent 1 = "New Home Solutions" means NHS handles that slot internally —
+            // Agent 1 figures are not required. Otherwise all 3 agents need all 3 figures.
+            String a1Name = opp.Agent_1__r != null && opp.Agent_1__r.Name != null
+                              ? opp.Agent_1__r.Name.trim().toLowerCase() : '';
+            Boolean a1IsNhs = a1Name == 'new home solutions';
+
+            Boolean a2AllFigures = opp.Agent_2_Initial_Asking_Price__c != null
+                                && opp.Agent_2_Target_Sale__c != null
+                                && opp.Agent_2_Bottom_Line__c != null;
+            Boolean a3AllFigures = opp.Agent_3_Initial_Asking_Price__c != null
+                                && opp.Agent_3_Target_Sale__c != null
+                                && opp.Agent_3_Bottom_Line__c != null;
+
+            if (!a2AllFigures || !a3AllFigures) continue;
+
+            if (!a1IsNhs) {
+                Boolean a1AllFigures = opp.Agent_1_Initial_Asking_Price__c != null
+                                    && opp.Agent_1_Target_Sale__c != null
+                                    && opp.Agent_1_Bottom_Line__c != null;
+                if (!a1AllFigures) continue;
+            }
 
             // NHS valuation is outstanding if any of Market/Target/Forced is empty
             Boolean nhsMarketSet = opp.Current_Asking_Price__c != null && opp.Current_Asking_Price__c > 0;

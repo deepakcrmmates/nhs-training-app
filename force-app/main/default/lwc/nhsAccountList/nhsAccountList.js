@@ -58,7 +58,8 @@ export default class NhsAccountList extends NavigationMixin(LightningElement) {
             if (result.status === 'success') {
                 this.accounts = result.accounts.map(a => ({
                     ...a,
-                    url: '/' + a.id
+                    url: '/' + a.id,
+                    accountUrl: a.accountId ? '/' + a.accountId : ''
                 }));
                 this.totalCount = result.totalCount;
                 this.totalPages = result.totalPages;

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NHS CRM — Pre Go-Live Checklist</title>
+<style>
+  :root {
+    --sage-dark:  #4A6B5E;
+    --sage:       #6B9080;
+    --sage-mid:   #A4C3B2;
+    --sage-light: #CCE3D8;
+    --sage-tint:  #EAF4EF;
+    --border:     #C5DCCC;
+    --row-alt:    #F5F8F5;
+    --text-dark:  #1C2B24;
+    --text-body:  #374151;
+    --text-mute:  #6B7280;
+    --done:       #16A34A;
+    --done-bg:    #DCFCE7;
+    --prog:       #B45309;
+    --prog-bg:    #FEF3C7;
+    --todo:       #6B7280;
+    --todo-bg:    #F3F4F6;
+    --block:      #B91C1C;
+    --block-bg:   #FEE2E2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-dark);
+    font-size: 10.5px;
+    line-height: 1.4;
+    background: #fff;
+  }
+  .page { max-width: 1050px; margin: 0 auto; padding: 24px 30px 36px 30px; }
+
+  .hdr {
+    background: linear-gradient(135deg, var(--sage-dark) 0%, var(--sage) 100%);
+    color: #fff;
+    padding: 22px 28px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  }
+  .hdr h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px 0; letter-spacing: -0.01em; }
+  .hdr .sub { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; margin: 0; }
+  .hdr-brand {
+    font-family: 'Futura LT Light', 'Futura', sans-serif;
+    font-weight: 300;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-align: right;
+    line-height: 1.3;
+  }
+  .hdr-brand small { display: block; font-size: 10px; letter-spacing: 0.08em; opacity: 0.82; margin-top: 4px; }
+
+  .meta {
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    color: var(--text-body);
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .meta b { color: var(--sage-dark); text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; }
+
+  .legend {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 10px;
+    flex-wrap: wrap;
+  }
+  .legend .tag { padding: 3px 10px; border-radius: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 9px; }
+
+  h2.section {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sage-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 18px 0 6px 0;
+    padding: 6px 12px;
+    background: var(--sage-tint);
+    border-left: 4px solid var(--sage-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  h2.section .s-stats { font-size: 9px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.04em; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+  th {
+    background: #fff;
+    color: var(--sage-dark);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1.5px solid var(--border);
+  }
+  th.c { text-align: center; }
+  th.tick-col { text-align: center; width: 58px; }
+  th.status-col { width: 78px; text-align: center; }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 10.5px;
+    color: var(--text-body);
+  }
+  tr:nth-child(even) td { background: var(--row-alt); }
+  td.num {
+    width: 26px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 9.5px;
+    color: var(--text-mute);
+    font-weight: 600;
+  }
+  td.feat strong { color: var(--text-dark); font-weight: 700; }
+  td.feat .desc { color: var(--text-mute); font-size: 9.5px; margin-top: 1px; display: block; }
+  td.tick { text-align: center; }
+
+  .box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1.3px solid var(--sage);
+    border-radius: 3px;
+    background: #fff;
+    vertical-align: middle;
+  }
+  .box.dis { background: #F3F4F6; border-color: #E5E7EB; }
+
+  .tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 9px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .tag-done  { background: var(--done-bg);  color: var(--done); }
+  .tag-prog  { background: var(--prog-bg);  color: var(--prog); }
+  .tag-todo  { background: var(--todo-bg);  color: var(--todo); }
+  .tag-block { background: var(--block-bg); color: var(--block); }
+
+  /* Summary row */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin: 10px 0 18px 0;
+  }
+  .summary .box-k {
+    background: var(--sage-tint);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .summary .box-k .n { font-size: 20px; font-weight: 700; color: var(--sage-dark); font-family: 'SF Mono', monospace; }
+  .summary .box-k .l { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-mute); margin-top: 2px; font-weight: 700; }
+
+  /* Sign-off block */
+  .sig {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .sig-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--sage-tint);
+  }
+  .sig-box h3 {
+    font-size: 10px; font-weight: 700; color: var(--sage-dark); margin: 0 0 8px 0;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .sig-line { border-bottom: 1px solid var(--sage); margin: 14px 0 2px 0; height: 14px; }
+  .sig-lbl { font-size: 9px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .foot {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 9.5px;
+    color: var(--text-mute);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @page { size: A4; margin: 10mm; }
+  @media print {
+    body { font-size: 9.5px; }
+    .page { padding: 0; }
+    tr { page-break-inside: avoid; }
+    h2.section { page-break-after: avoid; }
+    .sig, .summary { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hdr">
+    <div>
+      <p class="sub">Pre Go-Live &middot; Feature &amp; Readiness Checklist</p>
+      <h1>NHS CRM — Final Go-Live Checklist</h1>
+    </div>
+    <div class="hdr-brand">
+      New Home Solutions
+      <small>Salesforce Production Cutover</small>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div><b>Prepared:</b> 21 April 2026</div>
+    <div><b>Target Go-Live:</b> TBC</div>
+    <div><b>Owner:</b> Deepak K Rana, CRM Mates Ltd</div>
+    <div><b>Sponsor:</b> Will Smith, NHS</div>
+    <div><b>Version:</b> 1.3</div>
+  </div>
+
+  <div class="legend">
+    <span class="tag tag-done">Done</span>
+    <span class="tag tag-prog">In Progress</span>
+    <span class="tag tag-todo">Pending</span>
+    <span class="tag tag-block">Blocker</span>
+  </div>
+
+  <div class="summary">
+    <div class="box-k"><div class="n">64</div><div class="l">Total items</div></div>
+    <div class="box-k"><div class="n">53</div><div class="l">Done</div></div>
+    <div class="box-k"><div class="n">1</div><div class="l">In progress</div></div>
+    <div class="box-k"><div class="n">8</div><div class="l">Pending</div></div>
+    <div class="box-k"><div class="n">2</div><div class="l">Blocked</div></div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2 class="section">1. Application Lifecycle <span class="s-stats">Create → Pipeline → Complete</span></h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td class="feat"><strong>Create Application form</strong><span class="desc">Full multi-section form with housebuilder picker, property details, vendor details, agents, scheme, dates.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">2</td><td class="feat"><strong>Manual address entry toggle</strong><span class="desc">Fallback when address lookup returns nothing.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">3</td><td class="feat"><strong>Vendor Households (auto-create on submit)</strong><span class="desc">Vendors get their own Household Account, independent of Housebuilder.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">4</td><td class="feat"><strong>Success screen — Download PDF + Go to Application</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">5</td><td class="feat"><strong>Application Detail V2 — pipeline view</strong><span class="desc">Pipeline bar, Quick Summary, stage-specific cards, collapsible agents.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">6</td><td class="feat"><strong>Generate PDF (Application Summary)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">7</td><td class="feat"><strong>Edit Application (admin only)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">8</td><td class="feat"><strong>Refresh button</strong><span class="desc">Parallel refresh of Opportunity wire + Vendor Notes + VA slots + BA slots; spinning icon and "Refreshing..." label during reload.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">9</td><td class="feat"><strong>Latest note visible in Quick Notes card</strong><span class="desc">Most recent note shown under the Add Note button with date, time and author.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">9a</td><td class="feat"><strong>Preview button on Property Address</strong><span class="desc">Eye-icon on the right of PROPERTY ADDRESS section; opens the linked NHS_Property__c record in a new browser tab.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">9b</td><td class="feat"><strong>UK currency formatting on Valuation Figures</strong><span class="desc">All 12 currency inputs (Agent 1/2/3 × Initial/Target/Bottom + NHS Market/Target/Forced) render with en-GB comma separators; handler strips commas/pound/spaces before save.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 2 -->
+  <h2 class="section">2. Pipeline Stages (NHS Process)</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">10</td><td class="feat"><strong>Step 1 — Application</strong> (default on create)</td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">11</td><td class="feat"><strong>Step 2 — Vendor Availability</strong><span class="desc">Calendar with AM/PM slots, 1-hour booking notice.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">12</td><td class="feat"><strong>Step 3 — Agents Booked</strong><span class="desc">Book Agent flow, agent editing, confirmation emails.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">13</td><td class="feat"><strong>Step 4 — Figures to Chase / Figures Returned</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">14</td><td class="feat"><strong>Step 5 — Valuations Ready (smart rules)</strong><span class="desc">Agent 1 = NHS → Agents 2 &amp; 3 figures only. Else all 3. Unassigned Agent 1 never qualifies.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">15</td><td class="feat"><strong>Step 6 — Final Checks</strong><span class="desc">Template auto-loads from NHS Config mapping; blocker panel lists missing checks / valuations; green bulb on Config when template is actively mapped.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">16</td><td class="feat"><strong>Step 7 — Vendor Discussions</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">17</td><td class="feat"><strong>Archived stage</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">18</td><td class="feat"><strong>Will Report button on Valuation Ready Kanban</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3 -->
+  <h2 class="section">3. Kanban &amp; List Views</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">19</td><td class="feat"><strong>All Applications Kanban (V7)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">20</td><td class="feat"><strong>Vendor Availability list</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">21</td><td class="feat"><strong>Agents Booked list</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">22</td><td class="feat"><strong>Figures to Chase / Returned lists</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">23</td><td class="feat"><strong>Valuations Ready list</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">24</td><td class="feat"><strong>Project Plan Kanban (priority columns)</strong><span class="desc">Drag &amp; drop with drop animation, Active/History tabs, quick Done/In Progress buttons.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 4 -->
+  <h2 class="section">4. Housebuilder Module</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">25</td><td class="feat"><strong>Housebuilders tab + search</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">26</td><td class="feat"><strong>+ New Housebuilder (inline form)</strong><span class="desc">Logo to Box, company details, dynamic contacts.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">27</td><td class="feat"><strong>Housebuilder Record Page (hero + 3 tabs)</strong><span class="desc">Contacts list, Applications with color-coded stage pills, Comms History.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">28</td><td class="feat"><strong>Edit Housebuilder modal + phone validation</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">29</td><td class="feat"><strong>Preferred Estate Agents tab (4th tab)</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+      <tr><td class="num">30</td><td class="feat"><strong>Schemes — conditional list per Housebuilder</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 5 -->
+  <h2 class="section">5. Vendors &amp; Contacts</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">31</td><td class="feat"><strong>Vendors tab + search</strong><span class="desc">Contact list with Account column (Household Account link).</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">32</td><td class="feat"><strong>Household Account model</strong><span class="desc">137 historical applications backfilled, 179 vendor contacts re-parented.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">33</td><td class="feat"><strong>Vendor 1 &amp; Vendor 2 full support on Applications</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6 -->
+  <h2 class="section">6. Agents Module</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">34</td><td class="feat"><strong>Agents tab + search</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">35</td><td class="feat"><strong>Assign Estate Agent (List view + Map view)</strong><span class="desc">Property pin + agents with radial fan-out for same postcode.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">36</td><td class="feat"><strong>Per-agent Valuation Report upload</strong><span class="desc">Goes to Box Valuations/Agent N folder.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">37</td><td class="feat"><strong>Phonebook icon on Assign Agents — Email page</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+      <tr><td class="num">38</td><td class="feat"><strong>+ New Agent + Agent Record Page</strong><span class="desc">Mirror of Housebuilder module.</span></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 7 -->
+  <h2 class="section">7. Property Management</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">39</td><td class="feat"><strong>Property Search (postcode + radius)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">40</td><td class="feat"><strong>Existing Properties list</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">41</td><td class="feat"><strong>Property Description auto-derivation</strong><span class="desc">"Apartment 2 Bed" derived from property type + bedrooms.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 8 -->
+  <h2 class="section">8. Communications &amp; Email</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">42</td><td class="feat"><strong>Comms Hub — 4-tab slide panel</strong><span class="desc">Email / Calls / SMS / WhatsApp.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">43</td><td class="feat"><strong>Compose email — TO / CC / BCC, address book, wide subject</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">44</td><td class="feat"><strong>Box file attachments in compose</strong><span class="desc">Tree-view picker, multi-select, sizes.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">45</td><td class="feat"><strong>Attachments visible in Comms History</strong><span class="desc">Post-send linking saves Box + uploaded files to the EmailMessage.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">46</td><td class="feat"><strong>Reply / Forward quoted body formatting</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">47</td><td class="feat"><strong>9 NHS branded email templates (#1–#9)</strong><span class="desc">#1 Agent 1 booking · #2/3 Agent 2/3 booking · #4 Vendor appointment · #5 Valuation figures · #6–#8 Chasers · #9 Final Checks.</span></td><td class="tick"><span class="tag tag-prog">In Prog</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 9 -->
+  <h2 class="section">9. Integrations</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">48</td><td class="feat"><strong>Box — OAuth, folder structure, file uploads</strong><span class="desc">Application / Valuations / Photos / Will Report subfolders.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">49</td><td class="feat"><strong>Mapbox + Google Maps dual-provider</strong><span class="desc">Auto-fallback, daily quota counter, health check.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">50</td><td class="feat"><strong>Ideal Postcode lookup (address auto-complete)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">51</td><td class="feat"><strong>Twilio SMS</strong> <span class="tag tag-block" style="margin-left:4px;">Blocked</span><span class="desc">Scheduler stopped. Blocked: card / billing issue + compliance review outstanding. Cannot reactivate until both resolved.</span></td><td class="tick"><span class="tag tag-block">Blocked</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+      <tr><td class="num">52</td><td class="feat"><strong>3CX telephony integration</strong> <span class="tag tag-block" style="margin-left:4px;">Blocked — Top Priority</span><span class="desc">Awaiting Gradwell ticket update for Salesforce integration approval + API key details.</span></td><td class="tick"><span class="tag tag-block">Blocked</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+      <tr><td class="num">53</td><td class="feat"><strong>Cloudflare Images API integration</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 10 -->
+  <h2 class="section">10. Admin &amp; Configuration</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">54</td><td class="feat"><strong>NHS API Config page</strong><span class="desc">Map Provider, Mapbox token, Box, all integrations central UI.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">55</td><td class="feat"><strong>Custom Settings populated</strong><span class="desc">NHS_API_Config__c, Box_Config__c, Google_Maps_Config__c.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">56</td><td class="feat"><strong>CSP Trusted Sites + Remote Site Settings</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">57</td><td class="feat"><strong>Permission Sets assigned to users</strong><span class="desc">NHS_Project_Plan_Access, NHS_Account_Geo_Access, etc.</span></td><td class="tick"><span class="tag tag-prog">In Prog</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">58</td><td class="feat"><strong>Scheduled jobs — health check only (Twilio stopped)</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 11 -->
+  <h2 class="section">11. Notifications &amp; Observability</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">59</td><td class="feat"><strong>Toast notifications across LWCs</strong></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">60</td><td class="feat"><strong>Notification system — Chatter analysis &amp; rollout</strong></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 12 -->
+  <h2 class="section">12. Go-Live Readiness</h2>
+  <table>
+    <thead><tr><th style="width:26px;">#</th><th>Feature</th><th class="status-col">Status</th><th class="tick-col">Jordan</th><th class="tick-col">Gina</th><th class="tick-col">Will</th></tr></thead>
+    <tbody>
+      <tr><td class="num">61</td><td class="feat"><strong>Technical Document up to date</strong><span class="desc">Every deploy logged in docs/TECHNICAL_DOCUMENT.md and pushed to GitHub.</span></td><td class="tick"><span class="tag tag-done">Done</span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td><td class="tick"><span class="box"></span></td></tr>
+      <tr><td class="num">62</td><td class="feat"><strong>Production cutover plan &amp; training</strong><span class="desc">Sandbox → Prod deploy path, user training session, fallback plan.</span></td><td class="tick"><span class="tag tag-todo">Pending</span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td><td class="tick"><span class="box dis"></span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- Sign off -->
+  <div class="sig">
+    <div class="sig-box">
+      <h3>Jordan — Final Sign-off</h3>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Signature</div>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Date</div>
+    </div>
+    <div class="sig-box">
+      <h3>Gina — Final Sign-off</h3>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Signature</div>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Date</div>
+    </div>
+    <div class="sig-box">
+      <h3>Will — Final Sign-off</h3>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Signature</div>
+      <div class="sig-line"></div>
+      <div class="sig-lbl">Date</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div>New Home Solutions &middot; NHS CRM Go-Live Checklist v1.3</div>
+    <div>Prepared by Deepak K Rana &middot; CRM Mates Ltd &middot; deepak@crmmates.com</div>
+  </div>
+
+</div>
+</body>
+</html>

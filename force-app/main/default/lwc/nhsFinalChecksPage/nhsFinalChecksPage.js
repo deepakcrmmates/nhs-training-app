@@ -76,7 +76,7 @@ export default class NhsFinalChecksPage extends LightningElement {
 
                 this.isLoaded = true;
                 this.isDirty = false;
-                if (this.allChecked) this.loadTemplates();
+                if (this.readyToSend) this.loadTemplates();
             })
             .catch(err => { console.error(err); this.isLoaded = true; });
     }
@@ -143,7 +143,7 @@ export default class NhsFinalChecksPage extends LightningElement {
         const key = e.currentTarget.dataset.key;
         this.checks = { ...this.checks, [key]: !this.checks[key] };
         this.isDirty = true;
-        if (this.allChecked && this.templates.length === 0) this.loadTemplates();
+        if (this.readyToSend && this.templates.length === 0) this.loadTemplates();
     }
 
     async handleSave() {
@@ -162,8 +162,16 @@ export default class NhsFinalChecksPage extends LightningElement {
         getTemplates()
             .then(result => {
                 this.templates = (result || []).map(t => ({ label: t.name, value: t.id }));
+                this._applyDefaultTemplate();
             })
             .catch(err => console.error(err));
+    }
+
+    _applyDefaultTemplate() {
+        const defaultId = this.d && this.d.defaultTemplateId;
+        if (!defaultId || this.selectedTemplateId) return;
+        if (!this.templates.some(t => t.value === defaultId)) return;
+        this.handlePickTemplate({ currentTarget: { dataset: { id: defaultId } } });
     }
 
     renderedCallback() {
@@ -174,8 +182,47 @@ export default class NhsFinalChecksPage extends LightningElement {
     }
 
     get hasTemplates() { return this.templates.length > 0; }
-    get showEmail() { return this.allChecked; }
-    get showMoveNext() { return this.allChecked && this.builderApproved && !this.isDirty; }
+
+    // Missing valuation figures (agent 1/2/3 Initial/Target/Bottom + NHS Market/Target/Forced)
+    get missingValuations() {
+        const missing = [];
+        const need = (val) => val === null || val === undefined || val === 0;
+        const d = this.d || {};
+        const agents = [
+            { num: 1, name: d.agent1Name || 'Agent 1', initial: d.agent1Initial, target: d.agent1Target, bottom: d.agent1Bottom },
+            { num: 2, name: d.agent2Name || 'Agent 2', initial: d.agent2Initial, target: d.agent2Target, bottom: d.agent2Bottom },
+            { num: 3, name: d.agent3Name || 'Agent 3', initial: d.agent3Initial, target: d.agent3Target, bottom: d.agent3Bottom }
+        ];
+        for (const a of agents) {
+            const fields = [];
+            if (need(a.initial)) fields.push('Initial Asking');
+            if (need(a.target))  fields.push('Target Sale');
+            if (need(a.bottom))  fields.push('Bottom Price');
+            if (fields.length) missing.push({ key: 'a' + a.num, label: a.name, detail: fields.join(', ') });
+        }
+        const nhsFields = [];
+        if (need(d.nhsMarket)) nhsFields.push('Market Value');
+        if (need(d.nhsTarget)) nhsFields.push('Target Sale');
+        if (need(d.nhsForced)) nhsFields.push('Forced Sale');
+        if (nhsFields.length) missing.push({ key: 'nhs', label: 'NHS Recommendation', detail: nhsFields.join(', ') });
+        return missing;
+    }
+    get hasMissingValuations() { return this.missingValuations.length > 0; }
+    get missingChecksCount() { return TOTAL - this.checkedCount; }
+    get hasMissingChecks() { return !this.allChecked; }
+    get readyToSend() { return this.allChecked && !this.hasMissingValuations; }
+
+    get showEmail() { return this.readyToSend; }
+    get showMoveNext() { return this.readyToSend && this.builderApproved && !this.isDirty; }
+
+    get blockerHeadline() {
+        if (this.hasMissingChecks && this.hasMissingValuations) return 'Checks and valuation figures are incomplete';
+        if (this.hasMissingChecks) return 'Checks are incomplete';
+        return 'Valuation figures are incomplete';
+    }
+    get blockerChecksLabel() {
+        return this.missingChecksCount + ' of ' + TOTAL + ' check' + (this.missingChecksCount === 1 ? '' : 's') + ' still outstanding';
+    }
 
     async handleMoveNext() {
         this.isMoving = true;

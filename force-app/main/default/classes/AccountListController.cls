@@ -72,7 +72,7 @@ public with sharing class AccountListController {
             Integer limitSize = pageSize != null ? pageSize : 25;
             Integer offsetVal = pageNumber != null ? (pageNumber - 1) * limitSize : 0;
 
-            String baseQuery = 'SELECT Id, FirstName, LastName, Name, Email, MobilePhone, Phone, MailingCity, MailingPostalCode, CreatedDate ' +
+            String baseQuery = 'SELECT Id, FirstName, LastName, Name, Email, MobilePhone, Phone, MailingCity, MailingPostalCode, CreatedDate, AccountId, Account.Name ' +
                 'FROM Contact WHERE RecordTypeId = :rtId';
 
             String countQuery = 'SELECT COUNT() FROM Contact WHERE RecordTypeId = :rtId';
@@ -102,6 +102,8 @@ public with sharing class AccountListController {
                 row.put('email', c.Email);
                 row.put('contactMobile', c.MobilePhone);
                 row.put('contactEmail', c.Email);
+                row.put('accountId', c.AccountId);
+                row.put('accountName', c.Account != null ? c.Account.Name : '');
                 rows.add(row);
             }
 

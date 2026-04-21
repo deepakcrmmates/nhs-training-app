@@ -116,7 +116,18 @@
 
           <!-- Property Address Box (green) -->
           <div class="prop-address-box">
-            <div class="section-label" style="color: var(--nhs-dk);">Property Address</div>
+            <div class="prop-address-head">
+              <div class="section-label" style="color: var(--nhs-dk);">Property Address</div>
+              <template if:true={hasPropertyRecord}>
+                <button class="prop-preview-btn" onclick={handlePreviewProperty} title="Open property record">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Preview
+                </button>
+              </template>
+            </div>
             <div class="prop-grid-5">
               <div class="field">
                 <label class="field-label">Address</label>
@@ -958,15 +969,15 @@
                     <h4>Valuation Figures</h4>
                     <div class="val-row">
                       <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1InitialPrice} data-field="agent1InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1InitialPrice} data-field="agent1InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1TargetSale} data-field="agent1TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1TargetSale} data-field="agent1TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent1BottomLine} data-field="agent1BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1BottomLine} data-field="agent1BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                   </div>
                   <!-- Valuation Report Upload -->
@@ -1053,15 +1064,15 @@
                     <h4>Valuation Figures</h4>
                     <div class="val-row">
                       <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2InitialPrice} data-field="agent2InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2InitialPrice} data-field="agent2InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2TargetSale} data-field="agent2TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2TargetSale} data-field="agent2TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent2BottomLine} data-field="agent2BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2BottomLine} data-field="agent2BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                   </div>
                   <!-- Valuation Report Upload -->
@@ -1148,15 +1159,15 @@
                     <h4>Valuation Figures</h4>
                     <div class="val-row">
                       <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3InitialPrice} data-field="agent3InitialPrice" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3InitialPrice} data-field="agent3InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3TargetSale} data-field="agent3TargetSale" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3TargetSale} data-field="agent3TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                     <div class="val-row">
                       <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={formData.agent3BottomLine} data-field="agent3BottomLine" onchange={handleFieldChange} placeholder="0.00"/></div>
+                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3BottomLine} data-field="agent3BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
                     </div>
                   </div>
                   <!-- Valuation Report Upload -->
@@ -1198,21 +1209,21 @@
                   <div class="nhs-rec-label">Market</div>
                   <div class="nhs-rec-input">
                     <span class="nhs-rec-pound">£</span>
-                    <input type="text" class="nhs-rec-field" value={formData.recommendedMarket} data-field="recommendedMarket" onchange={handleFieldChange} placeholder="0.00"/>
+                    <input type="text" class="nhs-rec-field" value={fmt.recommendedMarket} data-field="recommendedMarket" onchange={handleFieldChange} placeholder="0"/>
                   </div>
                 </div>
                 <div class="nhs-rec-item">
                   <div class="nhs-rec-label">Target</div>
                   <div class="nhs-rec-input">
                     <span class="nhs-rec-pound">£</span>
-                    <input type="text" class="nhs-rec-field" value={formData.recommendedTarget} data-field="recommendedTarget" onchange={handleFieldChange} placeholder="0.00"/>
+                    <input type="text" class="nhs-rec-field" value={fmt.recommendedTarget} data-field="recommendedTarget" onchange={handleFieldChange} placeholder="0"/>
                   </div>
                 </div>
                 <div class="nhs-rec-item nhs-rec-amber">
                   <div class="nhs-rec-label">Forced</div>
                   <div class="nhs-rec-input">
                     <span class="nhs-rec-pound nhs-rec-pound-amber">£</span>
-                    <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={formData.recommendedForced} data-field="recommendedForced" onchange={handleFieldChange} placeholder="0.00"/>
+                    <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={fmt.recommendedForced} data-field="recommendedForced" onchange={handleFieldChange} placeholder="0"/>
                   </div>
                 </div>
               </div>
@@ -1423,6 +1434,17 @@
               </button>
             </div>
           </div>
+          <!-- Latest note display -->
+          <template if:true={hasLatestNote}>
+            <div class="qn-latest">
+              <div class="qn-latest-header">
+                <span class="qn-latest-label">Latest Note</span>
+                <span class="qn-latest-date">{latestNote.dateDisplay}</span>
+              </div>
+              <div class="qn-latest-body">{latestNote.body}</div>
+              <div class="qn-latest-author">— {latestNote.author}</div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -1437,7 +1459,7 @@
         <lightning-icon icon-name="utility:chat" size="x-small"></lightning-icon>
         Comms Hub
       </button>
-      <button class="btn-bottom btn-pdf" onclick={handleGeneratePdf}>
+      <button class="btn-bottom btn-pdf" onclick={handleGeneratePDF}>
         <lightning-icon icon-name="utility:pdf_ext" size="x-small"></lightning-icon>
         Generate PDF
       </button>
@@ -1447,9 +1469,15 @@
           Edit Application
         </button>
       </template>
-      <button class="btn-bottom btn-refresh" onclick={handleRefresh}>
-        <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
-        Refresh
+      <button class="btn-bottom btn-refresh" onclick={handleRefresh} disabled={isRefreshing}>
+        <template if:true={isRefreshing}>
+          <lightning-icon icon-name="utility:refresh" size="x-small" class="btn-refresh-spin"></lightning-icon>
+          Refreshing...
+        </template>
+        <template if:false={isRefreshing}>
+          <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
+          Refresh
+        </template>
       </button>
     </div>
     <div class="bottom-right">
@@ -1478,6 +1506,15 @@
       </template><!-- /notFinalChecks for save buttons -->
     </div>
   </div>
+
+  <!-- ========== PDF GENERATION MODAL ========== -->
+  <template if:true={showPdfModal}>
+    <div class="pdf-backdrop"></div>
+    <div class="pdf-modal">
+      <lightning-spinner alternative-text="Generating PDF" size="medium"></lightning-spinner>
+      <div class="pdf-status">{pdfStatus}</div>
+    </div>
+  </template>
 
   <!-- ========== 5. COMMS HUB OVERLAY (right panel) ========== -->
   <template if:true={showCommsHub}>

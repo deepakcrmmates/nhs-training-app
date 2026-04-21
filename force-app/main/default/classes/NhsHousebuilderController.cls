@@ -220,4 +220,19 @@ public with sharing class NhsHousebuilderController {
     public static void deleteContact(Id contactId) {
         delete new Contact(Id = contactId);
     }
+
+    @AuraEnabled
+    public static void updateHousebuilder(Id accountId, String accountDataJson) {
+        Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(accountDataJson);
+        Account acc = new Account(Id = accountId);
+        if (data.containsKey('name'))     acc.Name = (String) data.get('name');
+        if (data.containsKey('phone'))    acc.Phone = (String) data.get('phone');
+        if (data.containsKey('email'))    acc.Email__c = (String) data.get('email');
+        if (data.containsKey('website'))  acc.Website = (String) data.get('website');
+        if (data.containsKey('street'))   acc.BillingStreet = (String) data.get('street');
+        if (data.containsKey('city'))     acc.BillingCity = (String) data.get('city');
+        if (data.containsKey('postcode')) acc.BillingPostalCode = (String) data.get('postcode');
+        if (data.containsKey('country'))  acc.BillingCountry = (String) data.get('country');
+        update acc;
+    }
 }

@@ -10,7 +10,7 @@ public with sharing class NhsProjectPlanController {
         ];
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Map<String, Object>> getTasks(Id projectPlanId, Boolean includeClosed) {
         List<Map<String, Object>> results = new List<Map<String, Object>>();
 

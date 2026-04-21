@@ -64,6 +64,7 @@
                         <div class={col.columnClass} key={col.key}
                              data-priority={col.priority}
                              ondragover={handleDragOver}
+                             ondragleave={handleDragLeave}
                              ondrop={handleDrop}>
                             <div class={col.headerClass}>
                                 <span class="col-label">{col.label}</span>
@@ -74,6 +75,7 @@
                                     <div class={task.cardClass} key={task.Id} data-id={task.Id}
                                          draggable="true"
                                          ondragstart={handleDragStart}
+                                         ondragend={handleDragEnd}
                                          onclick={handleEditTask}>
                                         <div class="task-top">
                                             <span class="task-name">{task.Name}</span>

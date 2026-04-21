@@ -179,6 +179,13 @@ public with sharing class FinalChecksController {
         data.put('photosValidated', opp.FC_Photos_Validated__c);
         data.put('addressValidated', opp.FC_Address_Validated__c);
 
+        // Configured default email template for Final Checks (from NHS API Config)
+        String defaultTemplateId = '';
+        for (NHS_API_Config__c cfg : [SELECT Final_Checks_Email_Template_Id__c FROM NHS_API_Config__c LIMIT 1]) {
+            defaultTemplateId = cfg.Final_Checks_Email_Template_Id__c;
+        }
+        data.put('defaultTemplateId', defaultTemplateId);
+
         return data;
     }
 

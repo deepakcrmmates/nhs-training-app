@@ -52,7 +52,8 @@ public with sharing class NHSApiConfigController {
         List<NHS_API_Config__c> nhsConfigs = [
             SELECT Id, Ideal_Postcodes_Key__c, RapidAPI_Key__c, Street_Data_Endpoint__c, TinyURL_Endpoint__c,
                    Airparser_API_Key__c, Airparser_Inbox_Id__c,
-                   Map_Provider__c, Mapbox_Public_Token__c, Mapbox_Requests_Today__c, Mapbox_Daily_Limit__c, Mapbox_Last_Reset_Date__c
+                   Map_Provider__c, Mapbox_Public_Token__c, Mapbox_Requests_Today__c, Mapbox_Daily_Limit__c, Mapbox_Last_Reset_Date__c,
+                   Final_Checks_Email_Template_Id__c
             FROM NHS_API_Config__c LIMIT 1
         ];
         if (!nhsConfigs.isEmpty()) {
@@ -87,6 +88,16 @@ public with sharing class NHSApiConfigController {
             configs.add(buildConfig('Postcodes.io', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
                 field('Endpoint', 'Postcodes_IO_Endpoint__c', 'https://api.postcodes.io', 'readonly')
             }));
+
+            String fcTemplateLabel = '';
+            if (String.isNotBlank(n.Final_Checks_Email_Template_Id__c)) {
+                List<EmailTemplate> tpls = [SELECT Id, Name FROM EmailTemplate WHERE Id = :n.Final_Checks_Email_Template_Id__c LIMIT 1];
+                fcTemplateLabel = tpls.isEmpty() ? n.Final_Checks_Email_Template_Id__c : tpls[0].Name;
+            }
+            configs.add(buildConfig('Final Checks Email', 'NHS_API_Config__c', n.Id, new List<Map<String, String>>{
+                field('Template', 'Final_Checks_Email_Template_Id__c', n.Final_Checks_Email_Template_Id__c, 'email-template'),
+                field('Template Name', '__fc_template_label', fcTemplateLabel, 'readonly')
+            }));
         }
 
         // Twilio (managed — read only display)
@@ -113,6 +124,29 @@ public with sharing class NHSApiConfigController {
             c.put('healthStatus', String.isNotBlank(status) ? status : 'unknown');
             c.put('healthMessage', String.isNotBlank(status) ? status : 'Not checked');
             c.put('lastCheck', lastCheckStr);
+
+            // Bespoke health logic for Final Checks Email — no scheduled check, status is just "is it mapped and does the template still exist?"
+            if ('Final Checks Email'.equals((String) c.get('name'))) {
+                List<Map<String, String>> fieldsList = (List<Map<String, String>>) c.get('fields');
+                String templateId = null;
+                String templateLabel = null;
+                if (fieldsList != null) {
+                    for (Map<String, String> f : fieldsList) {
+                        if ('Final_Checks_Email_Template_Id__c'.equals(f.get('apiName'))) templateId = f.get('value');
+                        if ('__fc_template_label'.equals(f.get('apiName'))) templateLabel = f.get('value');
+                    }
+                }
+                if (String.isBlank(templateId)) {
+                    c.put('healthStatus', 'unknown');
+                    c.put('healthMessage', 'No template mapped');
+                } else if (String.isBlank(templateLabel)) {
+                    c.put('healthStatus', 'error');
+                    c.put('healthMessage', 'Mapped template Id not found');
+                } else {
+                    c.put('healthStatus', 'ok');
+                    c.put('healthMessage', 'Active — ' + templateLabel);
+                }
+            }
         }
 
         // Sort alphabetically

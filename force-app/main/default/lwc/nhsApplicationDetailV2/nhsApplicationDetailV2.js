@@ -39,6 +39,18 @@ import NOTES_FIELD from '@salesforce/schema/Opportunity.Notes__c';
 import DEVELOPMENT_FIELD from '@salesforce/schema/Opportunity.Development__c';
 import PLOT_FIELD from '@salesforce/schema/Opportunity.Plot__c';
 import PROPERTY_DESCRIPTION_FIELD from '@salesforce/schema/Opportunity.Property_Description__c';
+import PROPERTY_LOOKUP_FIELD from '@salesforce/schema/Opportunity.Property__c';
+// Linked property fields for deriving description when Property_Description__c is blank
+import PROP_DETACHED_FIELD from '@salesforce/schema/Opportunity.Property__r.Detached__c';
+import PROP_SEMI_FIELD from '@salesforce/schema/Opportunity.Property__r.Semi_Detached__c';
+import PROP_END_TERRACE_FIELD from '@salesforce/schema/Opportunity.Property__r.End_Terrace__c';
+import PROP_MID_TERRACE_FIELD from '@salesforce/schema/Opportunity.Property__r.Mid_Terrace__c';
+import PROP_APARTMENT_FIELD from '@salesforce/schema/Opportunity.Property__r.Apartment__c';
+import PROP_MAISONETTE_FIELD from '@salesforce/schema/Opportunity.Property__r.Maisonette__c';
+import PROP_STUDIO_FIELD from '@salesforce/schema/Opportunity.Property__r.Maisonette_Studio__c';
+import PROP_BUNGALOW_FIELD from '@salesforce/schema/Opportunity.Property__r.Bungalow__c';
+import PROP_OTHER_FIELD from '@salesforce/schema/Opportunity.Property__r.Other__c';
+import PROP_BEDROOMS_FIELD from '@salesforce/schema/Opportunity.Property__r.Number_Of_Bedrooms__c';
 import VENDOR_MOBILE_FIELD from '@salesforce/schema/Opportunity.Vendor_1_Mobile__c';
 import VENDOR_EXPECTATIONS_FIELD from '@salesforce/schema/Opportunity.Client_Expectations__c';
 import VENDOR_PHONE_FIELD from '@salesforce/schema/Opportunity.Vendor_1_Phone__c';
@@ -113,7 +125,8 @@ import RECOMMENDED_FORCED_FIELD from '@salesforce/schema/Opportunity.Forced_Sale
 // ── Fields Array ───────────────────────────────────────────────────────────────
 const FIELDS = [
     NAME_FIELD, HOUSE_BUILDER_FIELD, HOUSE_BUILDER_NAME_FIELD, PROPERTY_ADDRESS_FIELD, VENDOR_1_FIELD, VENDOR_1_NAME_FIELD,
-    APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD, PROPERTY_DESCRIPTION_FIELD,
+    APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD, PROPERTY_DESCRIPTION_FIELD, PROPERTY_LOOKUP_FIELD,
+    PROP_DETACHED_FIELD, PROP_SEMI_FIELD, PROP_END_TERRACE_FIELD, PROP_MID_TERRACE_FIELD, PROP_APARTMENT_FIELD, PROP_MAISONETTE_FIELD, PROP_STUDIO_FIELD, PROP_BUNGALOW_FIELD, PROP_OTHER_FIELD, PROP_BEDROOMS_FIELD,
     VENDOR_MOBILE_FIELD, VENDOR_EXPECTATIONS_FIELD, VENDOR_PHONE_FIELD, ETA_COMP_END_FIELD, VENDOR_EMAIL_FIELD, SCHEME_FIELD, STAGE_FIELD, NHS_PROCESS_FIELD,
     VENDOR_2_FIELD, VENDOR_2_NAME_FIELD, VENDOR_2_MOBILE_FIELD, VENDOR_2_PHONE_FIELD, VENDOR_2_EMAIL_FIELD,
     AGENT_1_FIELD, AGENT_1_NAME_FIELD, AGENT_1_PHONE_FIELD, AGENT_1_EMAIL_FIELD, AGENT_1_APPT_FIELD, AGENT_1_EMAILED_FIELD, AGENT_1_VERBALLY_CONFIRMED_FIELD, AGENT_1_INITIAL_PRICE_FIELD, AGENT_1_TARGET_SALE_FIELD, AGENT_1_BOTTOM_LINE_FIELD, AGENT_1_VAL_REPORT_ID_FIELD, AGENT_1_VAL_REPORT_NAME_FIELD,
@@ -215,6 +228,78 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         return (v !== null && v !== undefined && v !== 0) ? v : null;
     }
 
+    // UK number formatting for currency inputs (integer with comma thousands separator)
+    _fmtGB(v) {
+        if (v === null || v === undefined || v === '') return '';
+        const num = Number(String(v).replace(/,/g, ''));
+        if (Number.isNaN(num)) return '';
+        return num.toLocaleString('en-GB');
+    }
+
+    get hasPropertyRecord() {
+        return !!(this.formData && this.formData.propertyId);
+    }
+
+    handlePreviewProperty() {
+        if (!this.formData || !this.formData.propertyId) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'No Property record',
+                message: 'This application is not linked to a Property record yet.',
+                variant: 'warning'
+            }));
+            return;
+        }
+        this[NavigationMixin.GenerateUrl]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: this.formData.propertyId,
+                objectApiName: 'NHS_Property__c',
+                actionName: 'view'
+            }
+        }).then(url => {
+            window.open(url, '_blank', 'noopener');
+        });
+    }
+
+    get fmt() {
+        const f = this.formData || {};
+        return {
+            agent1InitialPrice: this._fmtGB(f.agent1InitialPrice),
+            agent1TargetSale:   this._fmtGB(f.agent1TargetSale),
+            agent1BottomLine:   this._fmtGB(f.agent1BottomLine),
+            agent2InitialPrice: this._fmtGB(f.agent2InitialPrice),
+            agent2TargetSale:   this._fmtGB(f.agent2TargetSale),
+            agent2BottomLine:   this._fmtGB(f.agent2BottomLine),
+            agent3InitialPrice: this._fmtGB(f.agent3InitialPrice),
+            agent3TargetSale:   this._fmtGB(f.agent3TargetSale),
+            agent3BottomLine:   this._fmtGB(f.agent3BottomLine),
+            recommendedMarket:  this._fmtGB(f.recommendedMarket),
+            recommendedTarget:  this._fmtGB(f.recommendedTarget),
+            recommendedForced:  this._fmtGB(f.recommendedForced)
+        };
+    }
+
+    _derivePropertyDescription(f) {
+        const p = f?.Property__r?.value?.fields;
+        if (!p) return '';
+        const types = [];
+        if (p.Detached__c?.value) types.push('Detached');
+        if (p.Semi_Detached__c?.value) types.push('Semi-Detached');
+        if (p.End_Terrace__c?.value) types.push('End Terrace');
+        if (p.Mid_Terrace__c?.value) types.push('Mid Terrace');
+        if (p.Apartment__c?.value) types.push('Apartment');
+        if (p.Maisonette__c?.value) types.push('Maisonette');
+        if (p.Maisonette_Studio__c?.value) types.push('Studio');
+        if (p.Bungalow__c?.value) types.push('Bungalow');
+        if (p.Other__c?.value) types.push('Other');
+        let desc = types.join(' / ');
+        const beds = p.Number_Of_Bedrooms__c?.value;
+        if (beds !== null && beds !== undefined) {
+            desc += (desc ? ' ' : '') + Math.trunc(beds) + ' Bed';
+        }
+        return desc;
+    }
+
     mapDataToForm(data) {
         const f = data.fields;
         this.formData = {
@@ -237,7 +322,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             etaCompEnd:         f.ETA_Comp_End__c?.value || '',
             development:        f.Development__c?.value || '',
             plot:               f.Plot__c?.value || '',
-            propertyDescription: f.Property_Description__c?.value || '',
+            propertyDescription: f.Property_Description__c?.value || this._derivePropertyDescription(f),
+            propertyId:         f.Property__c?.value || '',
             scheme:             f.Scheme__c?.value || '',
             nhsProcess:         f.NHS_Process__c?.value || '',
             stageName:          f.StageName?.value || '',
@@ -617,7 +703,20 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     // ── Inline Field Change (immediate persist) ────────────────────────────────
     async handleFieldChange(event) {
         const fieldName = event.currentTarget.dataset.field;
-        const value = event.target.value !== undefined ? event.target.value : event.detail.value;
+        let value = event.target.value !== undefined ? event.target.value : event.detail.value;
+
+        // Normalise currency inputs — strip commas, £ signs, spaces
+        const CURRENCY_FIELDS = new Set([
+            'agent1InitialPrice', 'agent1TargetSale', 'agent1BottomLine',
+            'agent2InitialPrice', 'agent2TargetSale', 'agent2BottomLine',
+            'agent3InitialPrice', 'agent3TargetSale', 'agent3BottomLine',
+            'recommendedMarket', 'recommendedTarget', 'recommendedForced'
+        ]);
+        if (CURRENCY_FIELDS.has(fieldName) && typeof value === 'string') {
+            const cleaned = value.replace(/[£,\s]/g, '');
+            value = cleaned === '' ? null : Number(cleaned);
+            if (Number.isNaN(value)) value = null;
+        }
 
         // Update local state
         this.formData = { ...this.formData, [fieldName]: value };
@@ -1637,26 +1736,32 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     // ── Refresh Data ───────────────────────────────────────────────────────────
-    handleRefresh() {
-        this.isLoading = true;
-        refreshApex(this.wiredRecordResult)
-            .then(() => {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Refreshed',
-                    message: 'Data refreshed successfully.',
-                    variant: 'success'
-                }));
-            })
-            .catch(() => {
-                this.dispatchEvent(new ShowToastEvent({
-                    title: 'Error',
-                    message: 'Failed to refresh.',
-                    variant: 'error'
-                }));
-            })
-            .finally(() => {
-                this.isLoading = false;
-            });
+    @track isRefreshing = false;
+
+    async handleRefresh() {
+        if (this.isRefreshing) return;
+        this.isRefreshing = true;
+        try {
+            await Promise.all([
+                refreshApex(this.wiredRecordResult),
+                this.loadVendorNotes(),
+                this.loadVaData(),
+                this.loadBaSlots()
+            ]);
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Refreshed',
+                message: 'Application data reloaded.',
+                variant: 'success'
+            }));
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Refresh failed',
+                message: e?.body?.message || e?.message || 'Something went wrong',
+                variant: 'error'
+            }));
+        } finally {
+            this.isRefreshing = false;
+        }
     }
 
     // ── Generate PDF ───────────────────────────────────────────────────────────
@@ -2337,6 +2442,8 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track notesPageSize = 5;
     @track notesPageNum = 1;
     get hasVendorNotes() { return this.vendorNotes.length > 0; }
+    get latestNote() { return this.vendorNotes.length > 0 ? this.vendorNotes[0] : null; }
+    get hasLatestNote() { return this.vendorNotes.length > 0; }
     get notesTotalPages() { return Math.ceil(this.vendorNotes.length / this.notesPageSize) || 1; }
     get pagedNotes() {
         const start = (this.notesPageNum - 1) * this.notesPageSize;

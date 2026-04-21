@@ -38,6 +38,10 @@
                     </div>
                 </div>
                 <div class="hbd-contact-strip">
+                    <button class="hbd-edit-btn" onclick={handleShowEditHb} title="Edit Housebuilder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit
+                    </button>
                     <template if:true={data.phone}>
                         <a href={phoneHref} class="hbd-quick">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.17 6.17l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -220,6 +224,62 @@
                     <template if:false={hasComms}>
                         <div class="hbd-empty">No communications recorded yet.</div>
                     </template>
+                </div>
+            </template>
+
+            <!-- Edit Housebuilder modal -->
+            <template if:true={showEditHb}>
+                <div class="hbd-backdrop" onclick={handleCloseEditHb}></div>
+                <div class="hbd-modal hbd-modal-wide">
+                    <div class="hbd-modal-header">
+                        <h3>Edit Housebuilder</h3>
+                        <button class="hbd-modal-close" onclick={handleCloseEditHb}>&times;</button>
+                    </div>
+                    <div class="hbd-modal-body">
+                        <div class="hbd-modal-grid">
+                            <div class="hbd-modal-field hbd-col-full">
+                                <label>Company Name</label>
+                                <input type="text" data-field="name" value={editHb.name} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field">
+                                <label>Email</label>
+                                <input type="email" data-field="email" value={editHb.email} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field">
+                                <label>Phone</label>
+                                <input type="tel" data-field="phone" value={editHb.phone}
+                                       pattern="[0-9+()\-\s]*"
+                                       inputmode="tel"
+                                       placeholder="+44 1234 567890"
+                                       onkeypress={handlePhoneKeyPress}
+                                       oninput={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field hbd-col-full">
+                                <label>Website</label>
+                                <input type="text" data-field="website" value={editHb.website} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field hbd-col-full">
+                                <label>Street</label>
+                                <input type="text" data-field="street" value={editHb.street} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field">
+                                <label>City</label>
+                                <input type="text" data-field="city" value={editHb.city} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field">
+                                <label>Postcode</label>
+                                <input type="text" data-field="postcode" value={editHb.postcode} onchange={handleEditHbFieldChange}/>
+                            </div>
+                            <div class="hbd-modal-field hbd-col-full">
+                                <label>Country</label>
+                                <input type="text" data-field="country" value={editHb.country} onchange={handleEditHbFieldChange}/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hbd-modal-footer">
+                        <button class="hbd-btn-secondary" onclick={handleCloseEditHb}>Cancel</button>
+                        <button class="hbd-btn-primary" onclick={handleSaveEditHb}>Save Changes</button>
+                    </div>
                 </div>
             </template>
         </template>

@@ -14,8 +14,9 @@
 public without sharing class houseBuilderApplication {
     @AuraEnabled(cacheable=true)
     public static Account getAccountFileUrl(Id accountId) {
-        Account acc = [SELECT Id, Logo_URL__c, House_Builder_Application_Pdf_URL__c, Agent_Valuation_Pdf_URL__c FROM Account WHERE Id = :accountId LIMIT 1];
-        return acc;
+        if (accountId == null) return null;
+        List<Account> accs = [SELECT Id, Logo_URL__c, House_Builder_Application_Pdf_URL__c, Agent_Valuation_Pdf_URL__c FROM Account WHERE Id = :accountId LIMIT 1];
+        return accs.isEmpty() ? null : accs[0];
     }
 
     @AuraEnabled
@@ -67,13 +68,26 @@ public without sharing class houseBuilderApplication {
         Map<String, String> res = new Map<String, String>();
         try {
             Id vendorRT = Schema.SObjectType.Contact.getRecordTypeInfosByDeveloperName().get('Vendors').getRecordTypeId();
+            Id householdRT = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Household').getRecordTypeId();
+
+            // Create Household Account from Vendor 1's surname — vendors live under their own household, not the Housebuilder
+            String v1LastName = (String) vendorData.get('lastname');
+            String householdName = (String.isNotBlank(v1LastName) ? v1LastName : 'Vendor') + ' Household';
+            Account household = new Account(
+                Name = householdName,
+                RecordTypeId = householdRT
+            );
+            insert household;
+            res.put('householdId', household.Id);
+            res.put('householdName', household.Name);
 
             Contact v1 = new Contact(
                 FirstName = (String)vendorData.get('firstname'),
-                LastName = (String)vendorData.get('lastname'),
+                LastName = v1LastName,
                 Email = (String)vendorData.get('email'),
                 MobilePhone = (String)vendorData.get('mobilePhone'),
-                RecordTypeId = vendorRT
+                RecordTypeId = vendorRT,
+                AccountId = household.Id
             );
             insert v1;
             res.put('vendor1Id', v1.Id);
@@ -85,7 +99,8 @@ public without sharing class houseBuilderApplication {
                     LastName = (String)vendorData.get('lastname1'),
                     Email = (String)vendorData.get('email1'),
                     MobilePhone = (String)vendorData.get('mobilePhone1'),
-                    RecordTypeId = vendorRT
+                    RecordTypeId = vendorRT,
+                    AccountId = household.Id
                 );
                 insert v2;
                 res.put('vendor2Id', v2.Id);
@@ -303,10 +318,6 @@ public without sharing class houseBuilderApplication {
 
             opp.RecordTypeId = partExchange;
             insert opp;
-            
-            // Post-insert update for Vendor 
-            Contact v1 = new Contact(Id = vendor1Id, AccountId = opp.House_Builder__c);
-            update v1;
 
             res.put('oppname', opp.Name);
             res.put('y', opp.Id);

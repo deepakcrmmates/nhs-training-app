@@ -24,10 +24,11 @@ import setupFoldersAndGeneratePdf from '@salesforce/apex/HouseBuilderPdfControll
 import generatePdfToNhsFolder from '@salesforce/apex/HouseBuilderPdfController.generatePdfToNhsFolder';
 import isHouseBuilderRecordType from '@salesforce/apex/accountController.isHouseBuilderRecordType';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import { NavigationMixin } from 'lightning/navigation';
 
 import { refreshApex } from '@salesforce/apex';
 
-export default class NHSApplicationForm extends LightningElement {
+export default class NHSApplicationForm extends NavigationMixin(LightningElement) {
 
     @track housebuilderId =''; // = '001KG00000E5Jw3YAF'
     @track mapData = [];
@@ -50,6 +51,7 @@ export default class NHSApplicationForm extends LightningElement {
     successMessage = '';
     errorMessage = '';
     propertAddress = '';
+    @track manualAddressMode = false;
     processResults = [];
     isAllSuccess = false;
     startDateInputs = '';
@@ -211,15 +213,15 @@ export default class NHSApplicationForm extends LightningElement {
         });
     }
 
-    @wire(getAccountFileUrl, { accountId: '$housebuilderId' })
+    get _wiredHousebuilderId() {
+        return this.housebuilderId && this.housebuilderId.length === 18 ? this.housebuilderId : undefined;
+    }
+
+    @wire(getAccountFileUrl, { accountId: '$_wiredHousebuilderId' })
     wiredLogo({ error, data }) {
         if (data) {
-            console.log('Data fetching logo:', data);
-
-            this.logoUrl = data.Logo_URL__c || ''; // Ensure a fallback value
+            this.logoUrl = data.Logo_URL__c || '';
             this.applicationPdfUrl = data.House_Builder_Application_Pdf_URL__c || '';
-            //      this.valuationPdfUrl = data.Valuation_Pdf_URL__c || ''; // Seems like a mistake using Logo_URL__c twice
-
         } else if (error) {
             console.error('Error fetching logo:', error);
         }
@@ -442,6 +444,37 @@ export default class NHSApplicationForm extends LightningElement {
         console.log('OUTPUT : Ideal Postcode ', JSON.stringify(event.detail.dta));
 
         this.propertAddress = this.formData.Property.street + ' ' + this.formData.Property.city + ' ' + this.formData.Property.pcode + ' ' + this.formData.Property.country
+    }
+
+    get addressToggleTitle() {
+        return this.manualAddressMode ? 'Switch back to address search' : 'Enter the address manually';
+    }
+
+    handleToggleAddressMode() {
+        this.manualAddressMode = !this.manualAddressMode;
+        if (this.manualAddressMode && !this.formData.Property.country) {
+            this.formData.Property.country = 'United Kingdom';
+        }
+    }
+
+    handleManualAddressChange(event) {
+        const key = event.target.dataset.manual;
+        const value = event.target.value || '';
+        this.formData.Property[key] = value;
+
+        const fieldMap = {
+            street: 'Address__Street__s',
+            city: 'Address__City__s',
+            pcode: 'Address__PostalCode__s'
+        };
+        const hiddenField = fieldMap[key];
+        if (hiddenField) {
+            const el = this.template.querySelector(`[data-field-name="${hiddenField}"]`);
+            if (el) el.value = value;
+        }
+
+        const p = this.formData.Property;
+        this.propertAddress = [p.street, p.city, p.pcode, p.country].filter(Boolean).join(' ');
     }
 
     handlePropertChange(event) {
@@ -736,6 +769,25 @@ export default class NHSApplicationForm extends LightningElement {
             // Update success state
             this.isAllSuccess = this.processResults.every(result => result.status === 'Success' || result.status === 'Progress');
         }, index * delay); // Ensures sequential appearance
+    }
+
+    handleGoToApplication() {
+        if (!this.applicationId) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Application not available',
+                message: 'Application record not found yet — please wait for submission to finish.',
+                variant: 'warning'
+            }));
+            return;
+        }
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: this.applicationId,
+                objectApiName: 'Opportunity',
+                actionName: 'view'
+            }
+        });
     }
 
     handleDownloadPdf() {

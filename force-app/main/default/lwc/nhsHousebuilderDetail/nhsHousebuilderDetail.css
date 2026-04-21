@@ -94,6 +94,24 @@
 }
 .hbd-quick:hover { background: var(--nhs-dk); color: #fff; border-color: var(--nhs-dk); }
 
+.hbd-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--nhs-dk);
+    color: #fff;
+    border: 1px solid var(--nhs-dk);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.hbd-edit-btn:hover { background: #3A5A4E; }
+.hbd-edit-btn svg { color: #fff; }
+
 /* Tabs */
 .hbd-tabs {
     display: flex;
@@ -342,6 +360,8 @@
     z-index: 9501; display: flex; flex-direction: column;
     overflow: hidden;
 }
+.hbd-modal-wide { width: 640px; max-height: 90vh; }
+.hbd-modal-wide .hbd-modal-body { overflow-y: auto; }
 .hbd-modal-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px;

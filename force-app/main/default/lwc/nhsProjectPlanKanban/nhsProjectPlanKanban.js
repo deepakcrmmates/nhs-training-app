@@ -82,7 +82,8 @@ export default class NhsProjectPlanKanban extends LightningElement {
         const catKey = (t.Category__c || 'Feature').replace(/\s+/g, '-').toLowerCase();
         const statusClass = 'task-status task-status-' + (t.Status__c || 'ToDo').replace(/\s+/g, '-').toLowerCase();
         const categoryClass = 'task-category task-cat-' + catKey;
-        const cardClass = 'task-card task-card-' + catKey;
+        const landed = this._justDroppedId === t.Id ? ' task-card-landed' : '';
+        const cardClass = 'task-card task-card-' + catKey + landed;
         const completedLabel = t.Completed_Date__c ? this._fmtDate(t.Completed_Date__c) : '';
         const dueLabel = t.Due_Date__c ? this._fmtDate(t.Due_Date__c) : '';
         const isOverdue = t.Due_Date__c && new Date(t.Due_Date__c) < new Date() && t.Status__c !== 'Done' && t.Status__c !== 'Cancelled';
@@ -220,27 +221,56 @@ export default class NhsProjectPlanKanban extends LightningElement {
     }
 
     // Drag & drop
+    @track _justDroppedId = null;
+
     handleDragStart(event) {
         this._dragTaskId = event.currentTarget.dataset.id;
         event.dataTransfer.effectAllowed = 'move';
+        event.currentTarget.classList.add('task-dragging');
+    }
+
+    handleDragEnd(event) {
+        event.currentTarget.classList.remove('task-dragging');
+        this.template.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drop-target-active'));
     }
 
     handleDragOver(event) {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
+        event.currentTarget.classList.add('drop-target-active');
+    }
+
+    handleDragLeave(event) {
+        event.currentTarget.classList.remove('drop-target-active');
     }
 
     async handleDrop(event) {
         event.preventDefault();
+        event.currentTarget.classList.remove('drop-target-active');
         const newPriority = event.currentTarget.dataset.priority;
-        if (!this._dragTaskId || !newPriority) return;
-        try {
-            await updateTaskPriority({ taskId: this._dragTaskId, newPriority });
-            this.loadTasks();
-        } catch (e) {
-            this._toast('Error', e.body?.message || 'Failed', 'error');
-        }
+        const taskId = this._dragTaskId;
+        if (!taskId || !newPriority) return;
         this._dragTaskId = null;
+
+        const task = this.tasks.find(t => t.Id === taskId);
+        if (!task || task.Priority__c === newPriority) return;
+
+        const oldPriority = task.Priority__c;
+        this.tasks = this.tasks.map(t =>
+            t.Id === taskId ? { ...t, Priority__c: newPriority } : t
+        );
+        this._justDroppedId = taskId;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => { this._justDroppedId = null; }, 500);
+
+        try {
+            await updateTaskPriority({ taskId, newPriority });
+        } catch (e) {
+            this.tasks = this.tasks.map(t =>
+                t.Id === taskId ? { ...t, Priority__c: oldPriority } : t
+            );
+            this._toast('Error', e.body?.message || 'Failed to move task', 'error');
+        }
     }
 
     // Plan CRUD

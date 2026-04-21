@@ -59,6 +59,9 @@
                             <th class="al-th">Phone</th>
                             <th class="al-th">Mobile</th>
                             <th class="al-th">Email</th>
+                            <template if:true={isContact}>
+                                <th class="al-th">Account</th>
+                            </template>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,6 +75,13 @@
                                 <td class="al-td">{acc.phone}</td>
                                 <td class="al-td">{acc.contactMobile}</td>
                                 <td class="al-td">{acc.contactEmail}</td>
+                                <template if:true={isContact}>
+                                    <td class="al-td">
+                                        <template if:true={acc.accountName}>
+                                            <a href={acc.accountUrl} onclick={handleLinkClick}>{acc.accountName}</a>
+                                        </template>
+                                    </td>
+                                </template>
                             </tr>
                         </template>
                     </tbody>

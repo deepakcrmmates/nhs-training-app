@@ -114,21 +114,57 @@
                     <div class="section-header-modern">
                         <lightning-icon icon-name="utility:retail_execution" size="small"></lightning-icon>
                         <h2>Property Details</h2>
+                        <template if:false={isReadOnly}>
+                            <button class="address-mode-toggle" type="button" onclick={handleToggleAddressMode} title={addressToggleTitle}>
+                                <template if:false={manualAddressMode}>
+                                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                                    <span>Enter Manually</span>
+                                </template>
+                                <template if:true={manualAddressMode}>
+                                    <lightning-icon icon-name="utility:search" size="xx-small"></lightning-icon>
+                                    <span>Use Search</span>
+                                </template>
+                            </button>
+                        </template>
                     </div>
 
                     <!-- Search Component -->
                     <template if:false={isReadOnly}>
-                        <div class="slds-m-bottom_medium">
-                            <label class="modern-label">Search Property</label>
-                            <c-idealaddresslookup
-                                selected-icon-name="standard:account"
-                                object-label="Property"
-                                object-api-name="NHS_Property__c"
-                                field-api-name="Name"
-                                other-field-api-name="Industry"
-                                onvalueselected={handleValueSelectedOnAccounts}>
-                            </c-idealaddresslookup>
-                        </div>
+                        <template if:false={manualAddressMode}>
+                            <div class="slds-m-bottom_medium">
+                                <label class="modern-label">Search Property</label>
+                                <c-idealaddresslookup
+                                    selected-icon-name="standard:account"
+                                    object-label="Property"
+                                    object-api-name="NHS_Property__c"
+                                    field-api-name="Name"
+                                    other-field-api-name="Industry"
+                                    onvalueselected={handleValueSelectedOnAccounts}>
+                                </c-idealaddresslookup>
+                            </div>
+                        </template>
+
+                        <!-- Manual address entry -->
+                        <template if:true={manualAddressMode}>
+                            <div class="manual-address-grid">
+                                <div class="manual-field manual-field-full">
+                                    <label class="modern-label">Street Address</label>
+                                    <lightning-input variant="label-hidden" data-manual="street" value={formData.Property.street} onchange={handleManualAddressChange} placeholder="e.g. Flat 12, 42 High Street"></lightning-input>
+                                </div>
+                                <div class="manual-field">
+                                    <label class="modern-label">City / Town</label>
+                                    <lightning-input variant="label-hidden" data-manual="city" value={formData.Property.city} onchange={handleManualAddressChange} placeholder="e.g. Leeds"></lightning-input>
+                                </div>
+                                <div class="manual-field">
+                                    <label class="modern-label">Postcode</label>
+                                    <lightning-input variant="label-hidden" data-manual="pcode" value={formData.Property.pcode} onchange={handleManualAddressChange} placeholder="e.g. LS1 4AB"></lightning-input>
+                                </div>
+                                <div class="manual-field manual-field-full">
+                                    <label class="modern-label">Country</label>
+                                    <lightning-input variant="label-hidden" data-manual="country" value={formData.Property.country} onchange={handleManualAddressChange} placeholder="United Kingdom"></lightning-input>
+                                </div>
+                            </div>
+                        </template>
                     </template>
 
                     <!-- Compact address display after selection -->
@@ -262,8 +298,9 @@
                     <div class="section-card slds-text-align_center">
                         <lightning-icon icon-name="action:approval" size="large" class="slds-m-bottom_medium"></lightning-icon>
                         <h2 class="slds-text-heading_medium">{finalMessage}</h2>
-                        <div class="slds-m-top_medium">
-                            <lightning-button label="Download PDF Summary" variant="brand" onclick={handleDownloadPdf} icon-name="utility:download"></lightning-button>
+                        <div class="slds-m-top_medium success-actions">
+                            <lightning-button label="Download PDF Summary" variant="brand-outline" onclick={handleDownloadPdf} icon-name="utility:download"></lightning-button>
+                            <lightning-button label="Go to Application" variant="brand" onclick={handleGoToApplication} icon-name="utility:forward" icon-position="right"></lightning-button>
                         </div>
                     </div>
                 </template>

@@ -5,12 +5,15 @@ import { refreshApex } from '@salesforce/apex';
 import getHousebuilderDetail from '@salesforce/apex/NhsHousebuilderController.getHousebuilderDetail';
 import addContactToHousebuilder from '@salesforce/apex/NhsHousebuilderController.addContactToHousebuilder';
 import deleteContact from '@salesforce/apex/NhsHousebuilderController.deleteContact';
+import updateHousebuilder from '@salesforce/apex/NhsHousebuilderController.updateHousebuilder';
 
 export default class NhsHousebuilderDetail extends NavigationMixin(LightningElement) {
     @api recordId;
     @track data = null;
     @track activeTab = 'contacts';
     @track showAddContact = false;
+    @track showEditHb = false;
+    @track editHb = { name: '', phone: '', email: '', website: '', street: '', city: '', postcode: '', country: '' };
     @track newContact = this._blankContact();
     @track isLoading = true;
     @track error = '';
@@ -136,6 +139,61 @@ export default class NhsHousebuilderDetail extends NavigationMixin(LightningElem
             type: 'standard__recordPage',
             attributes: { recordId: id, objectApiName: 'Opportunity', actionName: 'view' }
         });
+    }
+
+    // Edit Housebuilder
+    handleShowEditHb() {
+        this.editHb = {
+            name: this.data?.name || '',
+            phone: this.data?.phone || '',
+            email: this.data?.email || '',
+            website: this.data?.website || '',
+            street: this.data?.street || '',
+            city: this.data?.city || '',
+            postcode: this.data?.postcode || '',
+            country: this.data?.country || ''
+        };
+        this.showEditHb = true;
+    }
+    handleCloseEditHb() { this.showEditHb = false; }
+    handleEditHbFieldChange(event) {
+        const field = event.target.dataset.field;
+        let value = event.target.value;
+        if (field === 'phone') {
+            value = value.replace(/[^0-9+()\-\s]/g, '');
+            if (value !== event.target.value) event.target.value = value;
+        }
+        this.editHb = { ...this.editHb, [field]: value };
+    }
+    handlePhoneKeyPress(event) {
+        if (!/[0-9+()\-\s]/.test(event.key)) {
+            event.preventDefault();
+        }
+    }
+    async handleSaveEditHb() {
+        if (!this.editHb.name) {
+            this._toast('Missing Name', 'Company name is required.', 'warning');
+            return;
+        }
+        if (this.editHb.phone && !/^[0-9+()\-\s]+$/.test(this.editHb.phone)) {
+            this._toast('Invalid Phone', 'Phone can only contain digits, +, -, (, ), and spaces.', 'warning');
+            return;
+        }
+        if (this.editHb.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.editHb.email)) {
+            this._toast('Invalid Email', 'Please enter a valid email address.', 'warning');
+            return;
+        }
+        try {
+            await updateHousebuilder({
+                accountId: this.recordId,
+                accountDataJson: JSON.stringify(this.editHb)
+            });
+            this._toast('Saved', 'Housebuilder details updated.', 'success');
+            this.showEditHb = false;
+            await refreshApex(this._wired);
+        } catch (e) {
+            this._toast('Error', e.body?.message || 'Failed', 'error');
+        }
     }
 
     // Add contact

@@ -354,16 +354,35 @@
             </div>
         </template>
 
-        <!-- Locked message when checks incomplete -->
+        <!-- Blocker message when checks or valuations are incomplete -->
         <template if:false={showEmail}>
-            <div class="fc-section locked-section">
-                <div class="locked-content">
-                    <svg width="24" height="24" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <div class="fc-section fc-blocker">
+                <div class="fc-blocker-head">
+                    <svg width="22" height="22" fill="none" stroke="#B91C1C" stroke-width="1.6" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
                     <div>
-                        <h3>Final Email Locked</h3>
-                        <p>Complete all 7 checks above to unlock the final email and send.</p>
+                        <h3>{blockerHeadline}</h3>
+                        <p>The Final Email is locked until every check is ticked and every valuation figure is recorded.</p>
                     </div>
                 </div>
+
+                <ul class="fc-blocker-list">
+                    <template if:true={hasMissingChecks}>
+                        <li class="fc-blocker-item">
+                            <span class="fc-blocker-badge">Checks</span>
+                            <span class="fc-blocker-detail">{blockerChecksLabel}</span>
+                        </li>
+                    </template>
+                    <template for:each={missingValuations} for:item="m">
+                        <li class="fc-blocker-item" key={m.key}>
+                            <span class="fc-blocker-badge fc-blocker-badge-val">{m.label}</span>
+                            <span class="fc-blocker-detail">Missing: {m.detail}</span>
+                        </li>
+                    </template>
+                </ul>
             </div>
         </template>
 
