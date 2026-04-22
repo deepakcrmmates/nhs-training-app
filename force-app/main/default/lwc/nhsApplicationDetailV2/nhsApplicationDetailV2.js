@@ -638,6 +638,15 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         return p !== 'Application' && p !== 'Vendor Availability' && p !== 'Final Checks';
     }
 
+    // Valuation Figures inputs + Valuation Report upload + NHS Recommendations appear only
+    // once agents are actively being chased for figures — i.e. from Stage 4 onwards.
+    // At Stage 3 (Agents Booked) the user sees just the contact/appointment block.
+    get showValuationFigures() {
+        const p = this.formData.nhsProcess;
+        return p !== 'Application' && p !== 'Vendor Availability'
+            && p !== 'Agents Booked' && p !== 'Final Checks';
+    }
+
     get showVendorAvailability() {
         return this.formData.nhsProcess === 'Vendor Availability';
     }

@@ -964,6 +964,7 @@
                       </select>
                     </div>
                   </div>
+                  <template if:true={showValuationFigures}>
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
@@ -1015,6 +1016,7 @@
                       </template>
                     </template>
                   </div>
+                  </template><!-- /showValuationFigures Agent 1 -->
                 </div>
               </div>
 
@@ -1068,6 +1070,7 @@
                       </select>
                     </div>
                   </div>
+                  <template if:true={showValuationFigures}>
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
@@ -1119,6 +1122,7 @@
                       </template>
                     </template>
                   </div>
+                  </template><!-- /showValuationFigures Agent 2 -->
                 </div>
               </div>
 
@@ -1172,6 +1176,7 @@
                       </select>
                     </div>
                   </div>
+                  <template if:true={showValuationFigures}>
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
@@ -1223,12 +1228,14 @@
                       </template>
                     </template>
                   </div>
+                  </template><!-- /showValuationFigures Agent 3 -->
                 </div>
               </div>
 
             </div>
 
-            <!-- NHS Recommended Section -->
+            <!-- NHS Recommended Section — appears from Figures to Chase stage onwards -->
+            <template if:true={showValuationFigures}>
             <div class={nhsRecWrapClass}>
               <div class="nhs-rec-title">New Home Solutions Recommendations</div>
               <template if:true={nhsRecDisabled}>
@@ -1260,6 +1267,7 @@
                 </c-nhs-recommendations-timeline>
               </template>
             </div>
+            </template><!-- /showValuationFigures NHS Recommendations -->
 
             <!-- Will Report Upload — only on Valuations Ready -->
             <template if:true={isValuationsReady}>
