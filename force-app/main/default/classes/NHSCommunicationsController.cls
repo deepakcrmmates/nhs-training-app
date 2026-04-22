@@ -166,15 +166,21 @@ public with sharing class NHSCommunicationsController {
     public static List<Map<String, String>> getEmailTemplates() {
         List<Map<String, String>> templates = new List<Map<String, String>>();
 
-        // Query templates from the NHS Email Templates folder
-        List<Folder> folders = [SELECT Id FROM Folder WHERE Name = 'NHS Email Templates' LIMIT 1];
-        if (folders.isEmpty()) return templates;
+        // Query across every folder named "NHS Email Templates" — there can be multiple
+        // (one of Type='EmailTemplate' for Lightning templates and one of Type='Email' for Classic).
+        // We don't care which folder the template lives in; we just want the full list.
+        Set<Id> folderIds = new Set<Id>();
+        for (Folder f : [SELECT Id FROM Folder WHERE Name = 'NHS Email Templates']) {
+            folderIds.add(f.Id);
+        }
+        if (folderIds.isEmpty()) return templates;
 
         List<EmailTemplate> tpls = [
             SELECT Id, Name, Subject, Description, DeveloperName, LastModifiedDate
             FROM EmailTemplate
-            WHERE FolderId = :folders[0].Id
+            WHERE FolderId IN :folderIds
             AND IsActive = true
+            AND DeveloperName LIKE 'NHS_%'
             ORDER BY Name
         ];
 
