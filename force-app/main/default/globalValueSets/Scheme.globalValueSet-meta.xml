@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>New Home</fullName>
+        <default>false</default>
+        <label>New Home</label>
+    </customValue>
+    <customValue>
+        <fullName>Part Exchange</fullName>
+        <default>false</default>
+        <label>Part Exchange</label>
+    </customValue>
+    <customValue>
+        <fullName>Assisted Sale</fullName>
+        <default>false</default>
+        <label>Assisted Sale</label>
+    </customValue>
+    <customValue>
+        <fullName>PX or AS</fullName>
+        <default>false</default>
+        <label>PX or AS</label>
+    </customValue>
+    <customValue>
+        <fullName>Home Change</fullName>
+        <default>false</default>
+        <label>Home Change</label>
+    </customValue>
+    <customValue>
+        <fullName>Assisted Move</fullName>
+        <default>false</default>
+        <label>Assisted Move</label>
+    </customValue>
+    <customValue>
+        <fullName>Move Assist</fullName>
+        <default>false</default>
+        <label>Move Assist</label>
+    </customValue>
+    <customValue>
+        <fullName>Smooth Move</fullName>
+        <default>false</default>
+        <label>Smooth Move</label>
+    </customValue>
+    <customValue>
+        <fullName>Easy Move</fullName>
+        <default>false</default>
+        <label>Easy Move</label>
+    </customValue>
+    <customValue>
+        <fullName>Movemaker</fullName>
+        <default>false</default>
+        <label>Movemaker</label>
+    </customValue>
+    <masterLabel>Scheme</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>
