@@ -787,6 +787,22 @@
 .agent-col-1 { --agent-border: var(--agent1-border); --agent-header: var(--agent1-header); }
 .agent-col-2 { --agent-border: var(--agent2-border); --agent-header: var(--agent2-header); }
 .agent-col-3 { --agent-border: var(--agent3-border); --agent-header: var(--agent3-header); }
+
+/* Banner shown above NHS Recommendations when valuations are gated by missing agents */
+.val-gate-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #FEF3C7;
+    border: 1px solid #FDE68A;
+    border-radius: 6px;
+    color: #92400E;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.val-gate-banner svg { stroke: #92400E; flex-shrink: 0; }
 .nhs-rec-item {
     background: var(--nhs-pale); border: 1px solid var(--agent1-border);
     border-radius: 6px; padding: 11px; text-align: center;

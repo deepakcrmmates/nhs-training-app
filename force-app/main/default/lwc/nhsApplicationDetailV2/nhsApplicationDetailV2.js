@@ -327,6 +327,27 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get isTimelineModel() { return !!this.formData?.useTimelineValuations; }
     get isStandardModel() { return !this.formData?.useTimelineValuations; }
 
+    // Per-agent gating — each agent's valuation fields unlock the moment that agent is assigned.
+    get agent1Unassigned() { return !this.formData?.agent1Id; }
+    get agent2Unassigned() { return !this.formData?.agent2Id; }
+    get agent3Unassigned() { return !this.formData?.agent3Id; }
+
+    // NHS Recommendation still requires all 3 agents assigned (it summarises across them)
+    get allAgentsAssigned() {
+        const f = this.formData || {};
+        return !!(f.agent1Id && f.agent2Id && f.agent3Id);
+    }
+    get nhsRecDisabled() { return !this.allAgentsAssigned; }
+    get missingAgentsMessage() {
+        const f = this.formData || {};
+        const missing = [];
+        if (!f.agent1Id) missing.push('Agent 1');
+        if (!f.agent2Id) missing.push('Agent 2');
+        if (!f.agent3Id) missing.push('Agent 3');
+        if (!missing.length) return '';
+        return 'Assign ' + missing.join(', ') + ' before entering NHS recommendations.';
+    }
+
     // ── Child-component event handlers (agent valuation sub-components) ──
     _STD_ROLE_MAP = { initial: 'InitialPrice', target: 'TargetSale', bottom: 'BottomLine' };
     _TL_ROLE_MAP  = {
@@ -609,6 +630,13 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get showFinalChecks() { return this.formData.nhsProcess === 'Final Checks'; }
     get notFinalChecks() { return this.formData.nhsProcess !== 'Final Checks'; }
     get propCardClass() { return 'card' + (this.showFinalChecks ? ' card-readonly' : ''); }
+
+    // Hide the Agent Details / Valuation Figures / Recommendations card during early stages
+    // where agents haven't been booked yet — showing it confuses the end user.
+    get showAgentCard() {
+        const p = this.formData.nhsProcess;
+        return p !== 'Final Checks' && p !== 'Vendor Availability';
+    }
 
     get showVendorAvailability() {
         return this.formData.nhsProcess === 'Vendor Availability';
@@ -2213,10 +2241,21 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                 apptPast = d.getTime() < now.getTime();
             }
 
-            const initial = parseFloat(this.formData['agent' + a.num + 'InitialPrice']) || 0;
-            const target = parseFloat(this.formData['agent' + a.num + 'TargetSale']) || 0;
-            const bottom = parseFloat(this.formData['agent' + a.num + 'BottomLine']) || 0;
-            const hasAllFigures = initial > 0 && target > 0 && bottom > 0;
+            let hasAllFigures;
+            if (this.isTimelineModel) {
+                // Wain-style: 4 timeframe figures must all be populated
+                const keys = ['OpenMarket', '_6_8_Week', '_4_6_Week', '_2_4_Week'];
+                hasAllFigures = keys.every(k => {
+                    const v = parseFloat(this.formData['a' + a.num + k]) || 0;
+                    return v > 0;
+                });
+            } else {
+                // Standard: Initial / Target / Bottom
+                const initial = parseFloat(this.formData['agent' + a.num + 'InitialPrice']) || 0;
+                const target  = parseFloat(this.formData['agent' + a.num + 'TargetSale']) || 0;
+                const bottom  = parseFloat(this.formData['agent' + a.num + 'BottomLine']) || 0;
+                hasAllFigures = initial > 0 && target > 0 && bottom > 0;
+            }
             const figuresAvailable = apptPast && hasAllFigures;
 
             return {

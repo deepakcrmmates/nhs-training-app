@@ -892,8 +892,8 @@
         <c-nhs-final-checks-page record-id={recordId}></c-nhs-final-checks-page>
       </template>
 
-      <!-- ---- C. Agent Details Card (Collapsible) ---- -->
-      <template if:true={notFinalChecks}>
+      <!-- ---- C. Agent Details Card (Collapsible) — hidden on Vendor Availability + Final Checks ---- -->
+      <template if:true={showAgentCard}>
       <div class="card">
         <div class="card-header" style="cursor: pointer;" onclick={toggleAgentCard}>
           <h2 class="card-title">
@@ -973,6 +973,7 @@
                         initial-price={fmt.agent1InitialPrice}
                         target-sale={fmt.agent1TargetSale}
                         bottom-line={fmt.agent1BottomLine}
+                        disabled={agent1Unassigned}
                         onvalchange={handleStandardValChange}>
                       </c-nhs-agent-valuation-standard>
                     </template>
@@ -983,6 +984,7 @@
                         week68={fmt.a1_6_8_Week}
                         week46={fmt.a1_4_6_Week}
                         week24={fmt.a1_2_4_Week}
+                        disabled={agent1Unassigned}
                         onvalchange={handleTimelineValChange}>
                       </c-nhs-agent-valuation-timeline>
                     </template>
@@ -1075,6 +1077,7 @@
                         initial-price={fmt.agent2InitialPrice}
                         target-sale={fmt.agent2TargetSale}
                         bottom-line={fmt.agent2BottomLine}
+                        disabled={agent2Unassigned}
                         onvalchange={handleStandardValChange}>
                       </c-nhs-agent-valuation-standard>
                     </template>
@@ -1085,6 +1088,7 @@
                         week68={fmt.a2_6_8_Week}
                         week46={fmt.a2_4_6_Week}
                         week24={fmt.a2_2_4_Week}
+                        disabled={agent2Unassigned}
                         onvalchange={handleTimelineValChange}>
                       </c-nhs-agent-valuation-timeline>
                     </template>
@@ -1177,6 +1181,7 @@
                         initial-price={fmt.agent3InitialPrice}
                         target-sale={fmt.agent3TargetSale}
                         bottom-line={fmt.agent3BottomLine}
+                        disabled={agent3Unassigned}
                         onvalchange={handleStandardValChange}>
                       </c-nhs-agent-valuation-standard>
                     </template>
@@ -1187,6 +1192,7 @@
                         week68={fmt.a3_6_8_Week}
                         week46={fmt.a3_4_6_Week}
                         week24={fmt.a3_2_4_Week}
+                        disabled={agent3Unassigned}
                         onvalchange={handleTimelineValChange}>
                       </c-nhs-agent-valuation-timeline>
                     </template>
@@ -1225,11 +1231,21 @@
             <!-- NHS Recommended Section -->
             <div class={nhsRecWrapClass}>
               <div class="nhs-rec-title">New Home Solutions Recommendations</div>
+              <template if:true={nhsRecDisabled}>
+                <div class="val-gate-banner">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  {missingAgentsMessage}
+                </div>
+              </template>
               <template if:false={isTimelineModel}>
                 <c-nhs-recommendations-standard
                   market={fmt.recommendedMarket}
                   target={fmt.recommendedTarget}
                   forced={fmt.recommendedForced}
+                  disabled={nhsRecDisabled}
                   onrecchange={handleStandardRecChange}>
                 </c-nhs-recommendations-standard>
               </template>
@@ -1239,6 +1255,7 @@
                   week68={fmt.nhsRec_6_8_Week}
                   week46={fmt.nhsRec_4_6_Week}
                   week24={fmt.nhsRec_2_4_Week}
+                  disabled={nhsRecDisabled}
                   onrecchange={handleTimelineRecChange}>
                 </c-nhs-recommendations-timeline>
               </template>
@@ -1332,7 +1349,7 @@
           </template>
         </div>
       </div>
-      </template><!-- /notFinalChecks -->
+      </template><!-- /showAgentCard (hides on Vendor Availability + Final Checks) -->
 
     </div>
 
