@@ -28,3 +28,7 @@
     font-family: var(--font-sans);
 }
 .val-input input:focus { border-color: var(--nhs-dk); }
+.val-input input:disabled {
+    background: #F3F4F6; color: #9CA3AF; cursor: not-allowed;
+    border-color: #E5E7EB;
+}

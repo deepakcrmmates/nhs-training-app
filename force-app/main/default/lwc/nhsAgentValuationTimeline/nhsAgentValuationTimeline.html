@@ -1,18 +1,18 @@
 <template>
     <div class="val-row">
         <span class="val-label">Open Market</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={openMarket} data-role="openMarket" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={openMarket} data-role="openMarket" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
     <div class="val-row">
         <span class="val-label">6-8 Week</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week68} data-role="week68" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week68} data-role="week68" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
     <div class="val-row">
         <span class="val-label">4-6 Week</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week46} data-role="week46" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week46} data-role="week46" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
     <div class="val-row">
         <span class="val-label">2-4 Week</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week24} data-role="week24" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={week24} data-role="week24" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
 </template>

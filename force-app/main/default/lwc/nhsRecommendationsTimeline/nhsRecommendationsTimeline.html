@@ -4,28 +4,28 @@
             <div class="nhs-rec-label">Open Market</div>
             <div class="nhs-rec-input">
                 <span class="nhs-rec-pound">£</span>
-                <input type="text" class="nhs-rec-field" value={openMarket} data-role="openMarket" onchange={handleChange} placeholder="0"/>
+                <input type="text" class="nhs-rec-field" value={openMarket} data-role="openMarket" onchange={handleChange} placeholder="0" disabled={disabled}/>
             </div>
         </div>
         <div class="nhs-rec-item">
             <div class="nhs-rec-label">6-8 Week</div>
             <div class="nhs-rec-input">
                 <span class="nhs-rec-pound">£</span>
-                <input type="text" class="nhs-rec-field" value={week68} data-role="week68" onchange={handleChange} placeholder="0"/>
+                <input type="text" class="nhs-rec-field" value={week68} data-role="week68" onchange={handleChange} placeholder="0" disabled={disabled}/>
             </div>
         </div>
         <div class="nhs-rec-item">
             <div class="nhs-rec-label">4-6 Week</div>
             <div class="nhs-rec-input">
                 <span class="nhs-rec-pound">£</span>
-                <input type="text" class="nhs-rec-field" value={week46} data-role="week46" onchange={handleChange} placeholder="0"/>
+                <input type="text" class="nhs-rec-field" value={week46} data-role="week46" onchange={handleChange} placeholder="0" disabled={disabled}/>
             </div>
         </div>
         <div class="nhs-rec-item nhs-rec-amber">
             <div class="nhs-rec-label">2-4 Week</div>
             <div class="nhs-rec-input">
                 <span class="nhs-rec-pound nhs-rec-pound-amber">£</span>
-                <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={week24} data-role="week24" onchange={handleChange} placeholder="0"/>
+                <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={week24} data-role="week24" onchange={handleChange} placeholder="0" disabled={disabled}/>
             </div>
         </div>
     </div>

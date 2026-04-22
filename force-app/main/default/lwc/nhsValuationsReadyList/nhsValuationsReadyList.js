@@ -27,7 +27,11 @@ export default class NhsValuationsReadyList extends NavigationMixin(LightningEle
                     a3InitFmt: fmtMoney(app.agent3Initial),
                     nhsMarketFmt: fmtMoney(app.nhsMarket),
                     nhsTargetFmt: fmtMoney(app.nhsTarget),
-                    nhsForcedFmt: fmtMoney(app.nhsForced)
+                    nhsForcedFmt: fmtMoney(app.nhsForced),
+                    agent1Tooltip: app.agent1MissingList ? 'Missing: ' + app.agent1MissingList : 'All figures received',
+                    agent2Tooltip: app.agent2MissingList ? 'Missing: ' + app.agent2MissingList : 'All figures received',
+                    agent3Tooltip: app.agent3MissingList ? 'Missing: ' + app.agent3MissingList : 'All figures received',
+                    nhsTooltip: app.nhsMissingList ? 'NHS Recommendation missing: ' + app.nhsMissingList : 'All NHS figures set'
                 }));
                 this.isLoading = false;
             })

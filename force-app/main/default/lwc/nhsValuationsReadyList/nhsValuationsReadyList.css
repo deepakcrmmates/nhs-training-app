@@ -56,8 +56,18 @@
 .vr-td-fig { padding: 7px 9px; }
 .vr-td-nhs { padding: 7px 9px; }
 
+.app-name-row { display: flex; align-items: center; gap: 6px; }
 .app-addr { font-weight: 700; font-size: 12px; color: var(--nhs-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
 .vr-row:hover .app-addr { color: var(--nhs-mid); text-decoration: underline; }
+.vr-timeline-pill {
+    flex-shrink: 0;
+    background: #FFF8E7; color: #8A6D1F;
+    border: 1px solid #E8D18A;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    line-height: 1.4;
+}
 .app-dev { font-size: 10px; color: var(--nhs-text-muted); margin-top: 2px; }
 .vendor-name { font-weight: 600; color: var(--nhs-text-mid); font-size: 12px; }
 

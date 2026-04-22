@@ -62,6 +62,9 @@ export default class NhsFiguresToChaseList extends NavigationMixin(LightningElem
                     agent1FigureFmt: fmtMoney(app.agent1Figure),
                     agent2FigureFmt: fmtMoney(app.agent2Figure),
                     agent3FigureFmt: fmtMoney(app.agent3Figure),
+                    agent1ChaseTooltip: app.agent1MissingList ? 'Missing: ' + app.agent1MissingList : 'Chase agent for figures',
+                    agent2ChaseTooltip: app.agent2MissingList ? 'Missing: ' + app.agent2MissingList : 'Chase agent for figures',
+                    agent3ChaseTooltip: app.agent3MissingList ? 'Missing: ' + app.agent3MissingList : 'Chase agent for figures',
                     pendingLabel: app.pendingCount + ' figure' + (app.pendingCount !== 1 ? 's' : '') + ' pending',
                     pendingClass: app.pendingCount === 3 ? 'pending-badge high' :
                                   app.pendingCount === 2 ? 'pending-badge mid' : 'pending-badge low',

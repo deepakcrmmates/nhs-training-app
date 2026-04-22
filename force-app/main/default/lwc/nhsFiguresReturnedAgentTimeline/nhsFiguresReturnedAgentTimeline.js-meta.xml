@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Figures Returned — Agent Card (Timeline 4-row)</masterLabel>
+    <description>Compact 4-row agent figure card (Open Market / 6-8W / 4-6W / 2-4W) used on the Figures Returned list when the housebuilder uses the Timeline valuation model.</description>
+</LightningComponentBundle>

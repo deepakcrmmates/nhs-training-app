@@ -1,0 +1,43 @@
+<template>
+    <table class="val-table">
+        <thead>
+            <tr>
+                <th class="val-th"></th>
+                <th class="val-th val-th-a1">{agent1Name}</th>
+                <th class="val-th val-th-a2">{agent2Name}</th>
+                <th class="val-th val-th-a3">{agent3Name}</th>
+                <th class="val-th val-th-avg">Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="val-td val-label">Open Market</td>
+                <td class="val-td val-num">{a1Open}</td>
+                <td class="val-td val-num">{a2Open}</td>
+                <td class="val-td val-num">{a3Open}</td>
+                <td class="val-td val-num val-avg">{avgOpen}</td>
+            </tr>
+            <tr>
+                <td class="val-td val-label">6 – 8 Week</td>
+                <td class="val-td val-num">{a1_68}</td>
+                <td class="val-td val-num">{a2_68}</td>
+                <td class="val-td val-num">{a3_68}</td>
+                <td class="val-td val-num val-avg">{avg_68}</td>
+            </tr>
+            <tr>
+                <td class="val-td val-label">4 – 6 Week</td>
+                <td class="val-td val-num">{a1_46}</td>
+                <td class="val-td val-num">{a2_46}</td>
+                <td class="val-td val-num">{a3_46}</td>
+                <td class="val-td val-num val-avg">{avg_46}</td>
+            </tr>
+            <tr>
+                <td class="val-td val-label">2 – 4 Week</td>
+                <td class="val-td val-num">{a1_24}</td>
+                <td class="val-td val-num">{a2_24}</td>
+                <td class="val-td val-num">{a3_24}</td>
+                <td class="val-td val-num val-avg">{avg_24}</td>
+            </tr>
+        </tbody>
+    </table>
+</template>

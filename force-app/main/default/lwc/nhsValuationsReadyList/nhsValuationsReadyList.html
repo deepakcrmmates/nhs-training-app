@@ -32,7 +32,12 @@
                     <template for:each={displayedApps} for:item="app">
                         <tr key={app.id} class="vr-row" data-id={app.id} onclick={handleRowClick}>
                             <td class="vr-td">
-                                <div class="app-addr">{app.name}</div>
+                                <div class="app-name-row">
+                                    <span class="app-addr">{app.name}</span>
+                                    <template if:true={app.useTimeline}>
+                                        <span class="vr-timeline-pill" title="Wain-style timeline valuation — 4 timeframes">Timeline</span>
+                                    </template>
+                                </div>
                                 <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
                             </td>
                             <td class="vr-td">
@@ -40,25 +45,25 @@
                             </td>
                             <!-- Agent figures (compact) -->
                             <td class="vr-td vr-td-fig">
-                                <div class="fig-compact">
+                                <div class="fig-compact" title={app.agent1Tooltip}>
                                     <span class="fig-name">{app.agent1Name}</span>
                                     <span class="fig-val">{app.a1InitFmt}</span>
                                 </div>
                             </td>
                             <td class="vr-td vr-td-fig">
-                                <div class="fig-compact">
+                                <div class="fig-compact" title={app.agent2Tooltip}>
                                     <span class="fig-name">{app.agent2Name}</span>
                                     <span class="fig-val">{app.a2InitFmt}</span>
                                 </div>
                             </td>
                             <td class="vr-td vr-td-fig">
-                                <div class="fig-compact">
+                                <div class="fig-compact" title={app.agent3Tooltip}>
                                     <span class="fig-name">{app.agent3Name}</span>
                                     <span class="fig-val">{app.a3InitFmt}</span>
                                 </div>
                             </td>
                             <!-- NHS Recommended -->
-                            <td class="vr-td vr-td-nhs">
+                            <td class="vr-td vr-td-nhs" title={app.nhsTooltip}>
                                 <div class="nhs-card">
                                     <div class="nhs-row">
                                         <span class="nhs-label">Market</span>
@@ -66,7 +71,7 @@
                                             <span class="nhs-val set">{app.nhsMarketFmt}</span>
                                         </template>
                                         <template if:false={app.nhsMarketSet}>
-                                            <span class="nhs-val outstanding">Outstanding</span>
+                                            <span class="nhs-val outstanding" title={app.nhsTooltip}>Outstanding</span>
                                         </template>
                                     </div>
                                     <div class="nhs-row">
@@ -75,7 +80,7 @@
                                             <span class="nhs-val set">{app.nhsTargetFmt}</span>
                                         </template>
                                         <template if:false={app.nhsTargetSet}>
-                                            <span class="nhs-val outstanding">Outstanding</span>
+                                            <span class="nhs-val outstanding" title={app.nhsTooltip}>Outstanding</span>
                                         </template>
                                     </div>
                                     <div class="nhs-row">
@@ -84,7 +89,7 @@
                                             <span class="nhs-val set">{app.nhsForcedFmt}</span>
                                         </template>
                                         <template if:false={app.nhsForcedSet}>
-                                            <span class="nhs-val outstanding">Outstanding</span>
+                                            <span class="nhs-val outstanding" title={app.nhsTooltip}>Outstanding</span>
                                         </template>
                                     </div>
                                 </div>

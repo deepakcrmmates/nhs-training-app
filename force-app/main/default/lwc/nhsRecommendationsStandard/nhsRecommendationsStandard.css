@@ -36,3 +36,8 @@
 .nhs-rec-field-amber { color: #F59E0B; border-bottom-color: #FDE68A; }
 .nhs-rec-field-amber::placeholder { color: #FDE68A; }
 .nhs-rec-field-amber:focus { border-bottom-color: #F59E0B; }
+.nhs-rec-field:disabled {
+    color: #9CA3AF; cursor: not-allowed;
+    border-bottom-color: #E5E7EB;
+}
+.nhs-rec-item:has(.nhs-rec-field:disabled) { opacity: 0.6; }

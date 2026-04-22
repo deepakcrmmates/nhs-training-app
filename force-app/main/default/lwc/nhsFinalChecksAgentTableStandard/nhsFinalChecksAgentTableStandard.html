@@ -1,0 +1,36 @@
+<template>
+    <table class="val-table">
+        <thead>
+            <tr>
+                <th class="val-th"></th>
+                <th class="val-th val-th-a1">{agent1Name}</th>
+                <th class="val-th val-th-a2">{agent2Name}</th>
+                <th class="val-th val-th-a3">{agent3Name}</th>
+                <th class="val-th val-th-avg">Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="val-td val-label">Initial Asking Price</td>
+                <td class="val-td val-num">{a1Initial}</td>
+                <td class="val-td val-num">{a2Initial}</td>
+                <td class="val-td val-num">{a3Initial}</td>
+                <td class="val-td val-num val-avg">{avgInitial}</td>
+            </tr>
+            <tr>
+                <td class="val-td val-label">Target Sale Price</td>
+                <td class="val-td val-num">{a1Target}</td>
+                <td class="val-td val-num">{a2Target}</td>
+                <td class="val-td val-num">{a3Target}</td>
+                <td class="val-td val-num val-avg">{avgTarget}</td>
+            </tr>
+            <tr>
+                <td class="val-td val-label">Bottom Price</td>
+                <td class="val-td val-num">{a1Bottom}</td>
+                <td class="val-td val-num">{a2Bottom}</td>
+                <td class="val-td val-num">{a3Bottom}</td>
+                <td class="val-td val-num val-avg">{avgBottom}</td>
+            </tr>
+        </tbody>
+    </table>
+</template>

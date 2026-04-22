@@ -5,6 +5,7 @@ export default class NhsAgentValuationStandard extends LightningElement {
     @api initialPrice;     // display-formatted value
     @api targetSale;
     @api bottomLine;
+    @api disabled = false;
 
     handleChange(event) {
         const field = event.target.dataset.role;

@@ -4,6 +4,7 @@ export default class NhsRecommendationsStandard extends LightningElement {
     @api market;
     @api target;
     @api forced;
+    @api disabled = false;
 
     handleChange(event) {
         const field = event.target.dataset.role;

@@ -47,6 +47,7 @@ export default class NhsApiConfig extends LightningElement {
     pickOptions(apiName) {
         if (apiName === 'Map_Provider__c') return this.mapProviderOptions;
         if (apiName === 'Final_Checks_Email_Template_Id__c') return this.emailTemplateOptions;
+        if (apiName === 'Final_Checks_Email_Template_Timeline_Id__c') return this.emailTemplateOptions;
         return this.distanceMethodOptions;
     }
 

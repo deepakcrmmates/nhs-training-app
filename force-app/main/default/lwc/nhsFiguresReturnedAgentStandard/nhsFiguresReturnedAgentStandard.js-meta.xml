@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Figures Returned — Agent Card (Standard 3-row)</masterLabel>
+    <description>Compact 3-row agent figure card used on the Figures Returned list when the housebuilder uses the standard valuation model.</description>
+</LightningComponentBundle>

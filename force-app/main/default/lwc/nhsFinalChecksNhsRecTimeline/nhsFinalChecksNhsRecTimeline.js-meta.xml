@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Final Checks — NHS Recommendation (Timeline 4-card)</masterLabel>
+    <description>Read-only 4-card NHS recommendation summary (Open Market / 6-8 Week / 4-6 Week / 2-4 Week) shown on the Final Checks page when the housebuilder uses the Timeline valuation model.</description>
+</LightningComponentBundle>

@@ -54,10 +54,10 @@
                             <!-- Agent 1 -->
                             <td class="fc-td fc-td-agent">
                                 <template if:true={app.agent1FigMissing}>
-                                    <div class={app.agent1MissingClass}>
+                                    <div class={app.agent1MissingClass} title={app.agent1ChaseTooltip}>
                                         <div class="fig-agent">{app.agent1Name}</div>
                                         <div class="fig-visited">{app.agent1DateFmt}</div>
-                                        <span class="fig-chase-badge">Chase</span>
+                                        <span class="fig-chase-badge" title={app.agent1ChaseTooltip}>Chase</span>
                                     </div>
                                 </template>
                                 <template if:false={app.agent1FigMissing}>
@@ -79,10 +79,10 @@
                             <!-- Agent 2 -->
                             <td class="fc-td fc-td-agent">
                                 <template if:true={app.agent2FigMissing}>
-                                    <div class={app.agent2MissingClass}>
+                                    <div class={app.agent2MissingClass} title={app.agent2ChaseTooltip}>
                                         <div class="fig-agent">{app.agent2Name}</div>
                                         <div class="fig-visited">{app.agent2DateFmt}</div>
-                                        <span class="fig-chase-badge">Chase</span>
+                                        <span class="fig-chase-badge" title={app.agent2ChaseTooltip}>Chase</span>
                                     </div>
                                 </template>
                                 <template if:false={app.agent2FigMissing}>
@@ -104,10 +104,10 @@
                             <!-- Agent 3 -->
                             <td class="fc-td fc-td-agent">
                                 <template if:true={app.agent3FigMissing}>
-                                    <div class={app.agent3MissingClass}>
+                                    <div class={app.agent3MissingClass} title={app.agent3ChaseTooltip}>
                                         <div class="fig-agent">{app.agent3Name}</div>
                                         <div class="fig-visited">{app.agent3DateFmt}</div>
-                                        <span class="fig-chase-badge">Chase</span>
+                                        <span class="fig-chase-badge" title={app.agent3ChaseTooltip}>Chase</span>
                                     </div>
                                 </template>
                                 <template if:false={app.agent3FigMissing}>

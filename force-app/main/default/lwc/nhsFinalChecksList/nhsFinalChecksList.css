@@ -91,9 +91,19 @@
     vertical-align: middle;
     color: #334155;
 }
+.app-name-row { display: flex; align-items: center; gap: 6px; }
 .app-name { font-weight: 600; color: #1e293b; font-size: 0.82rem; }
 .app-sub { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
 .vendor-name { font-weight: 500; }
+.fc-timeline-pill {
+    flex-shrink: 0;
+    background: #FFF8E7; color: #8A6D1F;
+    border: 1px solid #E8D18A;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    line-height: 1.4;
+}
 
 /* ── Progress bar ── */
 .progress-wrap { display: flex; align-items: center; gap: 8px; }

@@ -40,40 +40,12 @@
                 <div class="fc-dot"></div>
                 <h2>Agent Valuations</h2>
             </div>
-            <table class="val-table">
-                <thead>
-                    <tr>
-                        <th class="val-th"></th>
-                        <th class="val-th val-th-a1">{agent1Name}</th>
-                        <th class="val-th val-th-a2">{agent2Name}</th>
-                        <th class="val-th val-th-a3">{agent3Name}</th>
-                        <th class="val-th val-th-avg">Average</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="val-td val-label">Initial Asking Price</td>
-                        <td class="val-td val-num">{a1Initial}</td>
-                        <td class="val-td val-num">{a2Initial}</td>
-                        <td class="val-td val-num">{a3Initial}</td>
-                        <td class="val-td val-num val-avg">{avgInitial}</td>
-                    </tr>
-                    <tr>
-                        <td class="val-td val-label">Target Sale Price</td>
-                        <td class="val-td val-num">{a1Target}</td>
-                        <td class="val-td val-num">{a2Target}</td>
-                        <td class="val-td val-num">{a3Target}</td>
-                        <td class="val-td val-num val-avg">{avgTarget}</td>
-                    </tr>
-                    <tr>
-                        <td class="val-td val-label">Bottom Price</td>
-                        <td class="val-td val-num">{a1Bottom}</td>
-                        <td class="val-td val-num">{a2Bottom}</td>
-                        <td class="val-td val-num">{a3Bottom}</td>
-                        <td class="val-td val-num val-avg">{avgBottom}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <template if:true={isTimelineModel}>
+                <c-nhs-final-checks-agent-table-timeline data={d}></c-nhs-final-checks-agent-table-timeline>
+            </template>
+            <template if:false={isTimelineModel}>
+                <c-nhs-final-checks-agent-table-standard data={d}></c-nhs-final-checks-agent-table-standard>
+            </template>
         </div>
 
         <!-- ══ SECTION 3: NHS RECOMMENDATION ══ -->
@@ -82,20 +54,12 @@
                 <div class="fc-dot green"></div>
                 <h2>NHS Recommendation</h2>
             </div>
-            <div class="nhs-grid">
-                <div class="nhs-item">
-                    <span class="nhs-label">Market Value</span>
-                    <span class="nhs-value">{nhsMarket}</span>
-                </div>
-                <div class="nhs-item">
-                    <span class="nhs-label">Target Sale</span>
-                    <span class="nhs-value">{nhsTarget}</span>
-                </div>
-                <div class="nhs-item">
-                    <span class="nhs-label">Forced Sale</span>
-                    <span class="nhs-value">{nhsForced}</span>
-                </div>
-            </div>
+            <template if:true={isTimelineModel}>
+                <c-nhs-final-checks-nhs-rec-timeline data={d}></c-nhs-final-checks-nhs-rec-timeline>
+            </template>
+            <template if:false={isTimelineModel}>
+                <c-nhs-final-checks-nhs-rec-standard data={d}></c-nhs-final-checks-nhs-rec-standard>
+            </template>
         </div>
 
         <!-- ══ SECTION 4: FINAL CHECKS ══ -->

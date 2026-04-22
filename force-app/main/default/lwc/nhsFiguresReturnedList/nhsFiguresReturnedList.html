@@ -21,19 +21,15 @@
                         <th class="fr-th">Vendor</th>
                         <th class="fr-th fr-th-agent">
                             <div class="th-name">Agent 1 (NHS)</div>
-                            <div class="th-sub">Initial / Target / Bottom</div>
                         </th>
                         <th class="fr-th fr-th-agent">
                             <div class="th-name">Agent 2</div>
-                            <div class="th-sub">Initial / Target / Bottom</div>
                         </th>
                         <th class="fr-th fr-th-agent">
                             <div class="th-name">Agent 3</div>
-                            <div class="th-sub">Initial / Target / Bottom</div>
                         </th>
                         <th class="fr-th fr-th-nhs">
                             <div class="th-name">NHS Recommended</div>
-                            <div class="th-sub">Market / Target / Forced</div>
                         </th>
                     </tr>
                 </thead>
@@ -41,79 +37,98 @@
                     <template for:each={displayedApps} for:item="app">
                         <tr key={app.id} class="fr-row" data-id={app.id} onclick={handleRowClick}>
                             <td class="fr-td">
-                                <div class="app-addr">{app.name}</div>
+                                <div class="app-name-row">
+                                    <span class="app-addr">{app.name}</span>
+                                    <template if:true={app.useTimeline}>
+                                        <span class="fr-timeline-pill" title="Timeline valuation model">Timeline</span>
+                                    </template>
+                                </div>
                                 <div class="app-dev">{app.development} &bull; Plot {app.plot}</div>
                             </td>
                             <td class="fr-td">
                                 <span class="vendor-name">{app.vendorName}</span>
                             </td>
+
+                            <!-- Agent 1 -->
                             <td class="fr-td fr-td-agent">
-                                <div class="fig-card">
-                                    <div class="fig-agent-name">{app.agent1Name}</div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Initial</span>
-                                        <span class="fig-val">{app.a1InitFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Target</span>
-                                        <span class="fig-val">{app.a1TargetFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Bottom</span>
-                                        <span class="fig-val">{app.a1BottomFmt}</span>
-                                    </div>
-                                </div>
+                                <template if:true={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-timeline
+                                        agent-name={app.agent1Name}
+                                        open-market={app.a1OpenMarket}
+                                        week68={app.a1_6_8_Week}
+                                        week46={app.a1_4_6_Week}
+                                        week24={app.a1_2_4_Week}>
+                                    </c-nhs-figures-returned-agent-timeline>
+                                </template>
+                                <template if:false={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-standard
+                                        agent-name={app.agent1Name}
+                                        initial={app.agent1Initial}
+                                        target={app.agent1Target}
+                                        bottom={app.agent1Bottom}>
+                                    </c-nhs-figures-returned-agent-standard>
+                                </template>
                             </td>
+
+                            <!-- Agent 2 -->
                             <td class="fr-td fr-td-agent">
-                                <div class="fig-card">
-                                    <div class="fig-agent-name">{app.agent2Name}</div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Initial</span>
-                                        <span class="fig-val">{app.a2InitFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Target</span>
-                                        <span class="fig-val">{app.a2TargetFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Bottom</span>
-                                        <span class="fig-val">{app.a2BottomFmt}</span>
-                                    </div>
-                                </div>
+                                <template if:true={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-timeline
+                                        agent-name={app.agent2Name}
+                                        open-market={app.a2OpenMarket}
+                                        week68={app.a2_6_8_Week}
+                                        week46={app.a2_4_6_Week}
+                                        week24={app.a2_2_4_Week}>
+                                    </c-nhs-figures-returned-agent-timeline>
+                                </template>
+                                <template if:false={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-standard
+                                        agent-name={app.agent2Name}
+                                        initial={app.agent2Initial}
+                                        target={app.agent2Target}
+                                        bottom={app.agent2Bottom}>
+                                    </c-nhs-figures-returned-agent-standard>
+                                </template>
                             </td>
+
+                            <!-- Agent 3 -->
                             <td class="fr-td fr-td-agent">
-                                <div class="fig-card">
-                                    <div class="fig-agent-name">{app.agent3Name}</div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Initial</span>
-                                        <span class="fig-val">{app.a3InitFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Target</span>
-                                        <span class="fig-val">{app.a3TargetFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Bottom</span>
-                                        <span class="fig-val">{app.a3BottomFmt}</span>
-                                    </div>
-                                </div>
+                                <template if:true={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-timeline
+                                        agent-name={app.agent3Name}
+                                        open-market={app.a3OpenMarket}
+                                        week68={app.a3_6_8_Week}
+                                        week46={app.a3_4_6_Week}
+                                        week24={app.a3_2_4_Week}>
+                                    </c-nhs-figures-returned-agent-timeline>
+                                </template>
+                                <template if:false={app.useTimeline}>
+                                    <c-nhs-figures-returned-agent-standard
+                                        agent-name={app.agent3Name}
+                                        initial={app.agent3Initial}
+                                        target={app.agent3Target}
+                                        bottom={app.agent3Bottom}>
+                                    </c-nhs-figures-returned-agent-standard>
+                                </template>
                             </td>
+
+                            <!-- NHS Recommended -->
                             <td class="fr-td fr-td-nhs">
-                                <div class="nhs-card">
-                                    <div class="nhs-title">NHS Recommended</div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Market</span>
-                                        <span class="nhs-val">{app.nhsMarketFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Target</span>
-                                        <span class="nhs-val">{app.nhsTargetFmt}</span>
-                                    </div>
-                                    <div class="fig-row">
-                                        <span class="fig-label">Forced</span>
-                                        <span class="nhs-val">{app.nhsForcedFmt}</span>
-                                    </div>
-                                </div>
+                                <template if:true={app.useTimeline}>
+                                    <c-nhs-figures-returned-nhs-timeline
+                                        open-market={app.nhsRecOpenMarket}
+                                        week68={app.nhsRec_6_8_Week}
+                                        week46={app.nhsRec_4_6_Week}
+                                        week24={app.nhsRec_2_4_Week}>
+                                    </c-nhs-figures-returned-nhs-timeline>
+                                </template>
+                                <template if:false={app.useTimeline}>
+                                    <c-nhs-figures-returned-nhs-standard
+                                        market={app.nhsMarket}
+                                        target={app.nhsTarget}
+                                        forced={app.nhsForced}>
+                                    </c-nhs-figures-returned-nhs-standard>
+                                </template>
                             </td>
                         </tr>
                     </template>

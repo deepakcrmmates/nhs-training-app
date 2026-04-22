@@ -12,6 +12,16 @@
 **/
 
 public without sharing class houseBuilderApplication {
+
+    // Normalise a string coming from an LWC that is meant to represent a Salesforce Id.
+    // Returns null for blanks, single spaces, and other non-Id-shaped values so we don't get
+    // "Invalid id:" exceptions when the form hasn't selected a value for a lookup field.
+    private static Id cleanId(String s) {
+        if (String.isBlank(s)) return null;
+        String trimmed = s.trim();
+        if (trimmed.length() != 15 && trimmed.length() != 18) return null;
+        try { return Id.valueOf(trimmed); } catch (Exception e) { return null; }
+    }
     @AuraEnabled(cacheable=true)
     public static Account getAccountFileUrl(Id accountId) {
         if (accountId == null) return null;
@@ -244,11 +254,11 @@ public without sharing class houseBuilderApplication {
             }
             opp.Property_Description__c = propDesc;
             
-            opp.Vendor_1__c = vendor1Id;
-            opp.Vendor_2__c = vendor2Id;
+            opp.Vendor_1__c = cleanId(vendor1Id);
+            opp.Vendor_2__c = cleanId(vendor2Id);
             opp.Agent_1__c = ac != null ? ac.Id : null;
-            opp.Agent_2__c = agentId;
-            opp.Agent_3__c = agent3Id;
+            opp.Agent_2__c = cleanId(agentId);
+            opp.Agent_3__c = cleanId(agent3Id);
 
             if (appData.get('expectation') != null && String.isNotBlank(String.valueOf(appData.get('expectation')))) {
                 opp.Client_Expectations__c = Integer.valueOf(String.valueOf(appData.get('expectation')));
@@ -257,7 +267,7 @@ public without sharing class houseBuilderApplication {
             opp.ETA_Comp_Start__c = (String)appData.get('startDate');
             opp.ETA_Comp_End__c = (String)appData.get('endDate');
             opp.Notes__c = (String)appData.get('notes');
-            opp.House_Builder__c = (String)appData.get('housebuilderId');
+            opp.House_Builder__c = cleanId((String) appData.get('housebuilderId'));
             opp.Development__c = (String)appData.get('development');
             opp.Plot__c = (String)appData.get('plot');
             
@@ -266,7 +276,7 @@ public without sharing class houseBuilderApplication {
                 opp.Date_of_Enquiry__c = Date.valueOf((String)appData.get('dateOfApplicationReceived'));
             }
 
-            opp.Sales_Advisor__c = (String)appData.get('salesAdvisor');
+            opp.Sales_Advisor__c = cleanId((String) appData.get('salesAdvisor'));
             opp.CloseDate = System.today();
             opp.StageName = 'To be contacted';
             opp.NHS_Process__c = 'Application';

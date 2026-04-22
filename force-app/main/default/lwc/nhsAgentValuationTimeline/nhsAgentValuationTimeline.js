@@ -6,6 +6,7 @@ export default class NhsAgentValuationTimeline extends LightningElement {
     @api week68;
     @api week46;
     @api week24;
+    @api disabled = false;
 
     handleChange(event) {
         const field = event.target.dataset.role;

@@ -22,6 +22,10 @@ td, th { border: 1px solid #C5DCCC; padding: 6px 10px; vertical-align: middle; f
 .agent-table col.agent-lbl { width: 14%; }
 .agent-table col.agent-col { width: 28.66%; }
 .agent-table .av { text-align: center; background: #fff; }
+/* NHS Recommendation — timeline 4-col table */
+.nhs-tl-table { width: 100%; border-collapse: collapse; margin-top: 0; }
+.nhs-tl-table td { border: 1px solid #C5DCCC; padding: 6px 10px; vertical-align: middle; font-size: 11px; }
+.nhs-tl-table .av { text-align: center; background: #fff; }
 </style>
 </head>
 <body>
@@ -126,36 +130,94 @@ td, th { border: 1px solid #C5DCCC; padding: 6px 10px; vertical-align: middle; f
         <td class="sub-hdr">Agent 2</td>
         <td class="sub-hdr">Agent 3</td>
     </tr>
-    <tr>
-        <td class="lbl">Initial Asking Price</td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_1_Initial_Asking_Price__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_2_Initial_Asking_Price__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_3_Initial_Asking_Price__c}"/></apex:outputText></td>
-    </tr>
-    <tr>
-        <td class="lbl">Target Sale</td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Target_Sale__c))}"><apex:param value="{!opp.Agent_1_Target_Sale__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Target_Sale__c))}"><apex:param value="{!opp.Agent_2_Target_Sale__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Target_Sale__c))}"><apex:param value="{!opp.Agent_3_Target_Sale__c}"/></apex:outputText></td>
-    </tr>
-    <tr>
-        <td class="lbl">Bottom Line</td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Bottom_Line__c))}"><apex:param value="{!opp.Agent_1_Bottom_Line__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Bottom_Line__c))}"><apex:param value="{!opp.Agent_2_Bottom_Line__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Bottom_Line__c))}"><apex:param value="{!opp.Agent_3_Bottom_Line__c}"/></apex:outputText></td>
-    </tr>
-    <tr>
-        <td class="lbl" rowspan="2">NHS Recommended</td>
-        <td class="sub-hdr">Market</td>
-        <td class="sub-hdr">Target</td>
-        <td class="sub-hdr">Forced</td>
-    </tr>
-    <tr>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Current_Asking_Price__c))}"><apex:param value="{!opp.Current_Asking_Price__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Target_Sale__c))}"><apex:param value="{!opp.Target_Sale__c}"/></apex:outputText></td>
-        <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Forced_Sale__c))}"><apex:param value="{!opp.Forced_Sale__c}"/></apex:outputText></td>
-    </tr>
+
+    <!-- Standard valuation model — 3 rows: Initial / Target / Bottom -->
+    <apex:outputPanel layout="none" rendered="{!isStandardModel}">
+        <tr>
+            <td class="lbl">Initial Asking Price</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_1_Initial_Asking_Price__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_2_Initial_Asking_Price__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Initial_Asking_Price__c))}"><apex:param value="{!opp.Agent_3_Initial_Asking_Price__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl">Target Sale</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Target_Sale__c))}"><apex:param value="{!opp.Agent_1_Target_Sale__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Target_Sale__c))}"><apex:param value="{!opp.Agent_2_Target_Sale__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Target_Sale__c))}"><apex:param value="{!opp.Agent_3_Target_Sale__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl">Bottom Line</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Bottom_Line__c))}"><apex:param value="{!opp.Agent_1_Bottom_Line__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Bottom_Line__c))}"><apex:param value="{!opp.Agent_2_Bottom_Line__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Bottom_Line__c))}"><apex:param value="{!opp.Agent_3_Bottom_Line__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl" rowspan="2">NHS Recommended</td>
+            <td class="sub-hdr">Market</td>
+            <td class="sub-hdr">Target</td>
+            <td class="sub-hdr">Forced</td>
+        </tr>
+        <tr>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Current_Asking_Price__c))}"><apex:param value="{!opp.Current_Asking_Price__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Target_Sale__c))}"><apex:param value="{!opp.Target_Sale__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Forced_Sale__c))}"><apex:param value="{!opp.Forced_Sale__c}"/></apex:outputText></td>
+        </tr>
+    </apex:outputPanel>
+
+    <!-- Timeline valuation model (Wain Homes) — 4 rows: Open Market / 6-8W / 4-6W / 2-4W -->
+    <apex:outputPanel layout="none" rendered="{!isTimelineModel}">
+        <tr>
+            <td class="lbl">Open Market</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_Open_Market__c))}"><apex:param value="{!opp.Agent_1_Open_Market__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_Open_Market__c))}"><apex:param value="{!opp.Agent_2_Open_Market__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_Open_Market__c))}"><apex:param value="{!opp.Agent_3_Open_Market__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl">6 &ndash; 8 Week</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_6_8_Week__c))}"><apex:param value="{!opp.Agent_1_6_8_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_6_8_Week__c))}"><apex:param value="{!opp.Agent_2_6_8_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_6_8_Week__c))}"><apex:param value="{!opp.Agent_3_6_8_Week__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl">4 &ndash; 6 Week</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_4_6_Week__c))}"><apex:param value="{!opp.Agent_1_4_6_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_4_6_Week__c))}"><apex:param value="{!opp.Agent_2_4_6_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_4_6_Week__c))}"><apex:param value="{!opp.Agent_3_4_6_Week__c}"/></apex:outputText></td>
+        </tr>
+        <tr>
+            <td class="lbl">2 &ndash; 4 Week</td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_1_2_4_Week__c))}"><apex:param value="{!opp.Agent_1_2_4_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_2_2_4_Week__c))}"><apex:param value="{!opp.Agent_2_2_4_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.Agent_3_2_4_Week__c))}"><apex:param value="{!opp.Agent_3_2_4_Week__c}"/></apex:outputText></td>
+        </tr>
+    </apex:outputPanel>
 </table>
+
+<!-- NHS Recommendation — Timeline model (separate 4-col table, lives outside agent-table since 4 values don't fit the 3-col layout) -->
+<apex:outputPanel layout="none" rendered="{!isTimelineModel}">
+    <table class="nhs-tl-table">
+        <colgroup>
+            <col style="width:14%"/>
+            <col style="width:21.5%"/>
+            <col style="width:21.5%"/>
+            <col style="width:21.5%"/>
+            <col style="width:21.5%"/>
+        </colgroup>
+        <tr>
+            <td class="lbl" rowspan="2">NHS Recommended</td>
+            <td class="sub-hdr">Open Market</td>
+            <td class="sub-hdr">6 &ndash; 8 Week</td>
+            <td class="sub-hdr">4 &ndash; 6 Week</td>
+            <td class="sub-hdr">2 &ndash; 4 Week</td>
+        </tr>
+        <tr>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.NHS_Rec_Open_Market__c))}"><apex:param value="{!opp.NHS_Rec_Open_Market__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.NHS_Rec_6_8_Week__c))}"><apex:param value="{!opp.NHS_Rec_6_8_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.NHS_Rec_4_6_Week__c))}"><apex:param value="{!opp.NHS_Rec_4_6_Week__c}"/></apex:outputText></td>
+            <td class="av money"><apex:outputText value="£{0,number,#,##0.00}" rendered="{!NOT(ISNULL(opp.NHS_Rec_2_4_Week__c))}"><apex:param value="{!opp.NHS_Rec_2_4_Week__c}"/></apex:outputText></td>
+        </tr>
+    </table>
+</apex:outputPanel>
 
 </body>
 </html>

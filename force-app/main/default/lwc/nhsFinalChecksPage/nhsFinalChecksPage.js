@@ -19,7 +19,6 @@ const CHECK_ITEMS = [
     { key: 'addressValidated', label: 'Address Validated',    group: 'validation' },
 ];
 const TOTAL = CHECK_ITEMS.length;
-const fmt = v => v != null ? '£' + Number(v).toLocaleString('en-GB', { minimumFractionDigits: 0 }) : '—';
 
 export default class NhsFinalChecksPage extends LightningElement {
     @api recordId;
@@ -88,35 +87,8 @@ export default class NhsFinalChecksPage extends LightningElement {
     get vendorEmail()  { return this.d.vendorEmail || '—'; }
     get vendorMobile() { return this.d.vendorMobile || '—'; }
 
-    // ── Agent valuations ──
-    get agent1Name() { return this.d.agent1Name || 'Agent 1'; }
-    get agent2Name() { return this.d.agent2Name || 'Agent 2'; }
-    get agent3Name() { return this.d.agent3Name || 'Agent 3'; }
-
-    get a1Initial() { return fmt(this.d.agent1Initial); }
-    get a1Target()  { return fmt(this.d.agent1Target); }
-    get a1Bottom()  { return fmt(this.d.agent1Bottom); }
-    get a2Initial() { return fmt(this.d.agent2Initial); }
-    get a2Target()  { return fmt(this.d.agent2Target); }
-    get a2Bottom()  { return fmt(this.d.agent2Bottom); }
-    get a3Initial() { return fmt(this.d.agent3Initial); }
-    get a3Target()  { return fmt(this.d.agent3Target); }
-    get a3Bottom()  { return fmt(this.d.agent3Bottom); }
-
-    get avgInitial() { return this._avg('Initial'); }
-    get avgTarget()  { return this._avg('Target'); }
-    get avgBottom()  { return this._avg('Bottom'); }
-
-    _avg(type) {
-        const key = type === 'Initial' ? 'Initial' : type === 'Target' ? 'Target' : 'Bottom';
-        const vals = [1,2,3].map(n => this.d[`agent${n}${key}`]).filter(v => v != null && v > 0);
-        if (vals.length === 0) return '—';
-        return fmt(vals.reduce((s,v) => s + v, 0) / vals.length);
-    }
-
-    get nhsMarket() { return fmt(this.d.nhsMarket); }
-    get nhsTarget() { return fmt(this.d.nhsTarget); }
-    get nhsForced() { return fmt(this.d.nhsForced); }
+    // ── Valuation model flag ──
+    get isTimelineModel() { return !!this.d.useTimelineValuations; }
 
     // ── Checks ──
     get agentReports() { return this._group('reports'); }
@@ -183,28 +155,51 @@ export default class NhsFinalChecksPage extends LightningElement {
 
     get hasTemplates() { return this.templates.length > 0; }
 
-    // Missing valuation figures (agent 1/2/3 Initial/Target/Bottom + NHS Market/Target/Forced)
+    // Missing valuation figures — branches on valuation model (timeline 4-row vs standard 3-row)
     get missingValuations() {
         const missing = [];
         const need = (val) => val === null || val === undefined || val === 0;
         const d = this.d || {};
-        const agents = [
-            { num: 1, name: d.agent1Name || 'Agent 1', initial: d.agent1Initial, target: d.agent1Target, bottom: d.agent1Bottom },
-            { num: 2, name: d.agent2Name || 'Agent 2', initial: d.agent2Initial, target: d.agent2Target, bottom: d.agent2Bottom },
-            { num: 3, name: d.agent3Name || 'Agent 3', initial: d.agent3Initial, target: d.agent3Target, bottom: d.agent3Bottom }
-        ];
-        for (const a of agents) {
-            const fields = [];
-            if (need(a.initial)) fields.push('Initial Asking');
-            if (need(a.target))  fields.push('Target Sale');
-            if (need(a.bottom))  fields.push('Bottom Price');
-            if (fields.length) missing.push({ key: 'a' + a.num, label: a.name, detail: fields.join(', ') });
+
+        if (this.isTimelineModel) {
+            const agents = [
+                { num: 1, name: d.agent1Name || 'Agent 1', open: d.a1OpenMarket, w68: d.a1_6_8_Week, w46: d.a1_4_6_Week, w24: d.a1_2_4_Week },
+                { num: 2, name: d.agent2Name || 'Agent 2', open: d.a2OpenMarket, w68: d.a2_6_8_Week, w46: d.a2_4_6_Week, w24: d.a2_2_4_Week },
+                { num: 3, name: d.agent3Name || 'Agent 3', open: d.a3OpenMarket, w68: d.a3_6_8_Week, w46: d.a3_4_6_Week, w24: d.a3_2_4_Week }
+            ];
+            for (const a of agents) {
+                const fields = [];
+                if (need(a.open)) fields.push('Open Market');
+                if (need(a.w68))  fields.push('6–8 Week');
+                if (need(a.w46))  fields.push('4–6 Week');
+                if (need(a.w24))  fields.push('2–4 Week');
+                if (fields.length) missing.push({ key: 'a' + a.num, label: a.name, detail: fields.join(', ') });
+            }
+            const nhsFields = [];
+            if (need(d.nhsRecOpenMarket)) nhsFields.push('Open Market');
+            if (need(d.nhsRec_6_8_Week))  nhsFields.push('6–8 Week');
+            if (need(d.nhsRec_4_6_Week))  nhsFields.push('4–6 Week');
+            if (need(d.nhsRec_2_4_Week))  nhsFields.push('2–4 Week');
+            if (nhsFields.length) missing.push({ key: 'nhs', label: 'NHS Recommendation', detail: nhsFields.join(', ') });
+        } else {
+            const agents = [
+                { num: 1, name: d.agent1Name || 'Agent 1', initial: d.agent1Initial, target: d.agent1Target, bottom: d.agent1Bottom },
+                { num: 2, name: d.agent2Name || 'Agent 2', initial: d.agent2Initial, target: d.agent2Target, bottom: d.agent2Bottom },
+                { num: 3, name: d.agent3Name || 'Agent 3', initial: d.agent3Initial, target: d.agent3Target, bottom: d.agent3Bottom }
+            ];
+            for (const a of agents) {
+                const fields = [];
+                if (need(a.initial)) fields.push('Initial Asking');
+                if (need(a.target))  fields.push('Target Sale');
+                if (need(a.bottom))  fields.push('Bottom Price');
+                if (fields.length) missing.push({ key: 'a' + a.num, label: a.name, detail: fields.join(', ') });
+            }
+            const nhsFields = [];
+            if (need(d.nhsMarket)) nhsFields.push('Market Value');
+            if (need(d.nhsTarget)) nhsFields.push('Target Sale');
+            if (need(d.nhsForced)) nhsFields.push('Forced Sale');
+            if (nhsFields.length) missing.push({ key: 'nhs', label: 'NHS Recommendation', detail: nhsFields.join(', ') });
         }
-        const nhsFields = [];
-        if (need(d.nhsMarket)) nhsFields.push('Market Value');
-        if (need(d.nhsTarget)) nhsFields.push('Target Sale');
-        if (need(d.nhsForced)) nhsFields.push('Forced Sale');
-        if (nhsFields.length) missing.push({ key: 'nhs', label: 'NHS Recommendation', detail: nhsFields.join(', ') });
         return missing;
     }
     get hasMissingValuations() { return this.missingValuations.length > 0; }

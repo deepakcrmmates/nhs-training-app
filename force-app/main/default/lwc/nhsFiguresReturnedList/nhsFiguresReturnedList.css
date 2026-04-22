@@ -61,25 +61,21 @@
 .app-dev { font-size: 10px; color: var(--nhs-text-muted); margin-top: 2px; }
 .vendor-name { font-weight: 600; color: var(--nhs-text-mid); font-size: 12px; word-wrap: break-word; }
 
-/* Figure card per agent */
-.fig-card {
-    padding: 6px 8px; background: var(--nhs-pale); border-left: 3px solid var(--nhs-mid);
-    border-radius: 2px; display: flex; flex-direction: column; gap: 3px;
+/* Agent name + Timeline pill row */
+.app-name-row { display: flex; align-items: center; gap: 6px; }
+.fr-timeline-pill {
+    flex-shrink: 0;
+    background: #FFF8E7; color: #8A6D1F;
+    border: 1px solid #E8D18A;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    line-height: 1.4;
 }
-.fig-agent-name { font-weight: 700; font-size: 11px; color: var(--nhs-dk); margin-bottom: 2px; }
-.fig-row { display: flex; justify-content: space-between; align-items: center; }
-.fig-label { font-size: 9px; font-weight: 600; color: var(--nhs-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.fig-val { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--nhs-dk); }
 
-/* NHS Recommended column */
+/* NHS Recommended column header styling */
 .fr-th-nhs { background: rgba(201,168,76,0.85); color: #fff; width: 18%; }
 .fr-td-nhs { padding: 7px 9px; }
-.nhs-card {
-    padding: 6px 8px; background: #FFF8E7; border-left: 3px solid #C9A84C;
-    border-radius: 2px; display: flex; flex-direction: column; gap: 3px;
-}
-.nhs-title { font-weight: 700; font-size: 10px; color: #7A5A00; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
-.nhs-val { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: #6B4A00; }
 
 .fr-empty { text-align: center; padding: 48px 20px; color: var(--nhs-text-muted); font-size: 13px; font-style: italic; }
 

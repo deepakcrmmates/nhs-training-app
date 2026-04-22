@@ -1,0 +1,12 @@
+:host { display: block; }
+.fig-card {
+    padding: 6px 8px; background: #E8F5E9; border-left: 3px solid #3A7D44;
+    border-radius: 2px; display: flex; flex-direction: column; gap: 3px;
+}
+.fig-agent-name { font-weight: 700; font-size: 11px; color: #2C5F2E; margin-bottom: 2px; }
+.fig-row { display: flex; justify-content: space-between; align-items: center; }
+.fig-label { font-size: 9px; font-weight: 600; color: #6B8A6B; text-transform: uppercase; letter-spacing: 0.05em; }
+.fig-val {
+    font-family: 'SF Mono', SFMono-Regular, Consolas, Menlo, monospace;
+    font-size: 11px; font-weight: 700; color: #2C5F2E;
+}

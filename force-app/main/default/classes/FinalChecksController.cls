@@ -4,7 +4,7 @@ public with sharing class FinalChecksController {
     public static List<AppWrapper> getFinalChecksApplications(String searchTerm) {
         String query =
             'SELECT Id, Name, Property_Address__c, Development__c, Plot__c, ' +
-            'House_Builder__r.Name, House_Builder__r.Vendor_Discussion_Approved__c, Owner.Name, Vendor_1__r.Name, ' +
+            'House_Builder__r.Name, House_Builder__r.Vendor_Discussion_Approved__c, House_Builder__r.Use_Timeline_Valuations__c, Owner.Name, Vendor_1__r.Name, ' +
             'Application_Reference_Number__c, Date_of_Application_Received__c, ' +
             'FC_Agent_1_Report__c, FC_Agent_2_Report__c, FC_Agent_3_Report__c, ' +
             'FC_NHS_Pre_Will_Report__c, FC_Will_Report__c, ' +
@@ -103,15 +103,20 @@ public with sharing class FinalChecksController {
             SELECT Name, Property_Address__c, Development__c, Plot__c,
                    House_Builder__c, House_Builder__r.Name, House_Builder__r.Email__c,
                    House_Builder__r.Vendor_Discussion_Approved__c,
+                   House_Builder__r.Use_Timeline_Valuations__c,
                    Vendor_1__r.Name,
                    Vendor_1_Email__c, Vendor_1_Mobile__c,
                    Agent_1__r.Name, Agent_1_Initial_Asking_Price__c,
                    Agent_1_Target_Sale__c, Agent_1_Bottom_Line__c,
+                   Agent_1_Open_Market__c, Agent_1_6_8_Week__c, Agent_1_4_6_Week__c, Agent_1_2_4_Week__c,
                    Agent_2__r.Name, Agent_2_Initial_Asking_Price__c,
                    Agent_2_Target_Sale__c, Agent_2_Bottom_Line__c,
+                   Agent_2_Open_Market__c, Agent_2_6_8_Week__c, Agent_2_4_6_Week__c, Agent_2_2_4_Week__c,
                    Agent_3__r.Name, Agent_3_Initial_Asking_Price__c,
                    Agent_3_Target_Sale__c, Agent_3_Bottom_Line__c,
+                   Agent_3_Open_Market__c, Agent_3_6_8_Week__c, Agent_3_4_6_Week__c, Agent_3_2_4_Week__c,
                    Current_Asking_Price__c, Target_Sale__c, Forced_Sale__c,
+                   NHS_Rec_Open_Market__c, NHS_Rec_6_8_Week__c, NHS_Rec_4_6_Week__c, NHS_Rec_2_4_Week__c,
                    FC_Agent_1_Report__c, FC_Agent_2_Report__c, FC_Agent_3_Report__c,
                    FC_NHS_Pre_Will_Report__c, FC_Will_Report__c,
                    FC_Photos_Validated__c, FC_Address_Validated__c,
@@ -149,26 +154,45 @@ public with sharing class FinalChecksController {
         }
         data.put('builderContacts', builderContacts);
 
+        // Timeline flag
+        data.put('useTimelineValuations', opp.House_Builder__r != null && opp.House_Builder__r.Use_Timeline_Valuations__c == true);
+
         // Agent 1
         data.put('agent1Name', opp.Agent_1__r != null ? opp.Agent_1__r.Name : '');
         data.put('agent1Initial', opp.Agent_1_Initial_Asking_Price__c);
         data.put('agent1Target', opp.Agent_1_Target_Sale__c);
         data.put('agent1Bottom', opp.Agent_1_Bottom_Line__c);
+        data.put('a1OpenMarket', opp.Agent_1_Open_Market__c);
+        data.put('a1_6_8_Week', opp.Agent_1_6_8_Week__c);
+        data.put('a1_4_6_Week', opp.Agent_1_4_6_Week__c);
+        data.put('a1_2_4_Week', opp.Agent_1_2_4_Week__c);
         // Agent 2
         data.put('agent2Name', opp.Agent_2__r != null ? opp.Agent_2__r.Name : '');
         data.put('agent2Initial', opp.Agent_2_Initial_Asking_Price__c);
         data.put('agent2Target', opp.Agent_2_Target_Sale__c);
         data.put('agent2Bottom', opp.Agent_2_Bottom_Line__c);
+        data.put('a2OpenMarket', opp.Agent_2_Open_Market__c);
+        data.put('a2_6_8_Week', opp.Agent_2_6_8_Week__c);
+        data.put('a2_4_6_Week', opp.Agent_2_4_6_Week__c);
+        data.put('a2_2_4_Week', opp.Agent_2_2_4_Week__c);
         // Agent 3
         data.put('agent3Name', opp.Agent_3__r != null ? opp.Agent_3__r.Name : '');
         data.put('agent3Initial', opp.Agent_3_Initial_Asking_Price__c);
         data.put('agent3Target', opp.Agent_3_Target_Sale__c);
         data.put('agent3Bottom', opp.Agent_3_Bottom_Line__c);
+        data.put('a3OpenMarket', opp.Agent_3_Open_Market__c);
+        data.put('a3_6_8_Week', opp.Agent_3_6_8_Week__c);
+        data.put('a3_4_6_Week', opp.Agent_3_4_6_Week__c);
+        data.put('a3_2_4_Week', opp.Agent_3_2_4_Week__c);
 
         // NHS
         data.put('nhsMarket', opp.Current_Asking_Price__c);
         data.put('nhsTarget', opp.Target_Sale__c);
         data.put('nhsForced', opp.Forced_Sale__c);
+        data.put('nhsRecOpenMarket', opp.NHS_Rec_Open_Market__c);
+        data.put('nhsRec_6_8_Week', opp.NHS_Rec_6_8_Week__c);
+        data.put('nhsRec_4_6_Week', opp.NHS_Rec_4_6_Week__c);
+        data.put('nhsRec_2_4_Week', opp.NHS_Rec_2_4_Week__c);
 
         // Checks
         data.put('agent1Report', opp.FC_Agent_1_Report__c);
@@ -179,10 +203,20 @@ public with sharing class FinalChecksController {
         data.put('photosValidated', opp.FC_Photos_Validated__c);
         data.put('addressValidated', opp.FC_Address_Validated__c);
 
-        // Configured default email template for Final Checks (from NHS API Config)
+        // Configured default email template for Final Checks — picks Timeline variant when the housebuilder is on the timeline model
+        Boolean timelineModel = opp.House_Builder__r != null && opp.House_Builder__r.Use_Timeline_Valuations__c == true;
         String defaultTemplateId = '';
-        for (NHS_API_Config__c cfg : [SELECT Final_Checks_Email_Template_Id__c FROM NHS_API_Config__c LIMIT 1]) {
-            defaultTemplateId = cfg.Final_Checks_Email_Template_Id__c;
+        for (NHS_API_Config__c cfg : [
+            SELECT Final_Checks_Email_Template_Id__c, Final_Checks_Email_Template_Timeline_Id__c
+            FROM NHS_API_Config__c LIMIT 1
+        ]) {
+            defaultTemplateId = timelineModel
+                ? cfg.Final_Checks_Email_Template_Timeline_Id__c
+                : cfg.Final_Checks_Email_Template_Id__c;
+            // Fallback: if the timeline-specific template isn't configured, fall back to the standard one so the page still functions
+            if (timelineModel && String.isBlank(defaultTemplateId)) {
+                defaultTemplateId = cfg.Final_Checks_Email_Template_Id__c;
+            }
         }
         data.put('defaultTemplateId', defaultTemplateId);
 
@@ -229,6 +263,7 @@ public with sharing class FinalChecksController {
         @AuraEnabled public Boolean addressValidated { get; set; }
         @AuraEnabled public Integer checkedCount    { get; set; }
         @AuraEnabled public Boolean builderApproved { get; set; }
+        @AuraEnabled public Boolean useTimeline     { get; set; }
 
         public AppWrapper(Opportunity opp) {
             this.id              = opp.Id;
@@ -238,6 +273,7 @@ public with sharing class FinalChecksController {
             this.plot            = opp.Plot__c;
             this.houseBuilder    = opp.House_Builder__r != null ? opp.House_Builder__r.Name : null;
             this.builderApproved = opp.House_Builder__r != null ? opp.House_Builder__r.Vendor_Discussion_Approved__c : false;
+            this.useTimeline     = opp.House_Builder__r != null && opp.House_Builder__r.Use_Timeline_Valuations__c == true;
             this.ownerName       = opp.Owner.Name;
             this.vendorName      = opp.Vendor_1__r != null ? opp.Vendor_1__r.Name : null;
             this.refNumber       = opp.Application_Reference_Number__c;

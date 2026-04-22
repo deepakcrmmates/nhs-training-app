@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Figures Returned — NHS Recommendation (Timeline 4-row)</masterLabel>
+    <description>4-row NHS Recommendation card (Open Market / 6-8W / 4-6W / 2-4W) used on the Figures Returned list for Timeline-model housebuilders.</description>
+</LightningComponentBundle>

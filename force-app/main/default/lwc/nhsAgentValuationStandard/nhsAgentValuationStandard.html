@@ -1,14 +1,14 @@
 <template>
     <div class="val-row">
         <span class="val-label">Initial Asking</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={initialPrice} data-role="initial" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={initialPrice} data-role="initial" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
     <div class="val-row">
         <span class="val-label">Target Sale</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={targetSale} data-role="target" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={targetSale} data-role="target" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
     <div class="val-row">
         <span class="val-label">Bottom Line</span>
-        <div class="val-input"><span class="val-pound">£</span><input type="text" value={bottomLine} data-role="bottom" onchange={handleChange} placeholder="0"/></div>
+        <div class="val-input"><span class="val-pound">£</span><input type="text" value={bottomLine} data-role="bottom" onchange={handleChange} placeholder="0" disabled={disabled}/></div>
     </div>
 </template>

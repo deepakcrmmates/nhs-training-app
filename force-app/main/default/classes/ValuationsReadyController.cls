@@ -133,6 +133,24 @@ public with sharing class ValuationsReadyController {
             w.nhsMarketSet = nhsMarketSet;
             w.nhsTargetSet = nhsTargetSet;
             w.nhsForcedSet = nhsForcedSet;
+            w.useTimeline = timelineModel;
+
+            // Build per-agent "missing" lists for hover tooltips — branches on valuation model
+            if (timelineModel) {
+                w.agent1MissingList = buildTimelineMissing(opp.Agent_1_Open_Market__c, opp.Agent_1_6_8_Week__c, opp.Agent_1_4_6_Week__c, opp.Agent_1_2_4_Week__c);
+                w.agent2MissingList = buildTimelineMissing(opp.Agent_2_Open_Market__c, opp.Agent_2_6_8_Week__c, opp.Agent_2_4_6_Week__c, opp.Agent_2_2_4_Week__c);
+                w.agent3MissingList = buildTimelineMissing(opp.Agent_3_Open_Market__c, opp.Agent_3_6_8_Week__c, opp.Agent_3_4_6_Week__c, opp.Agent_3_2_4_Week__c);
+                w.nhsMissingList = buildTimelineMissing(opp.NHS_Rec_Open_Market__c, opp.NHS_Rec_6_8_Week__c, opp.NHS_Rec_4_6_Week__c, opp.NHS_Rec_2_4_Week__c);
+            } else {
+                w.agent1MissingList = buildStandardMissing(opp.Agent_1_Initial_Asking_Price__c, opp.Agent_1_Target_Sale__c, opp.Agent_1_Bottom_Line__c);
+                w.agent2MissingList = buildStandardMissing(opp.Agent_2_Initial_Asking_Price__c, opp.Agent_2_Target_Sale__c, opp.Agent_2_Bottom_Line__c);
+                w.agent3MissingList = buildStandardMissing(opp.Agent_3_Initial_Asking_Price__c, opp.Agent_3_Target_Sale__c, opp.Agent_3_Bottom_Line__c);
+                List<String> nhsParts = new List<String>();
+                if (!nhsMarketSet) nhsParts.add('Market');
+                if (!nhsTargetSet) nhsParts.add('Target');
+                if (!nhsForcedSet) nhsParts.add('Forced');
+                w.nhsMissingList = String.join(nhsParts, ', ');
+            }
 
             Integer pending = 0;
             if (!nhsMarketSet) pending++;
@@ -143,6 +161,23 @@ public with sharing class ValuationsReadyController {
             results.add(w);
         }
         return results;
+    }
+
+    private static String buildTimelineMissing(Decimal openMarket, Decimal w68, Decimal w46, Decimal w24) {
+        List<String> parts = new List<String>();
+        if (openMarket == null || openMarket == 0) parts.add('Open Market');
+        if (w68 == null || w68 == 0)               parts.add('6–8 Week');
+        if (w46 == null || w46 == 0)               parts.add('4–6 Week');
+        if (w24 == null || w24 == 0)               parts.add('2–4 Week');
+        return String.join(parts, ', ');
+    }
+
+    private static String buildStandardMissing(Decimal initial, Decimal target, Decimal bottom) {
+        List<String> parts = new List<String>();
+        if (initial == null) parts.add('Initial Asking');
+        if (target == null)  parts.add('Target Sale');
+        if (bottom == null)  parts.add('Bottom Price');
+        return String.join(parts, ', ');
     }
 
     public class AppWrapper {
@@ -174,5 +209,11 @@ public with sharing class ValuationsReadyController {
         @AuraEnabled public Boolean nhsTargetSet { get; set; }
         @AuraEnabled public Boolean nhsForcedSet { get; set; }
         @AuraEnabled public Integer nhsPending { get; set; }
+        @AuraEnabled public Boolean useTimeline { get; set; }
+
+        @AuraEnabled public String agent1MissingList { get; set; }
+        @AuraEnabled public String agent2MissingList { get; set; }
+        @AuraEnabled public String agent3MissingList { get; set; }
+        @AuraEnabled public String nhsMissingList    { get; set; }
     }
 }

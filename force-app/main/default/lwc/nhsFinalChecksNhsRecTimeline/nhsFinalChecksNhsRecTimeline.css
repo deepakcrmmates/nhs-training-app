@@ -1,0 +1,30 @@
+:host { display: block; }
+
+.nhs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 16px 20px;
+    gap: 0;
+}
+.nhs-item {
+    text-align: center;
+    padding: 12px;
+    border-right: 1px solid #f1f5f9;
+}
+.nhs-item:last-child { border-right: none; }
+.nhs-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+.nhs-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #047857;
+    font-variant-numeric: tabular-nums;
+}
