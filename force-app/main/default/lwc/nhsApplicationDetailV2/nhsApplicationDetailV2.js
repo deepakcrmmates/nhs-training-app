@@ -635,7 +635,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     // where agents haven't been booked yet — showing it confuses the end user.
     get showAgentCard() {
         const p = this.formData.nhsProcess;
-        return p !== 'Final Checks' && p !== 'Vendor Availability';
+        return p !== 'Application' && p !== 'Vendor Availability' && p !== 'Final Checks';
     }
 
     get showVendorAvailability() {
