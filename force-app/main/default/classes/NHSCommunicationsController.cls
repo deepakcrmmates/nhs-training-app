@@ -162,7 +162,7 @@ public with sharing class NHSCommunicationsController {
         return results;
     }
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Map<String, String>> getEmailTemplates() {
         List<Map<String, String>> templates = new List<Map<String, String>>();
 
