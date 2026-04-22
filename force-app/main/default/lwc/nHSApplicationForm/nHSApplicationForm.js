@@ -93,6 +93,9 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
         return this.activeSection === sectionId ? 'nav-item active' : 'nav-item';
     }
 
+    // Soft-validation state — once the user confirms the warning prompt once, don't ask again this session
+    warningsAcknowledged = false;
+
     @track currentDateTime = new Date().toISOString().split('T')[0];
     marketStatusOptions = [
         { label: 'Yes', value: 'Yes' },
@@ -664,6 +667,19 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
             vendorLastNameInput.reportValidity();
         }
 
+        // ── Soft validation: warn but allow the user to proceed ──
+        if (!this.warningsAcknowledged) {
+            const warnings = this.collectSoftWarnings();
+            if (warnings.length > 0) {
+                const msg = 'The following recommended fields are not filled in:\n\n• '
+                    + warnings.join('\n• ')
+                    + '\n\nYou can still proceed, but please consider adding these details.\n\nDo you want to continue?';
+                const proceed = window.confirm(msg);
+                if (!proceed) return;
+                this.warningsAcknowledged = true;
+            }
+        }
+
         this.isLoading = true;
         this.isModalOpen = true;
 
@@ -755,6 +771,25 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
 
 
 
+
+    // Collect recommended-but-not-filled fields. Returns an array of human labels.
+    // Submission proceeds regardless — this drives only the pre-submit warning prompt.
+    collectSoftWarnings() {
+        const warnings = [];
+        const p = this.formData.Property || {};
+        const v = this.formData.Vendor || {};
+        const a = this.formData.Application || {};
+
+        const anyPropertyType = p.Detached || p.SemiDetached || p.EndTerrace || p.MidTerrace
+            || p.Apartment || p.Maisonette || p.Studio || p.Bungalow || p.Other;
+        if (!anyPropertyType) warnings.push('Type of property');
+        if (!p.NumberofBedrooms) warnings.push('Number of bedrooms');
+        if (!v.mobilePhone || String(v.mobilePhone).trim() === '') warnings.push('Phone number of Vendor 1');
+        if (!v.email || String(v.email).trim() === '') warnings.push('Email address of Vendor 1');
+        if (!a.expectation || String(a.expectation).trim() === '') warnings.push("Vendor's expectations");
+
+        return warnings;
+    }
 
     // Function to show messages one by one with delay
     addResultWithDelay(status, message, index, delay = 500) {
