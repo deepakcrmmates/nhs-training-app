@@ -742,8 +742,23 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
                 this.addResultWithDelay('Error', 'Box folder setup failed: ' + msg + ' — use Retry from the Application page.', 11);
             }
 
-            // STEP 6: GENERATE PDF AND UPLOAD TO BOX
-            this.addResultWithDelay('Progress', 'Generating PDF...', 12);
+            // STEP 6: GENERATE PDF AND UPLOAD TO BOX (synchronous — folder setup is now sync too)
+            this.addResultWithDelay('Progress', 'Generating PDF and uploading to Box...', 12);
+            try {
+                const pdfResult = await generatePdfToNhsFolder({ recordId: this.applicationId });
+                if (pdfResult && pdfResult.status === 'success') {
+                    this.addResultWithDelay('Success', 'PDF saved to Application folder in Box.', 13);
+                } else {
+                    const msg = (pdfResult && pdfResult.message) || 'Unknown PDF upload error';
+                    console.warn('PDF upload error:', msg);
+                    this.addResultWithDelay('Error', 'PDF upload failed: ' + msg, 13);
+                }
+                try { refreshApex(this.applicationPdfUrl); } catch (_) { /* wire may not be live */ }
+            } catch (pdfErr) {
+                console.error('PDF generation error:', pdfErr);
+                const msg = pdfErr?.body?.message || pdfErr?.message || 'Unknown error';
+                this.addResultWithDelay('Error', 'PDF generation failed: ' + msg, 13);
+            }
 
             this.finalMessage = `Thank you ${this.name}, your application has been successfully submitted.`;
             this.animationClass = 'animated-checkbox success';
@@ -751,20 +766,10 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
             this.isReadOnly = true;
             this.isLoading = false;
 
-            // PDF generation needs delay for Queueable folder creation to complete
             setTimeout(() => {
-                generatePdfToNhsFolder({ recordId: this.applicationId })
-                    .then(() => {
-                        console.log('PDF generated and uploaded to NHS Box folder');
-                        return refreshApex(this.applicationPdfUrl);
-                    })
-                    .catch(e => console.error('PDF generation error:', e));
-            }, 8000);
-
-            setTimeout(() => { 
-                this.isModalOpen = false; 
-                this.finalCheck = true; 
-            }, 8000);
+                this.isModalOpen = false;
+                this.finalCheck = true;
+            }, 2500);
 
         } catch (error) {
             console.error('Save Error:', error);

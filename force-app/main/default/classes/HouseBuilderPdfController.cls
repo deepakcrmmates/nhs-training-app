@@ -236,25 +236,37 @@ public without sharing class HouseBuilderPdfController {
         return NhsFolderSetupJob.runFolderSetup(recordId);
     }
 
-    // Generate PDF and upload to the NHS Application subfolder in Box
-    // Must be called from LWC context (requires user session for getContent)
+    // Generate PDF and upload to the NHS Application subfolder in Box — synchronous.
+    // Result shape: { status: 'success' | 'error', fileId, fileName, message }
+    // Must be called from LWC context (requires user session for getContent).
     @AuraEnabled
-    public static void generatePdfToNhsFolder(Id recordId) {
-        Opportunity opp = [SELECT Id, Name, Box_Folder_Id__c, House_Builder__r.Name
-                           FROM Opportunity WHERE Id = :recordId LIMIT 1];
+    public static Map<String, String> generatePdfToNhsFolder(Id recordId) {
+        Map<String, String> result = new Map<String, String>();
+        try {
+            Opportunity opp = [SELECT Id, Name, Box_Folder_Id__c, House_Builder__r.Name
+                               FROM Opportunity WHERE Id = :recordId LIMIT 1];
 
-        // Generate PDF
-        PageReference pdfPage = Page.houseBuilderApplicationPDF;
-        pdfPage.getParameters().put('Id', recordId);
-        Blob pdfBlob = pdfPage.getContent();
-        String base64File = EncodingUtil.base64Encode(pdfBlob);
+            if (String.isBlank(opp.Box_Folder_Id__c)) {
+                result.put('status', 'error');
+                result.put('message', 'No Box folder on this Opportunity — run folder setup first');
+                return result;
+            }
 
-        // Upload to NHS Application subfolder via @future
-        if (String.isNotBlank(opp.Box_Folder_Id__c)) {
+            // Generate PDF
+            PageReference pdfPage = Page.houseBuilderApplicationPDF;
+            pdfPage.getParameters().put('Id', recordId);
+            Blob pdfBlob = pdfPage.getContent();
+            String base64File = EncodingUtil.base64Encode(pdfBlob);
+
+            // Upload synchronously so the LWC can surface the real outcome
             String hbName = opp.House_Builder__r != null ? opp.House_Builder__r.Name : '';
-            BoxFileService.uploadPdfToNhsFolderAsync(
+            return BoxFileService.uploadPdfToNhsFolder(
                 opp.Box_Folder_Id__c, opp.Name, hbName, base64File
             );
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+            return result;
         }
     }
     

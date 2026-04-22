@@ -66,26 +66,54 @@ public class BoxFileService {
         }
     }
 
-    // ── Upload PDF to NHS Application subfolder (called from AuraEnabled after PDF generated) ──
-    @future(callout=true)
-    public static void uploadPdfToNhsFolderAsync(String mainFolderId, String oppName, String hbName, String base64File) {
+    // ── Upload PDF to NHS Application subfolder (synchronous — returns result map) ──
+    // Result: { status: 'success' | 'error', fileId, fileName, message }
+    public static Map<String, String> uploadPdfToNhsFolder(String mainFolderId, String oppName, String hbName, String base64File) {
+        Map<String, String> result = new Map<String, String>();
         try {
             String accessToken = BoxOAuthController.refreshAccessToken();
-            if (accessToken == null) return;
+            if (String.isBlank(accessToken)) {
+                result.put('status', 'error');
+                result.put('message', 'Could not refresh Box access token');
+                return result;
+            }
 
             String appFolderId = getOrCreateFolder('Application', mainFolderId, accessToken);
-            if (appFolderId == null) return;
+            if (String.isBlank(appFolderId)) {
+                result.put('status', 'error');
+                result.put('message', 'Could not find or create the Application subfolder');
+                return result;
+            }
 
             String timestamp = String.valueOf(DateTime.now().getTime());
             String fileName = sanitizeName(oppName) + ' (' + sanitizeName(hbName) + ') - ' + timestamp + '.pdf';
 
             String fileId = uploadFile(appFolderId, fileName, base64File, accessToken);
-            if (fileId != null) {
-                System.debug('BoxFileService: PDF uploaded to NHS folder. File ID: ' + fileId);
+            if (String.isBlank(fileId)) {
+                result.put('status', 'error');
+                result.put('message', 'Box API returned no file Id for the upload');
+                return result;
             }
+
+            result.put('status', 'success');
+            result.put('fileId', fileId);
+            result.put('fileName', fileName);
+            result.put('message', 'PDF uploaded to Application subfolder (Id ' + fileId + ')');
+            System.debug('BoxFileService: PDF uploaded to NHS folder. File ID: ' + fileId);
+            return result;
         } catch (Exception e) {
-            System.debug('BoxFileService uploadPdfToNhsFolderAsync error: ' + e.getMessage());
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+            System.debug(System.LoggingLevel.ERROR,
+                'BoxFileService uploadPdfToNhsFolder error: ' + e.getMessage() + ' | ' + e.getStackTraceString());
+            return result;
         }
+    }
+
+    // Backwards-compatible shim — keeps the old @future name working for any callers.
+    @future(callout=true)
+    public static void uploadPdfToNhsFolderAsync(String mainFolderId, String oppName, String hbName, String base64File) {
+        uploadPdfToNhsFolder(mainFolderId, oppName, hbName, base64File);
     }
 
     // ── Folder operations ──
