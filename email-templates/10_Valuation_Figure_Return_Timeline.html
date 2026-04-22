@@ -1,11 +1,11 @@
 <html lang="en">
 <head>
-	<title>Valuation Figure Return - New Home Solutions</title>
+	<title>Valuation Figure Return (Timeline) - New Home Solutions</title>
 </head>
 <body style="margin: 0px; padding: 0px; font-family: Aptos, 'Segoe UI', Arial, Helvetica, sans-serif; background-color: #ffffff;">
 <table cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
 <tr><td align="center" style="padding: 20px 0;">
-<table cellpadding="0" cellspacing="0" width="640" style="background-color: #ffffff; border: 1px solid #C5DCCC; border-radius: 6px; overflow: hidden;">
+<table cellpadding="0" cellspacing="0" width="720" style="background-color: #ffffff; border: 1px solid #C5DCCC; border-radius: 6px; overflow: hidden;">
 
 <!-- HEADER -->
 <tr>
@@ -20,7 +20,7 @@
 
 	<p style="margin: 0 0 16px; font-size: 14px; color: #374151; line-height: 1.65;">{{{Opportunity.Day_Greeting__c}}},</p>
 
-	<p style="margin: 0 0 20px; font-size: 14px; color: #374151; line-height: 1.65;">Further to the valuations carried out on the above property, please find below our pricing recommendations. Full reports and photos attached.</p>
+	<p style="margin: 0 0 20px; font-size: 14px; color: #374151; line-height: 1.65;">Further to the valuations carried out on the above property, please find below our pricing recommendations across the timeline windows. Full reports and photos attached.</p>
 
 	<!-- AGENT DETAILS LABEL -->
 	<table cellpadding="0" cellspacing="0" style="margin: 24px 0 8px;"><tr>
@@ -29,38 +29,41 @@
 		</td>
 	</tr></table>
 
-	<!-- PRICE GUIDE TABLE -->
+	<!-- PRICE GUIDE TABLE (Timeline: 4 rows — no Average column; add Average_*_Week__c formula fields later if needed) -->
 	<table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 12px 0 24px; border: 1px solid #C5DCCC; border-radius: 10px; overflow: hidden;">
 		<tr style="background-color: #4A6B5E;">
-			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 20%;">Price Guide</th>
-			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 20%;">{{{Opportunity.Agent_1_Name__c}}}</th>
-			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 20%;">{{{Opportunity.Agent_2_Name__c}}}</th>
-			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 20%;">{{{Opportunity.Agent_3_Name__c}}}</th>
-			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 20%;">Average</th>
+			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: left; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 25%;">Timeframe</th>
+			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 25%;">{{{Opportunity.Agent_1_Name__c}}}</th>
+			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 25%;">{{{Opportunity.Agent_2_Name__c}}}</th>
+			<th style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; width: 25%;">{{{Opportunity.Agent_3_Name__c}}}</th>
 		</tr>
-		<!-- Initial Asking Price -->
+		<!-- Open Market -->
 		<tr>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">Initial Asking Price</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_Initial_Asking_Price__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_Initial_Asking_Price__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_Initial_Asking_Price__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Average_Initial_Asking_Price__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">Open Market</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_Open_Market__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_Open_Market__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_Open_Market__c}}}</td>
 		</tr>
-		<!-- Target Sale -->
+		<!-- 6-8 Week -->
 		<tr>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold; vertical-align: middle; height: 44px;">Target Sale</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_Target_Sale__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_Target_Sale__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_Target_Sale__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Average_Target_Sale__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">6 &ndash; 8 Week</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_6_8_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_6_8_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_6_8_Week__c}}}</td>
 		</tr>
-		<!-- Forced Sale -->
+		<!-- 4-6 Week -->
 		<tr>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold; vertical-align: middle; height: 44px;">Forced Sale</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_Bottom_Line__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_Bottom_Line__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_Bottom_Line__c}}}</td>
-			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Average_Bottom_Line__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">4 &ndash; 6 Week</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_4_6_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_4_6_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_4_6_Week__c}}}</td>
+		</tr>
+		<!-- 2-4 Week -->
+		<tr>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">2 &ndash; 4 Week</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_1_2_4_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_2_2_4_Week__c}}}</td>
+			<td style="padding: 9px 14px; border: 1px solid #C5DCCC; font-size: 13px; color: #0D1E4A; font-weight: bold; text-align: center; background-color: #ffffff;">{{{Opportunity.Agent_3_2_4_Week__c}}}</td>
 		</tr>
 	</table>
 
@@ -71,22 +74,26 @@
 		</td>
 	</tr></table>
 
-	<!-- RECOMMENDATION TABLE -->
+	<!-- RECOMMENDATION TABLE (Timeline: 4 rows) -->
 	<table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 12px 0 24px; border: 1px solid #C5DCCC; border-radius: 10px; overflow: hidden;">
 		<tr style="background-color: #4A6B5E;">
 			<th colspan="2" style="padding: 10px 14px; border: 1px solid #4A6B5E; text-align: center; color: #ffffff; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;">New Home Solutions Recommendation</th>
 		</tr>
 		<tr>
 			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold; width: 50%;">Open Market</td>
-			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center; width: 50%;">{{{Opportunity.Initial_Asking_Price__c}}}</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center; width: 50%;">{{{Opportunity.NHS_Rec_Open_Market__c}}}</td>
 		</tr>
 		<tr>
-			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">Target</td>
-			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center;">{{{Opportunity.Target_Sale__c}}}</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">6 &ndash; 8 Week</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center;">{{{Opportunity.NHS_Rec_6_8_Week__c}}}</td>
 		</tr>
 		<tr>
-			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">Forced Sale</td>
-			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center;">{{{Opportunity.Forced_Sale__c}}}</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">4 &ndash; 6 Week</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center;">{{{Opportunity.NHS_Rec_4_6_Week__c}}}</td>
+		</tr>
+		<tr>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; background-color: #EAF4EF; font-size: 13px; color: #4A6B5E; font-weight: bold;">2 &ndash; 4 Week</td>
+			<td style="padding: 10px 14px; border: 1px solid #C5DCCC; font-size: 14px; color: #0D1E4A; font-weight: bold; text-align: center;">{{{Opportunity.NHS_Rec_2_4_Week__c}}}</td>
 		</tr>
 	</table>
 

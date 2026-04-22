@@ -187,7 +187,7 @@ Must include:
 
 > This E-mail message & any attachment is confidential and for the exclusive use of the intended recipient(s). If you have received this message in error, please return it in its entirety to the sender by reply & then delete the message. This message &/or attachment(s) may be subject to legal, professional or other privileges. Any views or opinions expressed by the author do not necessarily represent those of New Homes Solutions Ltd. Any information contained in this email must not be disclosed, copied, distributed or retained by any person without our express authority.
 
-> **HEAD OFFICE:** New Home Solutions, Unit 7 Hepton Court, York Road, Leeds, LS9 6PW (Registration Number 7970313). Registered in England at Hutton House, Sheriff Hutton Industrial Park, York Road, Sheriff Hutton, York, YO60 6RZ.
+> **HEAD OFFICE:** New Home Solutions, Unit 3 Hepton Court, York Road, Leeds, LS9 6PW (Registration Number 7970313). Registered in England at Hutton House, Sheriff Hutton Industrial Park, York Road, Sheriff Hutton, York, YO60 6RZ.
 
 ---
 
