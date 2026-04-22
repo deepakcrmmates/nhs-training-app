@@ -31,6 +31,24 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import NAME_FIELD from '@salesforce/schema/Opportunity.Name';
 import HOUSE_BUILDER_FIELD from '@salesforce/schema/Opportunity.House_Builder__c';
 import HOUSE_BUILDER_NAME_FIELD from '@salesforce/schema/Opportunity.House_Builder__r.Name';
+import HOUSE_BUILDER_TIMELINE_FIELD from '@salesforce/schema/Opportunity.House_Builder__r.Use_Timeline_Valuations__c';
+// Timeline valuation figures (per-agent + NHS Rec) — active when housebuilder uses Timeline model
+import A1_OPEN_MARKET_FIELD from '@salesforce/schema/Opportunity.Agent_1_Open_Market__c';
+import A1_6_8_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_1_6_8_Week__c';
+import A1_4_6_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_1_4_6_Week__c';
+import A1_2_4_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_1_2_4_Week__c';
+import A2_OPEN_MARKET_FIELD from '@salesforce/schema/Opportunity.Agent_2_Open_Market__c';
+import A2_6_8_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_2_6_8_Week__c';
+import A2_4_6_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_2_4_6_Week__c';
+import A2_2_4_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_2_2_4_Week__c';
+import A3_OPEN_MARKET_FIELD from '@salesforce/schema/Opportunity.Agent_3_Open_Market__c';
+import A3_6_8_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_3_6_8_Week__c';
+import A3_4_6_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_3_4_6_Week__c';
+import A3_2_4_WEEK_FIELD   from '@salesforce/schema/Opportunity.Agent_3_2_4_Week__c';
+import NHS_REC_OPEN_MARKET_FIELD from '@salesforce/schema/Opportunity.NHS_Rec_Open_Market__c';
+import NHS_REC_6_8_WEEK_FIELD   from '@salesforce/schema/Opportunity.NHS_Rec_6_8_Week__c';
+import NHS_REC_4_6_WEEK_FIELD   from '@salesforce/schema/Opportunity.NHS_Rec_4_6_Week__c';
+import NHS_REC_2_4_WEEK_FIELD   from '@salesforce/schema/Opportunity.NHS_Rec_2_4_Week__c';
 import PROPERTY_ADDRESS_FIELD from '@salesforce/schema/Opportunity.Property_Address__c';
 import VENDOR_1_FIELD from '@salesforce/schema/Opportunity.Vendor_1__c';
 import VENDOR_1_NAME_FIELD from '@salesforce/schema/Opportunity.Vendor_1__r.Name';
@@ -124,7 +142,11 @@ import RECOMMENDED_FORCED_FIELD from '@salesforce/schema/Opportunity.Forced_Sale
 
 // ── Fields Array ───────────────────────────────────────────────────────────────
 const FIELDS = [
-    NAME_FIELD, HOUSE_BUILDER_FIELD, HOUSE_BUILDER_NAME_FIELD, PROPERTY_ADDRESS_FIELD, VENDOR_1_FIELD, VENDOR_1_NAME_FIELD,
+    NAME_FIELD, HOUSE_BUILDER_FIELD, HOUSE_BUILDER_NAME_FIELD, HOUSE_BUILDER_TIMELINE_FIELD, PROPERTY_ADDRESS_FIELD, VENDOR_1_FIELD, VENDOR_1_NAME_FIELD,
+    A1_OPEN_MARKET_FIELD, A1_6_8_WEEK_FIELD, A1_4_6_WEEK_FIELD, A1_2_4_WEEK_FIELD,
+    A2_OPEN_MARKET_FIELD, A2_6_8_WEEK_FIELD, A2_4_6_WEEK_FIELD, A2_2_4_WEEK_FIELD,
+    A3_OPEN_MARKET_FIELD, A3_6_8_WEEK_FIELD, A3_4_6_WEEK_FIELD, A3_2_4_WEEK_FIELD,
+    NHS_REC_OPEN_MARKET_FIELD, NHS_REC_6_8_WEEK_FIELD, NHS_REC_4_6_WEEK_FIELD, NHS_REC_2_4_WEEK_FIELD,
     APP_RECEIVED_DATE_FIELD, NOTES_FIELD, DEVELOPMENT_FIELD, PLOT_FIELD, PROPERTY_DESCRIPTION_FIELD, PROPERTY_LOOKUP_FIELD,
     PROP_DETACHED_FIELD, PROP_SEMI_FIELD, PROP_END_TERRACE_FIELD, PROP_MID_TERRACE_FIELD, PROP_APARTMENT_FIELD, PROP_MAISONETTE_FIELD, PROP_STUDIO_FIELD, PROP_BUNGALOW_FIELD, PROP_OTHER_FIELD, PROP_BEDROOMS_FIELD,
     VENDOR_MOBILE_FIELD, VENDOR_EXPECTATIONS_FIELD, VENDOR_PHONE_FIELD, ETA_COMP_END_FIELD, VENDOR_EMAIL_FIELD, SCHEME_FIELD, STAGE_FIELD, NHS_PROCESS_FIELD,
@@ -182,7 +204,12 @@ const FIELD_MAP = {
     agent3BottomLine:   AGENT_3_BOTTOM_LINE_FIELD,
     recommendedMarket:  RECOMMENDED_MARKET_FIELD,
     recommendedTarget:  RECOMMENDED_TARGET_FIELD,
-    recommendedForced:  RECOMMENDED_FORCED_FIELD
+    recommendedForced:  RECOMMENDED_FORCED_FIELD,
+    // Timeline valuations (Wain-style)
+    a1OpenMarket: A1_OPEN_MARKET_FIELD, a1_6_8_Week: A1_6_8_WEEK_FIELD, a1_4_6_Week: A1_4_6_WEEK_FIELD, a1_2_4_Week: A1_2_4_WEEK_FIELD,
+    a2OpenMarket: A2_OPEN_MARKET_FIELD, a2_6_8_Week: A2_6_8_WEEK_FIELD, a2_4_6_Week: A2_4_6_WEEK_FIELD, a2_2_4_Week: A2_2_4_WEEK_FIELD,
+    a3OpenMarket: A3_OPEN_MARKET_FIELD, a3_6_8_Week: A3_6_8_WEEK_FIELD, a3_4_6_Week: A3_4_6_WEEK_FIELD, a3_2_4_Week: A3_2_4_WEEK_FIELD,
+    nhsRecOpenMarket: NHS_REC_OPEN_MARKET_FIELD, nhsRec_6_8_Week: NHS_REC_6_8_WEEK_FIELD, nhsRec_4_6_Week: NHS_REC_4_6_WEEK_FIELD, nhsRec_2_4_Week: NHS_REC_2_4_WEEK_FIELD
 };
 
 // Boolean fields that store Yes/No in formData but true/false in Salesforce
@@ -275,8 +302,81 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             agent3BottomLine:   this._fmtGB(f.agent3BottomLine),
             recommendedMarket:  this._fmtGB(f.recommendedMarket),
             recommendedTarget:  this._fmtGB(f.recommendedTarget),
-            recommendedForced:  this._fmtGB(f.recommendedForced)
+            recommendedForced:  this._fmtGB(f.recommendedForced),
+            // Timeline display values
+            a1OpenMarket: this._fmtGB(f.a1OpenMarket),
+            a1_6_8_Week:  this._fmtGB(f.a1_6_8_Week),
+            a1_4_6_Week:  this._fmtGB(f.a1_4_6_Week),
+            a1_2_4_Week:  this._fmtGB(f.a1_2_4_Week),
+            a2OpenMarket: this._fmtGB(f.a2OpenMarket),
+            a2_6_8_Week:  this._fmtGB(f.a2_6_8_Week),
+            a2_4_6_Week:  this._fmtGB(f.a2_4_6_Week),
+            a2_2_4_Week:  this._fmtGB(f.a2_2_4_Week),
+            a3OpenMarket: this._fmtGB(f.a3OpenMarket),
+            a3_6_8_Week:  this._fmtGB(f.a3_6_8_Week),
+            a3_4_6_Week:  this._fmtGB(f.a3_4_6_Week),
+            a3_2_4_Week:  this._fmtGB(f.a3_2_4_Week),
+            nhsRecOpenMarket: this._fmtGB(f.nhsRecOpenMarket),
+            nhsRec_6_8_Week:  this._fmtGB(f.nhsRec_6_8_Week),
+            nhsRec_4_6_Week:  this._fmtGB(f.nhsRec_4_6_Week),
+            nhsRec_2_4_Week:  this._fmtGB(f.nhsRec_2_4_Week)
         };
+    }
+
+    // Which valuation model does this application use?
+    get isTimelineModel() { return !!this.formData?.useTimelineValuations; }
+    get isStandardModel() { return !this.formData?.useTimelineValuations; }
+
+    // ── Child-component event handlers (agent valuation sub-components) ──
+    _STD_ROLE_MAP = { initial: 'InitialPrice', target: 'TargetSale', bottom: 'BottomLine' };
+    _TL_ROLE_MAP  = {
+        openMarket: 'OpenMarket',
+        week68:     '_6_8_Week',
+        week46:     '_4_6_Week',
+        week24:     '_2_4_Week'
+    };
+
+    handleStandardValChange(event) {
+        const { agentNum, field, value } = event.detail;
+        const suffix = this._STD_ROLE_MAP[field];
+        if (!suffix) return;
+        const fieldName = 'agent' + agentNum + suffix;
+        this._dispatchSyntheticChange(fieldName, value);
+    }
+
+    handleTimelineValChange(event) {
+        const { agentNum, field, value } = event.detail;
+        const suffix = this._TL_ROLE_MAP[field];
+        if (!suffix) return;
+        const fieldName = 'a' + agentNum + suffix;
+        this._dispatchSyntheticChange(fieldName, value);
+    }
+
+    handleStandardRecChange(event) {
+        const { field, value } = event.detail;
+        const map = { market: 'recommendedMarket', target: 'recommendedTarget', forced: 'recommendedForced' };
+        const fieldName = map[field];
+        if (fieldName) this._dispatchSyntheticChange(fieldName, value);
+    }
+
+    handleTimelineRecChange(event) {
+        const { field, value } = event.detail;
+        const map = {
+            openMarket: 'nhsRecOpenMarket',
+            week68:     'nhsRec_6_8_Week',
+            week46:     'nhsRec_4_6_Week',
+            week24:     'nhsRec_2_4_Week'
+        };
+        const fieldName = map[field];
+        if (fieldName) this._dispatchSyntheticChange(fieldName, value);
+    }
+
+    _dispatchSyntheticChange(fieldName, value) {
+        // Reuse the existing handleFieldChange pipeline so currency normalisation + save logic runs
+        this.handleFieldChange({
+            currentTarget: { dataset: { field: fieldName } },
+            target: { value }
+        });
     }
 
     _derivePropertyDescription(f) {
@@ -307,6 +407,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             propertyAddress:    f.Property_Address__c?.value || '',
             houseBuilderId:     f.House_Builder__c?.value,
             houseBuilderName:   f.House_Builder__r?.value?.fields?.Name?.value || '',
+            useTimelineValuations: !!f.House_Builder__r?.value?.fields?.Use_Timeline_Valuations__c?.value,
             vendor1Id:          f.Vendor_1__c?.value,
             vendor1Name:        f.Vendor_1__r?.value?.fields?.Name?.value || '',
             vendorMobile:       f.Vendor_1_Mobile__c?.value || '',
@@ -370,6 +471,24 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             agent3BottomLine:       this.currencyVal(f.Agent_3_Bottom_Line__c?.value),
             agent3ValReportId:      f.Agent_3_Valuation_Report_Box_Id__c?.value || '',
             agent3ValReportName:    f.Agent_3_Valuation_Report_Name__c?.value || '',
+
+            // Timeline valuations (Wain-style) — populated only when housebuilder.Use_Timeline_Valuations__c = true
+            a1OpenMarket: this.currencyVal(f.Agent_1_Open_Market__c?.value),
+            a1_6_8_Week:  this.currencyVal(f.Agent_1_6_8_Week__c?.value),
+            a1_4_6_Week:  this.currencyVal(f.Agent_1_4_6_Week__c?.value),
+            a1_2_4_Week:  this.currencyVal(f.Agent_1_2_4_Week__c?.value),
+            a2OpenMarket: this.currencyVal(f.Agent_2_Open_Market__c?.value),
+            a2_6_8_Week:  this.currencyVal(f.Agent_2_6_8_Week__c?.value),
+            a2_4_6_Week:  this.currencyVal(f.Agent_2_4_6_Week__c?.value),
+            a2_2_4_Week:  this.currencyVal(f.Agent_2_2_4_Week__c?.value),
+            a3OpenMarket: this.currencyVal(f.Agent_3_Open_Market__c?.value),
+            a3_6_8_Week:  this.currencyVal(f.Agent_3_6_8_Week__c?.value),
+            a3_4_6_Week:  this.currencyVal(f.Agent_3_4_6_Week__c?.value),
+            a3_2_4_Week:  this.currencyVal(f.Agent_3_2_4_Week__c?.value),
+            nhsRecOpenMarket: this.currencyVal(f.NHS_Rec_Open_Market__c?.value),
+            nhsRec_6_8_Week:  this.currencyVal(f.NHS_Rec_6_8_Week__c?.value),
+            nhsRec_4_6_Week:  this.currencyVal(f.NHS_Rec_4_6_Week__c?.value),
+            nhsRec_2_4_Week:  this.currencyVal(f.NHS_Rec_2_4_Week__c?.value),
 
             // Desktop Valuations
             agent1DesktopVal: f.Agent_1_Desktop_Valuation__c
@@ -710,7 +829,11 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             'agent1InitialPrice', 'agent1TargetSale', 'agent1BottomLine',
             'agent2InitialPrice', 'agent2TargetSale', 'agent2BottomLine',
             'agent3InitialPrice', 'agent3TargetSale', 'agent3BottomLine',
-            'recommendedMarket', 'recommendedTarget', 'recommendedForced'
+            'recommendedMarket', 'recommendedTarget', 'recommendedForced',
+            'a1OpenMarket', 'a1_6_8_Week', 'a1_4_6_Week', 'a1_2_4_Week',
+            'a2OpenMarket', 'a2_6_8_Week', 'a2_4_6_Week', 'a2_2_4_Week',
+            'a3OpenMarket', 'a3_6_8_Week', 'a3_4_6_Week', 'a3_2_4_Week',
+            'nhsRecOpenMarket', 'nhsRec_6_8_Week', 'nhsRec_4_6_Week', 'nhsRec_2_4_Week'
         ]);
         if (CURRENCY_FIELDS.has(fieldName) && typeof value === 'string') {
             const cleaned = value.replace(/[£,\s]/g, '');

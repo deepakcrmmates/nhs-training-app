@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>NHS_Rec_6_8_Week__c</fullName>
+    <description>NHS-recommended price for a 6-8 week sale window when using the timeline valuation model.</description>
+    <externalId>false</externalId>
+    <label>NHS Recommended 6-8 Week</label>
+    <precision>12</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Currency</type>
+</CustomField>

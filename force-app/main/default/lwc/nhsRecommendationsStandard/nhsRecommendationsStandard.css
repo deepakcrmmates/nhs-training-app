@@ -1,0 +1,38 @@
+:host {
+    --nhs-pale: #EAF4EF;
+    --nhs-dk: #4A6B5E;
+    --nhs-border: #C5DCCC;
+    --agent1-border: #C5DCCC;
+    --nhs-text-muted: #6B7280;
+    --font-sans: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: block;
+}
+
+.nhs-rec-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.nhs-rec-item {
+    background: var(--nhs-pale); border: 1px solid var(--agent1-border);
+    border-radius: 6px; padding: 11px; text-align: center;
+}
+.nhs-rec-amber { background: #FFFBEB; border-color: #FDE68A; }
+.nhs-rec-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--nhs-text-muted); font-weight: 700; margin-bottom: 5px;
+}
+.nhs-rec-input {
+    display: flex; align-items: center; justify-content: center; gap: 3px; margin-top: 4px;
+}
+.nhs-rec-pound { font-size: 14px; font-weight: 700; color: var(--nhs-dk); }
+.nhs-rec-pound-amber { color: #F59E0B; }
+.nhs-rec-field {
+    width: 90px; text-align: center; background: transparent; border: none;
+    border-bottom: 2px solid var(--agent1-border); outline: none;
+    font-size: 17px; font-weight: 700; color: var(--nhs-dk);
+    font-family: var(--font-sans); padding: 4px 4px 2px;
+}
+.nhs-rec-field::placeholder { color: #C5DCCC; font-weight: 400; }
+.nhs-rec-field:focus { border-bottom-color: var(--nhs-dk); }
+.nhs-rec-field-amber { color: #F59E0B; border-bottom-color: #FDE68A; }
+.nhs-rec-field-amber::placeholder { color: #FDE68A; }
+.nhs-rec-field-amber:focus { border-bottom-color: #F59E0B; }

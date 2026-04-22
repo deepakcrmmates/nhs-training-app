@@ -967,18 +967,25 @@
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
-                    <div class="val-row">
-                      <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1InitialPrice} data-field="agent1InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1TargetSale} data-field="agent1TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent1BottomLine} data-field="agent1BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
+                    <template if:false={isTimelineModel}>
+                      <c-nhs-agent-valuation-standard
+                        agent-num="1"
+                        initial-price={fmt.agent1InitialPrice}
+                        target-sale={fmt.agent1TargetSale}
+                        bottom-line={fmt.agent1BottomLine}
+                        onvalchange={handleStandardValChange}>
+                      </c-nhs-agent-valuation-standard>
+                    </template>
+                    <template if:true={isTimelineModel}>
+                      <c-nhs-agent-valuation-timeline
+                        agent-num="1"
+                        open-market={fmt.a1OpenMarket}
+                        week68={fmt.a1_6_8_Week}
+                        week46={fmt.a1_4_6_Week}
+                        week24={fmt.a1_2_4_Week}
+                        onvalchange={handleTimelineValChange}>
+                      </c-nhs-agent-valuation-timeline>
+                    </template>
                   </div>
                   <!-- Valuation Report Upload -->
                   <div class="agent-section vr-section">
@@ -1062,18 +1069,25 @@
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
-                    <div class="val-row">
-                      <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2InitialPrice} data-field="agent2InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2TargetSale} data-field="agent2TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent2BottomLine} data-field="agent2BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
+                    <template if:false={isTimelineModel}>
+                      <c-nhs-agent-valuation-standard
+                        agent-num="2"
+                        initial-price={fmt.agent2InitialPrice}
+                        target-sale={fmt.agent2TargetSale}
+                        bottom-line={fmt.agent2BottomLine}
+                        onvalchange={handleStandardValChange}>
+                      </c-nhs-agent-valuation-standard>
+                    </template>
+                    <template if:true={isTimelineModel}>
+                      <c-nhs-agent-valuation-timeline
+                        agent-num="2"
+                        open-market={fmt.a2OpenMarket}
+                        week68={fmt.a2_6_8_Week}
+                        week46={fmt.a2_4_6_Week}
+                        week24={fmt.a2_2_4_Week}
+                        onvalchange={handleTimelineValChange}>
+                      </c-nhs-agent-valuation-timeline>
+                    </template>
                   </div>
                   <!-- Valuation Report Upload -->
                   <div class="agent-section vr-section">
@@ -1157,18 +1171,25 @@
                   <div class="divider"></div>
                   <div class="agent-section">
                     <h4>Valuation Figures</h4>
-                    <div class="val-row">
-                      <span class="val-label">Initial Asking</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3InitialPrice} data-field="agent3InitialPrice" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Target Sale</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3TargetSale} data-field="agent3TargetSale" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
-                    <div class="val-row">
-                      <span class="val-label">Bottom Line</span>
-                      <div class="val-input"><span class="val-pound">£</span><input type="text" value={fmt.agent3BottomLine} data-field="agent3BottomLine" onchange={handleFieldChange} placeholder="0"/></div>
-                    </div>
+                    <template if:false={isTimelineModel}>
+                      <c-nhs-agent-valuation-standard
+                        agent-num="3"
+                        initial-price={fmt.agent3InitialPrice}
+                        target-sale={fmt.agent3TargetSale}
+                        bottom-line={fmt.agent3BottomLine}
+                        onvalchange={handleStandardValChange}>
+                      </c-nhs-agent-valuation-standard>
+                    </template>
+                    <template if:true={isTimelineModel}>
+                      <c-nhs-agent-valuation-timeline
+                        agent-num="3"
+                        open-market={fmt.a3OpenMarket}
+                        week68={fmt.a3_6_8_Week}
+                        week46={fmt.a3_4_6_Week}
+                        week24={fmt.a3_2_4_Week}
+                        onvalchange={handleTimelineValChange}>
+                      </c-nhs-agent-valuation-timeline>
+                    </template>
                   </div>
                   <!-- Valuation Report Upload -->
                   <div class="agent-section vr-section">
@@ -1204,29 +1225,23 @@
             <!-- NHS Recommended Section -->
             <div class={nhsRecWrapClass}>
               <div class="nhs-rec-title">New Home Solutions Recommendations</div>
-              <div class="nhs-rec-row">
-                <div class="nhs-rec-item">
-                  <div class="nhs-rec-label">Market</div>
-                  <div class="nhs-rec-input">
-                    <span class="nhs-rec-pound">£</span>
-                    <input type="text" class="nhs-rec-field" value={fmt.recommendedMarket} data-field="recommendedMarket" onchange={handleFieldChange} placeholder="0"/>
-                  </div>
-                </div>
-                <div class="nhs-rec-item">
-                  <div class="nhs-rec-label">Target</div>
-                  <div class="nhs-rec-input">
-                    <span class="nhs-rec-pound">£</span>
-                    <input type="text" class="nhs-rec-field" value={fmt.recommendedTarget} data-field="recommendedTarget" onchange={handleFieldChange} placeholder="0"/>
-                  </div>
-                </div>
-                <div class="nhs-rec-item nhs-rec-amber">
-                  <div class="nhs-rec-label">Forced</div>
-                  <div class="nhs-rec-input">
-                    <span class="nhs-rec-pound nhs-rec-pound-amber">£</span>
-                    <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={fmt.recommendedForced} data-field="recommendedForced" onchange={handleFieldChange} placeholder="0"/>
-                  </div>
-                </div>
-              </div>
+              <template if:false={isTimelineModel}>
+                <c-nhs-recommendations-standard
+                  market={fmt.recommendedMarket}
+                  target={fmt.recommendedTarget}
+                  forced={fmt.recommendedForced}
+                  onrecchange={handleStandardRecChange}>
+                </c-nhs-recommendations-standard>
+              </template>
+              <template if:true={isTimelineModel}>
+                <c-nhs-recommendations-timeline
+                  open-market={fmt.nhsRecOpenMarket}
+                  week68={fmt.nhsRec_6_8_Week}
+                  week46={fmt.nhsRec_4_6_Week}
+                  week24={fmt.nhsRec_2_4_Week}
+                  onrecchange={handleTimelineRecChange}>
+                </c-nhs-recommendations-timeline>
+              </template>
             </div>
 
             <!-- Will Report Upload — only on Valuations Ready -->

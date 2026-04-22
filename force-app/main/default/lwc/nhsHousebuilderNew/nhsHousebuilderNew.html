@@ -105,6 +105,30 @@
                 </div>
             </section>
 
+            <!-- Settings (per-housebuilder flags) -->
+            <section class="hb-section">
+                <div class="hb-section-header">
+                    <span class="hb-dot"></span>
+                    <h2>Settings</h2>
+                </div>
+                <div class="hb-settings-grid">
+                    <label class="hb-setting">
+                        <input type="checkbox" data-setting="useTimelineValuations" checked={useTimelineValuations} onchange={handleToggleSetting}/>
+                        <div class="hb-setting-copy">
+                            <span class="hb-setting-title">Use Timeline Valuations</span>
+                            <span class="hb-setting-desc">Switch this housebuilder's applications from Initial / Target / Bottom to a 4-timeframe model (Open Market, 6-8W, 4-6W, 2-4W). Used by Wain Homes.</span>
+                        </div>
+                    </label>
+                    <label class="hb-setting">
+                        <input type="checkbox" data-setting="vendorDiscussionApproved" checked={vendorDiscussionApproved} onchange={handleToggleSetting}/>
+                        <div class="hb-setting-copy">
+                            <span class="hb-setting-title">Vendor Discussion Approved</span>
+                            <span class="hb-setting-desc">Housebuilder has pre-approved moving applications into the Vendor Discussions stage without further sign-off. Enables the Move-to-Next button on Final Checks.</span>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
             <!-- Contacts -->
             <section class="hb-section">
                 <div class="hb-section-header">

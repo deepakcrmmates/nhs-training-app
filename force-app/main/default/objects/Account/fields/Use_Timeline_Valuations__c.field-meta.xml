@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Use_Timeline_Valuations__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Tick this on a Housebuilder account to switch that housebuilder's applications from the standard Initial / Target / Bottom valuation model to the timeline-based model (Open Market, 6-8 Week, 4-6 Week, 2-4 Week). Used by Wain Homes.</description>
+    <externalId>false</externalId>
+    <label>Use Timeline Valuations</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -20,6 +20,8 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
     @track isSaving = false;
     @track companyNumber = '';
     @track sicCodes = '';
+    @track useTimelineValuations = false;
+    @track vendorDiscussionApproved = false;
 
     _blankContact(idx) {
         return {
@@ -35,6 +37,13 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
     handleAccountChange(event) {
         const field = event.target.dataset.field;
         this.account = { ...this.account, [field]: event.target.value };
+    }
+
+    handleToggleSetting(event) {
+        const key = event.target.dataset.setting;
+        const val = event.target.checked;
+        if (key === 'useTimelineValuations') this.useTimelineValuations = val;
+        if (key === 'vendorDiscussionApproved') this.vendorDiscussionApproved = val;
     }
 
     handleCompaniesHouseSelect(event) {
@@ -132,7 +141,9 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
             const accountPayload = {
                 ...this.account,
                 companyNumber: this.companyNumber || null,
-                sicCodes: this.sicCodes || null
+                sicCodes: this.sicCodes || null,
+                useTimelineValuations: !!this.useTimelineValuations,
+                vendorDiscussionApproved: !!this.vendorDiscussionApproved
             };
             const newId = await createHousebuilder({
                 accountDataJson: JSON.stringify(accountPayload),

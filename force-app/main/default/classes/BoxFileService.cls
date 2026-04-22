@@ -207,14 +207,15 @@ public class BoxFileService {
     // ── Shared link ──
     public static String createSharedLink(String fileId, String accessToken) {
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(BOX_API_URL + '/files/' + fileId);
+        req.setEndpoint(BOX_API_URL + '/files/' + fileId + '?fields=shared_link');
         req.setMethod('PUT');
         req.setHeader('Authorization', 'Bearer ' + accessToken);
         req.setHeader('Content-Type', 'application/json');
 
         Map<String, Object> body = new Map<String, Object>();
         body.put('shared_link', new Map<String, Object>{
-            'access' => 'open'
+            'access' => 'open',
+            'permissions' => new Map<String, Object>{ 'can_download' => true, 'can_preview' => true }
         });
         req.setBody(JSON.serialize(body));
 
@@ -225,10 +226,13 @@ public class BoxFileService {
             Map<String, Object> responseBody = (Map<String, Object>) JSON.deserializeUntyped(resp.getBody());
             Map<String, Object> sharedLink = (Map<String, Object>) responseBody.get('shared_link');
             if (sharedLink != null) {
-                return (String) sharedLink.get('download_url');
+                // Prefer download_url (direct content stream). Fall back to url (preview page).
+                String dl = (String) sharedLink.get('download_url');
+                if (String.isNotBlank(dl)) return dl;
+                return (String) sharedLink.get('url');
             }
         }
-        System.debug('Box shared link error: ' + resp.getBody());
+        System.debug('Box shared link error: ' + resp.getStatusCode() + ' | ' + resp.getBody());
         return null;
     }
 

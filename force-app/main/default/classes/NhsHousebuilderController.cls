@@ -36,6 +36,10 @@ public with sharing class NhsHousebuilderController {
             String sicCodes = (String) accountData.get('sicCodes');
             if (String.isNotBlank(sicCodes)) acc.put('SIC_Codes__c', sicCodes);
 
+            // Per-housebuilder setting flags
+            if (accountData.get('useTimelineValuations') == true) acc.put('Use_Timeline_Valuations__c', true);
+            if (accountData.get('vendorDiscussionApproved') == true) acc.put('Vendor_Discussion_Approved__c', true);
+
             Id rtId = getHousebuilderRecordTypeId();
             if (rtId != null) acc.RecordTypeId = rtId;
 
@@ -85,27 +89,47 @@ public with sharing class NhsHousebuilderController {
     }
 
     private static String uploadLogoToBox(Id accountId, String accountName, String fileName, String base64Content) {
+        // Path: Housebuilder / {sanitized name} / Logo / {file}
         String accessToken = BoxOAuthController.refreshAccessToken();
-        if (accessToken == null) return null;
+        if (accessToken == null) {
+            throw new AuraHandledException('Could not get a Box access token — check the Box Config refresh token on NHS Config.');
+        }
 
         Box_Config__c config = BoxOAuthController.getConfig();
         String rootFolderId = config != null && String.isNotBlank(config.Root_Folder_Id__c) ? config.Root_Folder_Id__c : '0';
 
-        // Create an "NHS Logos" folder (or get existing) at the root
-        String logoFolderId = BoxFileService.getOrCreateFolder('NHS Logos', rootFolderId, accessToken);
-        if (logoFolderId == null) return null;
+        String housebuilderRootId = BoxFileService.getOrCreateFolder('Housebuilder', rootFolderId, accessToken);
+        if (housebuilderRootId == null) {
+            throw new AuraHandledException('Could not create/open the "Housebuilder" folder at the Box root (id=' + rootFolderId + ').');
+        }
 
-        // Create a folder per housebuilder for organization
         String sanitizedName = BoxFileService.sanitizeName(accountName);
-        String subFolderId = BoxFileService.getOrCreateFolder(sanitizedName, logoFolderId, accessToken);
-        if (subFolderId == null) return null;
+        String builderFolderId = BoxFileService.getOrCreateFolder(sanitizedName, housebuilderRootId, accessToken);
+        if (builderFolderId == null) {
+            throw new AuraHandledException('Could not create the "' + sanitizedName + '" folder under Housebuilder.');
+        }
 
-        // Upload
-        String fileId = BoxFileService.uploadFile(subFolderId, fileName, base64Content, accessToken);
-        if (fileId == null) return null;
+        String logoFolderId = BoxFileService.getOrCreateFolder('Logo', builderFolderId, accessToken);
+        if (logoFolderId == null) {
+            throw new AuraHandledException('Could not create the "Logo" subfolder under ' + sanitizedName + '.');
+        }
 
-        // Create public shared link
+        // Uniquify filename to avoid Box 409 Conflict when re-uploading
+        String uniqueName = fileName;
+        Integer dot = fileName.lastIndexOf('.');
+        String stem = dot > 0 ? fileName.substring(0, dot) : fileName;
+        String ext  = dot > 0 ? fileName.substring(dot) : '';
+        uniqueName = stem + '-' + String.valueOf(DateTime.now().getTime()) + ext;
+
+        String fileId = BoxFileService.uploadFile(logoFolderId, uniqueName, base64Content, accessToken);
+        if (fileId == null) {
+            throw new AuraHandledException('Box upload returned no file id — likely a name conflict, file too large, or quota exceeded. Check debug logs for the full Box response.');
+        }
+
         String sharedUrl = BoxFileService.createSharedLink(fileId, accessToken);
+        if (String.isBlank(sharedUrl)) {
+            throw new AuraHandledException('File uploaded (id=' + fileId + ') but creating a public shared link failed.');
+        }
         return sharedUrl;
     }
 
@@ -116,7 +140,8 @@ public with sharing class NhsHousebuilderController {
             Account acc = [
                 SELECT Id, Name, Phone, Website,
                        BillingStreet, BillingCity, BillingPostalCode, BillingCountry,
-                       Email__c, Logo_URL__c, House_Builder_Logo__c, RecordType.Name
+                       Email__c, Logo_URL__c, House_Builder_Logo__c, RecordType.Name,
+                       Use_Timeline_Valuations__c, Vendor_Discussion_Approved__c
                 FROM Account WHERE Id = :accountId LIMIT 1
             ];
             result.put('id', acc.Id);
@@ -131,6 +156,8 @@ public with sharing class NhsHousebuilderController {
             result.put('logoUrl', acc.Logo_URL__c);
             result.put('logoHtml', acc.House_Builder_Logo__c);
             result.put('recordType', acc.RecordType != null ? acc.RecordType.Name : '');
+            result.put('useTimelineValuations', acc.Use_Timeline_Valuations__c == true);
+            result.put('vendorDiscussionApproved', acc.Vendor_Discussion_Approved__c == true);
 
             // Contacts
             List<Contact> contacts = [
@@ -391,6 +418,110 @@ public with sharing class NhsHousebuilderController {
         if (data.containsKey('city'))     acc.BillingCity = (String) data.get('city');
         if (data.containsKey('postcode')) acc.BillingPostalCode = (String) data.get('postcode');
         if (data.containsKey('country'))  acc.BillingCountry = (String) data.get('country');
+        if (data.containsKey('useTimelineValuations')) acc.Use_Timeline_Valuations__c = (Boolean) data.get('useTimelineValuations');
+        if (data.containsKey('vendorDiscussionApproved')) acc.Vendor_Discussion_Approved__c = (Boolean) data.get('vendorDiscussionApproved');
         update acc;
+    }
+
+    @AuraEnabled
+    public static void updateHousebuilderSettings(Id accountId, Boolean useTimelineValuations, Boolean vendorDiscussionApproved) {
+        update new Account(
+            Id = accountId,
+            Use_Timeline_Valuations__c = useTimelineValuations == true,
+            Vendor_Discussion_Approved__c = vendorDiscussionApproved == true
+        );
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Map<String, String> getHousebuilderLogoBase64(Id accountId) {
+        Account acc = [SELECT Id, Name, Logo_URL__c FROM Account WHERE Id = :accountId LIMIT 1];
+        if (String.isBlank(acc.Logo_URL__c)) return null;
+
+        String accessToken = BoxOAuthController.refreshAccessToken();
+        if (accessToken == null) return null;
+
+        Box_Config__c cfg = BoxOAuthController.getConfig();
+        String rootId = cfg != null && String.isNotBlank(cfg.Root_Folder_Id__c) ? cfg.Root_Folder_Id__c : '0';
+
+        // Walk: root / Housebuilder / {sanitized name} / Logo
+        String hbFolderId = BoxFileService.getOrCreateFolder('Housebuilder', rootId, accessToken);
+        if (hbFolderId == null) return null;
+        String sanitized = BoxFileService.sanitizeName(acc.Name);
+        String builderFolderId = BoxFileService.getOrCreateFolder(sanitized, hbFolderId, accessToken);
+        if (builderFolderId == null) return null;
+        String logoFolderId = BoxFileService.getOrCreateFolder('Logo', builderFolderId, accessToken);
+        if (logoFolderId == null) return null;
+
+        // List files; pick the most recent
+        HttpRequest lsReq = new HttpRequest();
+        lsReq.setEndpoint('https://api.box.com/2.0/folders/' + logoFolderId + '/items?fields=id,name,type,modified_at&sort=date&direction=DESC');
+        lsReq.setMethod('GET');
+        lsReq.setHeader('Authorization', 'Bearer ' + accessToken);
+        HttpResponse lsResp = new Http().send(lsReq);
+        if (lsResp.getStatusCode() != 200) return null;
+        Map<String, Object> lsBody = (Map<String, Object>) JSON.deserializeUntyped(lsResp.getBody());
+        List<Object> entries = (List<Object>) lsBody.get('entries');
+        if (entries == null || entries.isEmpty()) return null;
+
+        String fileId;
+        String fileName;
+        for (Object o : entries) {
+            Map<String, Object> m = (Map<String, Object>) o;
+            if ('file'.equals((String) m.get('type'))) {
+                fileId = (String) m.get('id');
+                fileName = (String) m.get('name');
+                break; // first = most recent (DESC sort)
+            }
+        }
+        if (fileId == null) return null;
+
+        // Download content (follow 302 redirect to CDN)
+        HttpRequest dlReq = new HttpRequest();
+        dlReq.setEndpoint('https://api.box.com/2.0/files/' + fileId + '/content');
+        dlReq.setMethod('GET');
+        dlReq.setHeader('Authorization', 'Bearer ' + accessToken);
+        HttpResponse dlResp = new Http().send(dlReq);
+        if (dlResp.getStatusCode() == 302 || dlResp.getStatusCode() == 301) {
+            HttpRequest redir = new HttpRequest();
+            redir.setEndpoint(dlResp.getHeader('Location'));
+            redir.setMethod('GET');
+            dlResp = new Http().send(redir);
+        }
+        if (dlResp.getStatusCode() != 200) return null;
+
+        Blob body = dlResp.getBodyAsBlob();
+        // Infer content type from file extension if Box doesn't return one
+        String contentType = dlResp.getHeader('Content-Type');
+        if (String.isBlank(contentType) || contentType.startsWith('application/octet-stream')) {
+            String lower = fileName != null ? fileName.toLowerCase() : '';
+            if (lower.endsWith('.svg')) contentType = 'image/svg+xml';
+            else if (lower.endsWith('.png')) contentType = 'image/png';
+            else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) contentType = 'image/jpeg';
+            else if (lower.endsWith('.gif')) contentType = 'image/gif';
+            else if (lower.endsWith('.webp')) contentType = 'image/webp';
+            else contentType = 'application/octet-stream';
+        }
+        return new Map<String, String>{
+            'base64' => EncodingUtil.base64Encode(body),
+            'contentType' => contentType,
+            'fileName' => fileName
+        };
+    }
+
+    @AuraEnabled
+    public static String replaceLogo(Id accountId, String logoBase64, String logoFileName) {
+        if (String.isBlank(logoBase64) || String.isBlank(logoFileName)) {
+            throw new AuraHandledException('Logo file data is missing.');
+        }
+        Account acc = [SELECT Id, Name FROM Account WHERE Id = :accountId LIMIT 1];
+        String url = uploadLogoToBox(acc.Id, acc.Name, logoFileName, logoBase64);
+        if (String.isBlank(url)) {
+            throw new AuraHandledException('Logo upload to Box failed — check Box configuration.');
+        }
+        Account toUpd = new Account(Id = acc.Id);
+        toUpd.put('Logo_URL__c', url);
+        try { toUpd.put('House_Builder_Logo__c', '<img src="' + url + '" alt="' + acc.Name + ' Logo"/>'); } catch (Exception e) { /* optional */ }
+        update toUpd;
+        return url;
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>NHS Recommendations — Timeline (Open Market / 6-8W / 4-6W / 2-4W)</masterLabel>
+    <description>4-column NHS recommendation inputs used when the housebuilder is on the Timeline valuation model. Emits `recchange` events to the parent.</description>
+</LightningComponentBundle>

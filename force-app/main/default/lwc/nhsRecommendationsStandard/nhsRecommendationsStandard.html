@@ -1,0 +1,25 @@
+<template>
+    <div class="nhs-rec-row">
+        <div class="nhs-rec-item">
+            <div class="nhs-rec-label">Market</div>
+            <div class="nhs-rec-input">
+                <span class="nhs-rec-pound">£</span>
+                <input type="text" class="nhs-rec-field" value={market} data-role="market" onchange={handleChange} placeholder="0"/>
+            </div>
+        </div>
+        <div class="nhs-rec-item">
+            <div class="nhs-rec-label">Target</div>
+            <div class="nhs-rec-input">
+                <span class="nhs-rec-pound">£</span>
+                <input type="text" class="nhs-rec-field" value={target} data-role="target" onchange={handleChange} placeholder="0"/>
+            </div>
+        </div>
+        <div class="nhs-rec-item nhs-rec-amber">
+            <div class="nhs-rec-label">Forced</div>
+            <div class="nhs-rec-input">
+                <span class="nhs-rec-pound nhs-rec-pound-amber">£</span>
+                <input type="text" class="nhs-rec-field nhs-rec-field-amber" value={forced} data-role="forced" onchange={handleChange} placeholder="0"/>
+            </div>
+        </div>
+    </div>
+</template>

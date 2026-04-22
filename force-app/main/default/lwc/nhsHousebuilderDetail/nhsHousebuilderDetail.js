@@ -7,6 +7,9 @@ import addContactToHousebuilder from '@salesforce/apex/NhsHousebuilderController
 import deleteContact from '@salesforce/apex/NhsHousebuilderController.deleteContact';
 import updateContact from '@salesforce/apex/NhsHousebuilderController.updateContact';
 import updateHousebuilder from '@salesforce/apex/NhsHousebuilderController.updateHousebuilder';
+import updateHousebuilderSettings from '@salesforce/apex/NhsHousebuilderController.updateHousebuilderSettings';
+import replaceLogo from '@salesforce/apex/NhsHousebuilderController.replaceLogo';
+import getHousebuilderLogoBase64 from '@salesforce/apex/NhsHousebuilderController.getHousebuilderLogoBase64';
 import searchEstateAgents from '@salesforce/apex/NhsHousebuilderController.searchEstateAgents';
 import addPreferredAgent from '@salesforce/apex/NhsHousebuilderController.addPreferredAgent';
 import deletePreferredAgent from '@salesforce/apex/NhsHousebuilderController.deletePreferredAgent';
@@ -24,6 +27,26 @@ export default class NhsHousebuilderDetail extends NavigationMixin(LightningElem
     @track isLoading = true;
     @track error = '';
     _wired;
+
+    @track logoDataUrl = '';
+    _wiredLogoResult;
+    @wire(getHousebuilderLogoBase64, { accountId: '$recordId' })
+    wiredLogo(result) {
+        this._wiredLogoResult = result;
+        const data = result.data;
+        if (data && data.base64) {
+            this.logoDataUrl = 'data:' + (data.contentType || 'image/png') + ';base64,' + data.base64;
+        } else {
+            this.logoDataUrl = '';
+        }
+    }
+
+    get displayLogoUrl() {
+        return this.logoDataUrl || this.data?.logoUrl || '';
+    }
+    get hasLogoDisplay() {
+        return !!(this.logoDataUrl || (this.data && this.data.logoUrl));
+    }
 
     @wire(getHousebuilderDetail, { accountId: '$recordId' })
     wiredData(result) {
@@ -261,6 +284,121 @@ export default class NhsHousebuilderDetail extends NavigationMixin(LightningElem
         this[NavigationMixin.Navigate]({
             type: 'standard__recordPage',
             attributes: { recordId: id, objectApiName: 'Opportunity', actionName: 'view' }
+        });
+    }
+
+    // ──── Settings modal ────
+    @track showSettings = false;
+    @track settingsDraft = { useTimelineValuations: false, vendorDiscussionApproved: false };
+    @track isSavingSettings = false;
+
+    handleOpenSettings() {
+        this.settingsDraft = {
+            useTimelineValuations: !!(this.data && this.data.useTimelineValuations),
+            vendorDiscussionApproved: !!(this.data && this.data.vendorDiscussionApproved)
+        };
+        this.showSettings = true;
+    }
+    handleCloseSettings() { this.showSettings = false; }
+    handleSettingsToggle(event) {
+        const key = event.target.dataset.setting;
+        this.settingsDraft = { ...this.settingsDraft, [key]: event.target.checked };
+    }
+    async handleSaveSettings() {
+        this.isSavingSettings = true;
+        try {
+            await updateHousebuilderSettings({
+                accountId: this.recordId,
+                useTimelineValuations: this.settingsDraft.useTimelineValuations,
+                vendorDiscussionApproved: this.settingsDraft.vendorDiscussionApproved
+            });
+            this._toast('Saved', 'Housebuilder settings updated.', 'success');
+            this.showSettings = false;
+            await refreshApex(this._wired);
+        } catch (e) {
+            this._toast('Error', e.body?.message || 'Save failed', 'error');
+        } finally {
+            this.isSavingSettings = false;
+        }
+    }
+
+    // Logo upload (inside Settings)
+    @track isUploadingLogo = false;
+
+    async handleLogoFileChange(event) {
+        const file = event.target.files?.[0];
+        console.log('[Logo] file picked:', file && file.name, file && file.size, file && file.type);
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            this._toast('Invalid file', 'Please select an image (PNG, JPG, SVG).', 'warning');
+            return;
+        }
+        if (file.size > 4 * 1024 * 1024) {
+            this._toast('File too large', 'Logo must be under 4MB.', 'warning');
+            return;
+        }
+        this.isUploadingLogo = true;
+
+        // Hard safety timeout — force-clear the spinner after 90s so the UI never hangs forever
+        const safetyTimer = setTimeout(() => {
+            if (this.isUploadingLogo) {
+                console.warn('[Logo] upload timed out after 90s — clearing spinner.');
+                this.isUploadingLogo = false;
+                this._toast('Upload timed out', 'Server did not respond within 90 seconds. Check Apex logs.', 'warning');
+            }
+        }, 90000);
+
+        let base64;
+        try {
+            console.log('[Logo] reading file as base64…');
+            base64 = await this._fileToBase64(file);
+            console.log('[Logo] base64 length:', base64 && base64.length);
+        } catch (readErr) {
+            console.error('[Logo] FileReader failed:', readErr);
+            clearTimeout(safetyTimer);
+            this._toast('Read failed', 'Could not read the file in the browser.', 'error');
+            this.isUploadingLogo = false;
+            return;
+        }
+
+        let newUrl;
+        try {
+            console.log('[Logo] calling Apex replaceLogo…');
+            newUrl = await replaceLogo({
+                accountId: this.recordId,
+                logoBase64: base64,
+                logoFileName: file.name
+            });
+            console.log('[Logo] replaceLogo resolved:', newUrl);
+        } catch (e) {
+            console.error('[Logo] replaceLogo threw:', e);
+            clearTimeout(safetyTimer);
+            this._toast('Upload failed', e.body?.message || e.message || 'Could not upload logo', 'error');
+            this.isUploadingLogo = false;
+            return;
+        }
+
+        clearTimeout(safetyTimer);
+
+        if (newUrl) {
+            this.data = { ...this.data, logoUrl: newUrl };
+        }
+        event.target.value = '';
+        this._toast('Logo updated', 'New logo uploaded to Box and linked.', 'success');
+        refreshApex(this._wired).catch(() => { /* non-fatal */ });
+        refreshApex(this._wiredLogoResult).catch(() => { /* non-fatal */ });
+        this.isUploadingLogo = false;
+    }
+
+    _fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const r = reader.result;
+                resolve(r.substring(r.indexOf(',') + 1));
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
         });
     }
 
