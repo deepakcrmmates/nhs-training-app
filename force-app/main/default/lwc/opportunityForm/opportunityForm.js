@@ -11,6 +11,13 @@ export default class OpportunityForm extends LightningElement {
         { label: 'New Home', value: 'New Home' },
         { label: 'Part Exchange', value: 'Part Exchange' },
         { label: 'Assisted Sale', value: 'Assisted Sale' },
+        { label: 'PX or AS', value: 'PX or AS' },
+        { label: 'Home Change', value: 'Home Change' },
+        { label: 'Assisted Move', value: 'Assisted Move' },
+        { label: 'Move Assist', value: 'Move Assist' },
+        { label: 'Smooth Move', value: 'Smooth Move' },
+        { label: 'Easy Move', value: 'Easy Move' },
+        { label: 'Movemaker', value: 'Movemaker' }
     ];
 
     handleSchemeChange(event) {
