@@ -1298,8 +1298,10 @@
           </div>
         </template>
       </div>
+      </template><!-- /showAgentCard (Agent Details card only) -->
 
-      <!-- ---- D. Box File Storage ---- -->
+      <!-- ---- D. Box File Storage — visible on every non-Final-Checks stage ---- -->
+      <template if:true={notFinalChecks}>
       <c-nhs-box-browser record-id={recordId} property-address={formData.propertyAddress}></c-nhs-box-browser>
 
       <!-- ---- E. Vendor Notes Card ---- -->
@@ -1349,7 +1351,7 @@
           </template>
         </div>
       </div>
-      </template><!-- /showAgentCard (hides on Vendor Availability + Final Checks) -->
+      </template><!-- /notFinalChecks (Box + Vendor Notes visible everywhere except Final Checks) -->
 
     </div>
 
