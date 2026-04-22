@@ -55,7 +55,20 @@
                 <div class="hb-section-header">
                     <span class="hb-dot"></span>
                     <h2>Company Details</h2>
+                    <c-nhs-companies-house-search
+                        default-group="Housebuilder"
+                        button-label="Find on Companies House"
+                        oncompanyselected={handleCompaniesHouseSelect}>
+                    </c-nhs-companies-house-search>
                 </div>
+                <template if:true={companyNumber}>
+                    <div class="hb-ch-chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Imported from Companies House: <strong>#{companyNumber}</strong>
+                    </div>
+                </template>
                 <div class="hb-grid">
                     <div class="hb-field hb-col-full">
                         <label>Company Name *</label>

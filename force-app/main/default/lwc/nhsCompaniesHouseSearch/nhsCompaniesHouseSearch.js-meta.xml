@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>NHS Companies House Search</masterLabel>
+    <description>Reusable modal for searching UK Companies House and returning a selected company to the parent component.</description>
+</LightningComponentBundle>

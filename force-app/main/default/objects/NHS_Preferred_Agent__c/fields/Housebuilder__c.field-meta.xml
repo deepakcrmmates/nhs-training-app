@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Housebuilder__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description>The Housebuilder Account (Record Type = House Builder) that is naming this agent as preferred.</description>
+    <label>Housebuilder</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Preferred Agents</relationshipLabel>
+    <relationshipName>Preferred_Agents</relationshipName>
+    <required>true</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

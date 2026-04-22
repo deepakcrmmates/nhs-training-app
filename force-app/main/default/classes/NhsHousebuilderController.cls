@@ -30,6 +30,12 @@ public with sharing class NhsHousebuilderController {
             String email = (String) accountData.get('email');
             if (String.isNotBlank(email)) acc.put('Email__c', email);
 
+            // Companies House enrichment (optional)
+            String companyNumber = (String) accountData.get('companyNumber');
+            if (String.isNotBlank(companyNumber)) acc.put('Company_Number__c', companyNumber);
+            String sicCodes = (String) accountData.get('sicCodes');
+            if (String.isNotBlank(sicCodes)) acc.put('SIC_Codes__c', sicCodes);
+
             Id rtId = getHousebuilderRecordTypeId();
             if (rtId != null) acc.RecordTypeId = rtId;
 
@@ -196,10 +202,148 @@ public with sharing class NhsHousebuilderController {
                 }
             }
             result.put('commsHistory', commsList);
+
+            // Preferred Agents
+            List<Map<String, Object>> prefList = new List<Map<String, Object>>();
+            for (NHS_Preferred_Agent__c pa : [
+                SELECT Id, Name, Priority__c, Status__c, Notes__c, Added_Date__c,
+                       Estate_Agent__c, Estate_Agent__r.Name, Estate_Agent__r.Phone,
+                       Estate_Agent__r.Email__c, Estate_Agent__r.BillingCity
+                FROM NHS_Preferred_Agent__c
+                WHERE Housebuilder__c = :accountId
+                ORDER BY Priority__c ASC NULLS LAST, Added_Date__c DESC
+            ]) {
+                Map<String, Object> m = new Map<String, Object>();
+                m.put('id', pa.Id);
+                m.put('name', pa.Name);
+                m.put('priority', pa.Priority__c);
+                m.put('status', pa.Status__c);
+                m.put('notes', pa.Notes__c);
+                m.put('addedDate', pa.Added_Date__c);
+                m.put('agentId', pa.Estate_Agent__c);
+                m.put('agentName', pa.Estate_Agent__r != null ? pa.Estate_Agent__r.Name : '');
+                m.put('agentPhone', pa.Estate_Agent__r != null ? pa.Estate_Agent__r.Phone : '');
+                m.put('agentEmail', pa.Estate_Agent__r != null ? pa.Estate_Agent__r.Email__c : '');
+                m.put('agentCity', pa.Estate_Agent__r != null ? pa.Estate_Agent__r.BillingCity : '');
+                prefList.add(m);
+            }
+            result.put('preferredAgents', prefList);
         } catch (Exception e) {
             result.put('error', e.getMessage());
         }
         return result;
+    }
+
+    @AuraEnabled
+    public static Map<String, Object> getEmailMessage(Id emailMessageId) {
+        Map<String, Object> result = new Map<String, Object>();
+        try {
+            EmailMessage em = [
+                SELECT Id, Subject, FromAddress, FromName, ToAddress, CcAddress, BccAddress,
+                       MessageDate, Incoming, HtmlBody, TextBody, HasAttachment, RelatedToId
+                FROM EmailMessage WHERE Id = :emailMessageId LIMIT 1
+            ];
+            result.put('id', em.Id);
+            result.put('subject', em.Subject);
+            result.put('from', em.FromName != null ? em.FromName + ' <' + em.FromAddress + '>' : em.FromAddress);
+            result.put('to', em.ToAddress);
+            result.put('cc', em.CcAddress);
+            result.put('bcc', em.BccAddress);
+            result.put('date', em.MessageDate);
+            result.put('direction', em.Incoming ? 'Inbound' : 'Outbound');
+            result.put('htmlBody', em.HtmlBody);
+            result.put('textBody', em.TextBody);
+            result.put('hasAttachment', em.HasAttachment);
+            result.put('opportunityId', em.RelatedToId);
+
+            // Attachments (ContentDocumentLinks on this EmailMessage)
+            List<Map<String, Object>> atts = new List<Map<String, Object>>();
+            for (ContentDocumentLink link : [
+                SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.ContentSize,
+                       ContentDocument.FileType, ContentDocument.LatestPublishedVersionId
+                FROM ContentDocumentLink WHERE LinkedEntityId = :emailMessageId
+            ]) {
+                Map<String, Object> a = new Map<String, Object>();
+                a.put('id', link.ContentDocumentId);
+                a.put('name', link.ContentDocument.Title);
+                a.put('size', link.ContentDocument.ContentSize);
+                a.put('type', link.ContentDocument.FileType);
+                a.put('downloadUrl', '/sfc/servlet.shepherd/version/download/' + link.ContentDocument.LatestPublishedVersionId);
+                atts.add(a);
+            }
+            result.put('attachments', atts);
+
+            result.put('status', 'success');
+        } catch (Exception e) {
+            result.put('status', 'error');
+            result.put('message', e.getMessage());
+        }
+        return result;
+    }
+
+    @AuraEnabled
+    public static List<Map<String, Object>> searchEstateAgents(Id housebuilderId, String searchTerm) {
+        Id agentRT = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName().get('Estate_Agents').getRecordTypeId();
+        // Exclude agents already preferred by this housebuilder
+        Set<Id> already = new Set<Id>();
+        for (NHS_Preferred_Agent__c pa : [
+            SELECT Estate_Agent__c FROM NHS_Preferred_Agent__c WHERE Housebuilder__c = :housebuilderId
+        ]) already.add(pa.Estate_Agent__c);
+
+        String likeTerm = '%' + (searchTerm == null ? '' : String.escapeSingleQuotes(searchTerm.trim())) + '%';
+        String q = 'SELECT Id, Name, BillingCity, BillingPostalCode, Phone, Email__c FROM Account ' +
+                   'WHERE RecordTypeId = :agentRT AND Id NOT IN :already ';
+        if (String.isNotBlank(searchTerm)) q += 'AND (Name LIKE :likeTerm OR BillingCity LIKE :likeTerm OR BillingPostalCode LIKE :likeTerm) ';
+        q += 'ORDER BY Name ASC LIMIT 25';
+
+        List<Map<String, Object>> out = new List<Map<String, Object>>();
+        for (Account a : Database.query(q)) {
+            Map<String, Object> m = new Map<String, Object>();
+            m.put('id', a.Id);
+            m.put('name', a.Name);
+            m.put('city', a.BillingCity);
+            m.put('postcode', a.BillingPostalCode);
+            m.put('phone', a.Phone);
+            m.put('email', a.Email__c);
+            out.add(m);
+        }
+        return out;
+    }
+
+    @AuraEnabled
+    public static Id addPreferredAgent(Id housebuilderId, Id agentId, Decimal priority, String notes) {
+        // Guard against dupes just in case (LWC excludes already-preferred, but be safe)
+        List<NHS_Preferred_Agent__c> existing = [
+            SELECT Id FROM NHS_Preferred_Agent__c
+            WHERE Housebuilder__c = :housebuilderId AND Estate_Agent__c = :agentId LIMIT 1
+        ];
+        if (!existing.isEmpty()) {
+            throw new AuraHandledException('This agent is already a preferred partner for the housebuilder.');
+        }
+        NHS_Preferred_Agent__c pa = new NHS_Preferred_Agent__c(
+            Housebuilder__c = housebuilderId,
+            Estate_Agent__c = agentId,
+            Priority__c     = priority,
+            Notes__c        = notes,
+            Status__c       = 'Active',
+            Added_Date__c   = Date.today()
+        );
+        insert pa;
+        return pa.Id;
+    }
+
+    @AuraEnabled
+    public static void updatePreferredAgent(Id preferredId, Decimal priority, String status, String notes) {
+        NHS_Preferred_Agent__c pa = new NHS_Preferred_Agent__c(Id = preferredId);
+        if (priority != null) pa.Priority__c = priority;
+        if (String.isNotBlank(status)) pa.Status__c = status;
+        pa.Notes__c = notes;
+        update pa;
+    }
+
+    @AuraEnabled
+    public static void deletePreferredAgent(Id preferredId) {
+        delete new NHS_Preferred_Agent__c(Id = preferredId);
     }
 
     @AuraEnabled
@@ -219,6 +363,20 @@ public with sharing class NhsHousebuilderController {
     @AuraEnabled
     public static void deleteContact(Id contactId) {
         delete new Contact(Id = contactId);
+    }
+
+    @AuraEnabled
+    public static void updateContact(Id contactId, String firstName, String lastName, String email, String mobile, String phone, String jobTitle) {
+        Contact c = new Contact(
+            Id = contactId,
+            FirstName = firstName,
+            LastName = String.isNotBlank(lastName) ? lastName : 'Contact',
+            Email = email,
+            MobilePhone = mobile,
+            Phone = phone,
+            Title = jobTitle
+        );
+        update c;
     }
 
     @AuraEnabled

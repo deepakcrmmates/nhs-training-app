@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Daily_Limit__c</fullName>
+    <defaultValue>7000</defaultValue>
+    <description>Soft daily cap. Companies House limits to 600 requests per 5 minutes; 7,000/day is a safe daily envelope.</description>
+    <externalId>false</externalId>
+    <label>Daily Limit</label>
+    <precision>10</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

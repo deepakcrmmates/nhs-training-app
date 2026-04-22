@@ -100,6 +100,22 @@ public with sharing class NHSApiConfigController {
             }));
         }
 
+        // Companies House
+        List<Companies_House_Config__c> chConfigs = [SELECT Id, API_Key__c, Requests_Today__c, Daily_Limit__c, Last_Reset_Date__c FROM Companies_House_Config__c LIMIT 1];
+        Companies_House_Config__c chRec;
+        if (!chConfigs.isEmpty()) {
+            chRec = chConfigs[0];
+        } else {
+            chRec = new Companies_House_Config__c(SetupOwnerId = UserInfo.getOrganizationId());
+            insert chRec;
+        }
+        configs.add(buildConfig('Companies House', 'Companies_House_Config__c', chRec.Id, new List<Map<String, String>>{
+            field('API Key', 'API_Key__c', maskValue(chRec.API_Key__c), 'password'),
+            field('Daily Limit', 'Daily_Limit__c', chRec.Daily_Limit__c != null ? String.valueOf(chRec.Daily_Limit__c.intValue()) : '7000', 'number'),
+            field('Requests Today', 'Requests_Today__c', chRec.Requests_Today__c != null ? String.valueOf(chRec.Requests_Today__c.intValue()) : '0', 'readonly'),
+            field('Last Reset Date', 'Last_Reset_Date__c', chRec.Last_Reset_Date__c != null ? String.valueOf(chRec.Last_Reset_Date__c) : '', 'readonly')
+        }));
+
         // Twilio (managed — read only display)
         List<TwilioSF__TwilioMetaData__c> twConfigs = [SELECT Id, Name, TwilioSF__AccountSID__c, TwilioSF__MessagingServiceId__c FROM TwilioSF__TwilioMetaData__c WHERE TwilioSF__IsUsed__c = true LIMIT 1];
         if (!twConfigs.isEmpty()) {
@@ -124,6 +140,28 @@ public with sharing class NHSApiConfigController {
             c.put('healthStatus', String.isNotBlank(status) ? status : 'unknown');
             c.put('healthMessage', String.isNotBlank(status) ? status : 'Not checked');
             c.put('lastCheck', lastCheckStr);
+
+            // Bespoke health logic for Companies House — green when API key present, grey when blank.
+            if ('Companies House'.equals((String) c.get('name'))) {
+                List<Map<String, String>> fieldsList = (List<Map<String, String>>) c.get('fields');
+                Boolean hasKey = false;
+                if (fieldsList != null) {
+                    for (Map<String, String> f : fieldsList) {
+                        if ('API_Key__c'.equals(f.get('apiName'))) {
+                            hasKey = String.isNotBlank(f.get('value')) && !'•••'.equals(f.get('value')) && f.get('value') != '';
+                            // Masked values come through as "••••xxxx" so treat any non-empty as configured
+                            hasKey = String.isNotBlank(f.get('value'));
+                        }
+                    }
+                }
+                if (hasKey) {
+                    c.put('healthStatus', 'ok');
+                    c.put('healthMessage', 'API key configured');
+                } else {
+                    c.put('healthStatus', 'unknown');
+                    c.put('healthMessage', 'API key not set');
+                }
+            }
 
             // Bespoke health logic for Final Checks Email — no scheduled check, status is just "is it mapped and does the template still exist?"
             if ('Final Checks Email'.equals((String) c.get('name'))) {

@@ -131,6 +131,26 @@ export default class NhsProjectPlanKanban extends LightningElement {
         this.loadTasks();
     }
 
+    // Refresh
+    @track isRefreshing = false;
+    get refreshIconClass() { return this.isRefreshing ? 'ppk-refresh-spin' : ''; }
+
+    async handleRefresh() {
+        if (this.isRefreshing) return;
+        this.isRefreshing = true;
+        try {
+            await Promise.all([
+                refreshApex(this._wiredPlans),
+                this.loadTasks()
+            ]);
+            this._toast('Refreshed', 'Plans and tasks reloaded.', 'success');
+        } catch (e) {
+            this._toast('Refresh failed', e?.body?.message || e?.message || 'Something went wrong', 'error');
+        } finally {
+            this.isRefreshing = false;
+        }
+    }
+
     // Task CRUD
     handleNewTask() {
         this.editingTask = {

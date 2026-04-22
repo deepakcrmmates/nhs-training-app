@@ -18,6 +18,8 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
     @track contacts = [this._blankContact(0)];
     @track logoFile = null;        // { name, base64, previewUrl }
     @track isSaving = false;
+    @track companyNumber = '';
+    @track sicCodes = '';
 
     _blankContact(idx) {
         return {
@@ -33,6 +35,21 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
     handleAccountChange(event) {
         const field = event.target.dataset.field;
         this.account = { ...this.account, [field]: event.target.value };
+    }
+
+    handleCompaniesHouseSelect(event) {
+        const d = event.detail || {};
+        const street = [d.addressLine1, d.addressLine2].filter(Boolean).join(', ');
+        this.account = {
+            ...this.account,
+            name:     d.name || this.account.name,
+            street:   street || this.account.street,
+            city:     d.locality || this.account.city,
+            postcode: d.postalCode || this.account.postcode,
+            country:  d.country || this.account.country || 'United Kingdom'
+        };
+        this.companyNumber = d.number || '';
+        this.sicCodes = d.sicCodes || '';
     }
 
     handleContactChange(event) {
@@ -112,8 +129,13 @@ export default class NhsHousebuilderNew extends NavigationMixin(LightningElement
                 mobile: c.mobile,
                 jobTitle: c.jobTitle
             }));
+            const accountPayload = {
+                ...this.account,
+                companyNumber: this.companyNumber || null,
+                sicCodes: this.sicCodes || null
+            };
             const newId = await createHousebuilder({
-                accountDataJson: JSON.stringify(this.account),
+                accountDataJson: JSON.stringify(accountPayload),
                 contactsJson: JSON.stringify(validContacts),
                 logoBase64: this.logoFile?.base64 || null,
                 logoFileName: this.logoFile?.name || null

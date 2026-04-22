@@ -19,6 +19,11 @@
                 </template>
             </div>
             <div class="ppk-header-right">
+                <button class="ppk-btn ppk-btn-secondary ppk-btn-refresh" onclick={handleRefresh} disabled={isRefreshing} title="Reload plans and tasks">
+                    <lightning-icon icon-name="utility:refresh" size="xx-small" class={refreshIconClass}></lightning-icon>
+                    <template if:true={isRefreshing}>Refreshing…</template>
+                    <template if:false={isRefreshing}>Refresh</template>
+                </button>
                 <button class="ppk-btn ppk-btn-secondary" onclick={handleNewPlan}>
                     <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
                     New Plan

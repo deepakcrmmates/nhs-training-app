@@ -1,0 +1,89 @@
+<template>
+    <button class="ch-trigger-btn" onclick={handleOpen} type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        {buttonLabel}
+    </button>
+
+    <template if:true={showModal}>
+        <div class="ch-backdrop" onclick={handleClose}></div>
+        <div class="ch-modal" onclick={handleStopProp}>
+            <div class="ch-modal-header">
+                <div>
+                    <div class="ch-modal-kicker">UK Companies House</div>
+                    <h3>Find a Company</h3>
+                </div>
+                <button class="ch-modal-close" onclick={handleClose} type="button">&times;</button>
+            </div>
+
+            <div class="ch-modal-body">
+                <div class="ch-search-row">
+                    <div class="ch-search-input-wrap">
+                        <svg class="ch-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <input
+                            type="text"
+                            class="ch-search-input"
+                            placeholder="Search by company name or number…"
+                            value={query}
+                            oninput={handleQueryChange}/>
+                    </div>
+                    <select class="ch-sic-select" onchange={handleSicChange}>
+                        <template for:each={sicOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                        </template>
+                    </select>
+                    <button class="ch-search-btn" onclick={handleSearchClick} disabled={isSearching} type="button">
+                        {searchBtnLabel}
+                    </button>
+                </div>
+
+                <template if:true={isSearching}>
+                    <div class="ch-loading"><lightning-spinner alternative-text="Searching" size="small"></lightning-spinner></div>
+                </template>
+
+                <template if:true={errorMessage}>
+                    <div class="ch-error">{errorMessage}</div>
+                </template>
+
+                <template if:true={hasResults}>
+                    <ul class="ch-results">
+                        <template for:each={items} for:item="c">
+                            <li key={c.number} class="ch-result-row" data-number={c.number} onclick={handlePick}>
+                                <div class="ch-result-main">
+                                    <div class="ch-result-name">{c.name}</div>
+                                    <div class="ch-result-meta">
+                                        <span class="ch-result-number">#{c.number}</span>
+                                        <template if:true={c.statusBadge}>
+                                            <span class={c.statusClass}>{c.statusBadge}</span>
+                                        </template>
+                                        <template if:true={c.type}>
+                                            <span class="ch-result-type">{c.type}</span>
+                                        </template>
+                                    </div>
+                                    <div class="ch-result-address">{c.address}</div>
+                                </div>
+                                <div class="ch-result-action">Select →</div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+
+                <template if:true={showEmpty}>
+                    <div class="ch-empty">No companies matched "<strong>{query}</strong>". Try a different search term.</div>
+                </template>
+
+                <template if:false={hasSearched}>
+                    <div class="ch-hint">
+                        <p>Start typing a company name to search the UK Companies House public register.</p>
+                        <p class="ch-hint-sub">Use the category dropdown to narrow by trade (SIC code group).</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+</template>

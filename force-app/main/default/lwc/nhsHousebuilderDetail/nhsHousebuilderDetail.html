@@ -74,6 +74,9 @@
                 <button class={commsTabClass} data-tab="comms" onclick={handleTabClick}>
                     Comms History <span class="hbd-tab-count">{commsCount}</span>
                 </button>
+                <button class={prefAgentsTabClass} data-tab="prefagents" onclick={handleTabClick}>
+                    Preferred Agents <span class="hbd-tab-count">{prefAgentsCount}</span>
+                </button>
             </div>
 
             <!-- Contacts -->
@@ -120,7 +123,10 @@
                                         </template>
                                         <template if:false={c.phone}><span class="hbd-dim">—</span></template>
                                     </div>
-                                    <div class="hbd-col-action">
+                                    <div class="hbd-col-action hbd-pa-actions">
+                                        <button class="hbd-edit-row-btn" data-id={c.id} onclick={handleEditContact} title="Edit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </button>
                                         <button class="hbd-delete-btn" data-id={c.id} onclick={handleDeleteContact} title="Delete">&times;</button>
                                     </div>
                                 </div>
@@ -169,6 +175,58 @@
                             </div>
                         </div>
                     </template>
+
+                    <!-- Edit contact modal -->
+                    <template if:true={showEditContact}>
+                        <div class="hbd-backdrop" onclick={handleCloseEditContact}></div>
+                        <div class="hbd-modal">
+                            <div class="hbd-modal-header">
+                                <h3>Edit Contact</h3>
+                                <button class="hbd-modal-close" onclick={handleCloseEditContact}>&times;</button>
+                            </div>
+                            <div class="hbd-modal-body">
+                                <div class="hbd-modal-grid">
+                                    <div class="hbd-modal-field">
+                                        <label>First Name</label>
+                                        <input type="text" data-field="firstName" value={editContact.firstName} onchange={handleEditContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Last Name</label>
+                                        <input type="text" data-field="lastName" value={editContact.lastName} onchange={handleEditContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Email</label>
+                                        <input type="email" data-field="email" value={editContact.email} onchange={handleEditContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Mobile</label>
+                                        <input type="tel" data-field="mobile" value={editContact.mobile}
+                                               pattern="[0-9+()\-\s]*" inputmode="tel"
+                                               onkeypress={handleEditContactKeyPress}
+                                               oninput={handleEditContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Phone</label>
+                                        <input type="tel" data-field="phone" value={editContact.phone}
+                                               pattern="[0-9+()\-\s]*" inputmode="tel"
+                                               onkeypress={handleEditContactKeyPress}
+                                               oninput={handleEditContactFieldChange}/>
+                                    </div>
+                                    <div class="hbd-modal-field hbd-col-full">
+                                        <label>Job Title</label>
+                                        <input type="text" data-field="jobTitle" value={editContact.jobTitle} onchange={handleEditContactFieldChange}/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hbd-modal-footer">
+                                <button class="hbd-btn-secondary" onclick={handleCloseEditContact}>Cancel</button>
+                                <button class="hbd-btn-primary" onclick={handleSaveEditContact} disabled={isEditContactSaving}>
+                                    <template if:true={isEditContactSaving}>Saving…</template>
+                                    <template if:false={isEditContactSaving}>Save Changes</template>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
 
@@ -176,20 +234,35 @@
             <template if:true={isAppsTab}>
                 <div class="hbd-tab-body">
                     <template if:true={hasApps}>
-                        <div class="hbd-app-list">
+                        <div class="hbd-contact-list">
+                            <div class="hbd-contact-head hbd-app-head">
+                                <div>Application</div>
+                                <div>Development</div>
+                                <div>Plot</div>
+                                <div>Vendor</div>
+                                <div>Received</div>
+                                <div class="hbd-app-stage-col">Stage</div>
+                            </div>
                             <template for:each={appsDisplay} for:item="a">
-                                <div class="hbd-app-card" key={a.id} data-id={a.id} onclick={handleAppClick}>
-                                    <div class="hbd-app-top">
-                                        <span class="hbd-app-name">{a.name}</span>
-                                        <span class={a.stageClass}>{a.nhsProcess}</span>
+                                <div class="hbd-contact-row hbd-app-row" key={a.id} data-id={a.id} onclick={handleAppClick}>
+                                    <div class="hbd-app-name-col">
+                                        <div class="hbd-contact-name">{a.name}</div>
+                                        <div class="hbd-dim hbd-app-addr-sub">{a.propertyAddress}</div>
                                     </div>
-                                    <div class="hbd-app-addr">{a.propertyAddress}</div>
-                                    <div class="hbd-app-meta">
-                                        <template if:true={a.vendorName}><span>Vendor: {a.vendorName}</span></template>
-                                        <template if:true={a.development}><span>Dev: {a.development}</span></template>
-                                        <template if:true={a.plot}><span>Plot: {a.plot}</span></template>
-                                        <span class="hbd-app-date">{a.createdDateFormatted}</span>
+                                    <div>
+                                        <template if:true={a.development}>{a.development}</template>
+                                        <template if:false={a.development}><span class="hbd-dim">—</span></template>
                                     </div>
+                                    <div>
+                                        <template if:true={a.plot}>{a.plot}</template>
+                                        <template if:false={a.plot}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div>
+                                        <template if:true={a.vendorName}>{a.vendorName}</template>
+                                        <template if:false={a.vendorName}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-app-date">{a.createdDateFormatted}</div>
+                                    <div class="hbd-app-stage-col"><span class={a.stageClass}>{a.nhsProcess}</span></div>
                                 </div>
                             </template>
                         </div>
@@ -204,19 +277,33 @@
             <template if:true={isCommsTab}>
                 <div class="hbd-tab-body">
                     <template if:true={hasComms}>
-                        <div class="hbd-comms-list">
+                        <div class="hbd-contact-list">
+                            <div class="hbd-contact-head hbd-comms-head">
+                                <div>Dir</div>
+                                <div>Subject</div>
+                                <div>From</div>
+                                <div>To</div>
+                                <div>When</div>
+                            </div>
                             <template for:each={commsDisplay} for:item="c">
-                                <div class="hbd-comms-row" key={c.id}>
-                                    <div class={c.dirClass}>{c.direction}</div>
-                                    <div class="hbd-comms-body">
-                                        <div class="hbd-comms-subject">{c.subject}</div>
-                                        <div class="hbd-comms-preview">{c.preview}</div>
-                                        <div class="hbd-comms-meta">
-                                            <span>From: {c.from}</span>
-                                            <span>To: {c.to}</span>
-                                        </div>
+                                <div class="hbd-contact-row hbd-comms-row" key={c.id} data-id={c.id} onclick={handleCommsRowClick}>
+                                    <div><span class={c.dirPill}>{c.direction}</span></div>
+                                    <div class="hbd-comms-subject-col">
+                                        <div class="hbd-contact-name">{c.subject}</div>
+                                        <div class="hbd-dim hbd-comms-preview">{c.preview}</div>
                                     </div>
-                                    <div class="hbd-comms-date">{c.dateFormatted}</div>
+                                    <div>
+                                        <template if:true={c.from}>{c.from}</template>
+                                        <template if:false={c.from}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div>
+                                        <template if:true={c.to}>{c.to}</template>
+                                        <template if:false={c.to}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div class="hbd-comms-datecol">
+                                        <div class="hbd-comms-relative">{c.relativeTime}</div>
+                                        <div class="hbd-comms-absolute">{c.dateFormatted}</div>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -225,6 +312,232 @@
                         <div class="hbd-empty">No communications recorded yet.</div>
                     </template>
                 </div>
+            </template>
+
+            <!-- Preferred Agents -->
+            <template if:true={isPrefAgentsTab}>
+                <div class="hbd-tab-body">
+                    <div class="hbd-tab-actions">
+                        <button class="hbd-btn-primary hbd-btn-sm" onclick={handleShowAddPrefAgent}>+ Add Preferred Agent</button>
+                    </div>
+
+                    <template if:true={hasPrefAgents}>
+                        <div class="hbd-contact-list">
+                            <div class="hbd-contact-head hbd-pa-head">
+                                <div>Priority</div>
+                                <div>Agent</div>
+                                <div>City</div>
+                                <div>Phone</div>
+                                <div>Status</div>
+                                <div>Added</div>
+                                <div class="hbd-col-action"></div>
+                            </div>
+                            <template for:each={prefAgentsDisplay} for:item="p">
+                                <div class="hbd-contact-row hbd-pa-row" key={p.id} data-agentid={p.agentId} onclick={handlePrefAgentClick}>
+                                    <div class="hbd-pa-priority">{p.priorityDisplay}</div>
+                                    <div>
+                                        <div class="hbd-contact-name">{p.agentName}</div>
+                                        <template if:true={p.agentEmail}>
+                                            <a href={p.emailHref} onclick={stopProp} class="hbd-pa-sub">{p.agentEmail}</a>
+                                        </template>
+                                    </div>
+                                    <div>{p.agentCity}</div>
+                                    <div>
+                                        <template if:true={p.agentPhone}>
+                                            <a href={p.phoneHref} onclick={stopProp}>{p.agentPhone}</a>
+                                        </template>
+                                        <template if:false={p.agentPhone}><span class="hbd-dim">—</span></template>
+                                    </div>
+                                    <div><span class={p.statusClass}>{p.status}</span></div>
+                                    <div class="hbd-pa-date">{p.addedDateFormatted}</div>
+                    <div class="hbd-col-action hbd-pa-actions">
+                        <button class="hbd-edit-row-btn" data-id={p.id} onclick={handleEditPrefAgent} title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button class="hbd-delete-btn" data-id={p.id} onclick={handleDeletePrefAgent} title="Remove">&times;</button>
+                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasPrefAgents}>
+                        <div class="hbd-empty">No preferred estate agents yet. Click + Add Preferred Agent to start.</div>
+                    </template>
+
+                    <!-- Add Preferred Agent modal -->
+                    <template if:true={showAddPrefAgent}>
+                        <div class="hbd-backdrop" onclick={handleClosePrefAgent}></div>
+                        <div class="hbd-modal hbd-modal-wide">
+                            <div class="hbd-modal-header">
+                                <h3>Add Preferred Agent</h3>
+                                <button class="hbd-modal-close" onclick={handleClosePrefAgent}>&times;</button>
+                            </div>
+                            <div class="hbd-modal-body">
+                                <div class="hbd-modal-field hbd-col-full">
+                                    <label>Search Estate Agent</label>
+                                    <input type="text" placeholder="Name, city, or postcode…" value={prefSearchTerm} oninput={handlePrefSearchChange}/>
+                                </div>
+                                <div class="hbd-pa-search-results">
+                                    <template if:true={prefIsSearching}>
+                                        <div class="hbd-pa-loading"><lightning-spinner alternative-text="Searching" size="small"></lightning-spinner></div>
+                                    </template>
+                                    <template if:false={prefIsSearching}>
+                                        <template for:each={prefAgentResults} for:item="r">
+                                            <div class={r.selectedClass} key={r.id} data-id={r.id} onclick={handlePrefPickAgent}>
+                                                <div class="hbd-pa-result-main">
+                                                    <div class="hbd-pa-result-name">{r.name}</div>
+                                                    <div class="hbd-pa-result-meta">
+                                                        <template if:true={r.city}><span>{r.city}</span></template>
+                                                        <template if:true={r.postcode}><span>{r.postcode}</span></template>
+                                                        <template if:true={r.phone}><span>{r.phone}</span></template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </div>
+
+                                <template if:true={prefSelectedAgent}>
+                                    <div class="hbd-modal-grid" style="margin-top:14px;">
+                                        <div class="hbd-modal-field">
+                                            <label>Priority (optional)</label>
+                                            <input type="number" min="1" max="10" value={prefPriority} onchange={handlePrefPriorityChange} placeholder="e.g. 1"/>
+                                        </div>
+                                        <div class="hbd-modal-field hbd-col-full">
+                                            <label>Notes</label>
+                                            <input type="text" value={prefNotes} onchange={handlePrefNotesChange} placeholder="Why preferred? Territory? Performance?"/>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="hbd-modal-footer">
+                                <button class="hbd-btn-secondary" onclick={handleClosePrefAgent}>Cancel</button>
+                                <button class="hbd-btn-primary" onclick={handleSavePrefAgent} disabled={prefIsSaving}>
+                                    <template if:true={prefIsSaving}>Saving…</template>
+                                    <template if:false={prefIsSaving}>Add Preferred Agent</template>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Edit Preferred Agent modal -->
+                    <template if:true={showEditPrefAgent}>
+                        <div class="hbd-backdrop" onclick={handleCloseEditPrefAgent}></div>
+                        <div class="hbd-modal">
+                            <div class="hbd-modal-header">
+                                <h3>Edit Preferred Agent</h3>
+                                <button class="hbd-modal-close" onclick={handleCloseEditPrefAgent}>&times;</button>
+                            </div>
+                            <div class="hbd-modal-body">
+                                <div class="hbd-modal-grid">
+                                    <div class="hbd-modal-field hbd-col-full">
+                                        <label>Estate Agent</label>
+                                        <div class="hbd-locked-field">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                                                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                            </svg>
+                                            {editPrefAgent.agentName}
+                                        </div>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Priority</label>
+                                        <input type="number" min="1" max="10" value={editPrefAgent.priority} onchange={handleEditPrefPriorityChange} placeholder="e.g. 1"/>
+                                    </div>
+                                    <div class="hbd-modal-field">
+                                        <label>Status</label>
+                                        <select onchange={handleEditPrefStatusChange}>
+                                            <template for:each={editPrefStatusOptions} for:item="opt">
+                                                <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div class="hbd-modal-field hbd-col-full">
+                                        <label>Notes</label>
+                                        <input type="text" value={editPrefAgent.notes} onchange={handleEditPrefNotesChange} placeholder="Reason, territory, performance notes…"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hbd-modal-footer">
+                                <button class="hbd-btn-secondary" onclick={handleCloseEditPrefAgent}>Cancel</button>
+                                <button class="hbd-btn-primary" onclick={handleSaveEditPrefAgent} disabled={isEditPrefSaving}>
+                                    <template if:true={isEditPrefSaving}>Saving…</template>
+                                    <template if:false={isEditPrefSaving}>Save Changes</template>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Email Viewer slide panel -->
+            <template if:true={showEmailViewer}>
+                <div class="hbd-ev-backdrop" onclick={handleCloseEmailViewer}></div>
+                <aside class="hbd-ev-panel">
+                    <header class="hbd-ev-header">
+                        <div class="hbd-ev-header-left">
+                            <span class="hbd-ev-kicker">Email</span>
+                            <template if:true={hasEmailViewer}>
+                                <h3 class="hbd-ev-subject">{emailViewer.subject}</h3>
+                            </template>
+                        </div>
+                        <div class="hbd-ev-header-actions">
+                            <template if:true={emailHasOpp}>
+                                <button class="hbd-ev-btn hbd-ev-btn-secondary" onclick={handleOpenApplicationFromEmail} title="Open Application">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                        <polyline points="15 3 21 3 21 9"/>
+                                        <line x1="10" y1="14" x2="21" y2="3"/>
+                                    </svg>
+                                    Go to Application
+                                </button>
+                            </template>
+                            <button class="hbd-ev-close" onclick={handleCloseEmailViewer}>&times;</button>
+                        </div>
+                    </header>
+
+                    <template if:true={emailLoading}>
+                        <div class="hbd-ev-loading"><lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner></div>
+                    </template>
+
+                    <template if:true={hasEmailViewer}>
+                        <div class="hbd-ev-meta">
+                            <span class={emailViewer.dirPill}>{emailViewer.direction}</span>
+                            <div class="hbd-ev-metarow"><span class="hbd-ev-lbl">From</span><span class="hbd-ev-val">{emailViewer.from}</span></div>
+                            <div class="hbd-ev-metarow"><span class="hbd-ev-lbl">To</span><span class="hbd-ev-val">{emailViewer.to}</span></div>
+                            <template if:true={emailViewer.cc}>
+                                <div class="hbd-ev-metarow"><span class="hbd-ev-lbl">Cc</span><span class="hbd-ev-val">{emailViewer.cc}</span></div>
+                            </template>
+                            <template if:true={emailViewer.bcc}>
+                                <div class="hbd-ev-metarow"><span class="hbd-ev-lbl">Bcc</span><span class="hbd-ev-val">{emailViewer.bcc}</span></div>
+                            </template>
+                            <div class="hbd-ev-metarow">
+                                <span class="hbd-ev-lbl">Date</span>
+                                <span class="hbd-ev-val">{emailViewer.dateFormatted} <span class="hbd-dim">· {emailViewer.relativeTime}</span></span>
+                            </div>
+                        </div>
+
+                        <template if:true={emailHasAttachments}>
+                            <div class="hbd-ev-attachments">
+                                <div class="hbd-ev-att-label">Attachments ({emailAttachmentCount})</div>
+                                <template for:each={emailViewer.attachments} for:item="a">
+                                    <a key={a.id} href={a.downloadUrl} target="_blank" class="hbd-ev-att">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                        </svg>
+                                        <span class="hbd-ev-att-name">{a.name}</span>
+                                        <span class="hbd-ev-att-size">{a.sizeLabel}</span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+
+                        <div class="hbd-ev-body-wrap">
+                            <div class="hbd-email-body-rendered"></div>
+                        </div>
+                    </template>
+                </aside>
             </template>
 
             <!-- Edit Housebuilder modal -->

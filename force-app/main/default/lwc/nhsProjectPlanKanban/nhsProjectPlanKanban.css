@@ -62,6 +62,17 @@
 .ppk-btn-primary:hover { background: #3A5A4E; border-color: #3A5A4E; }
 .ppk-btn-secondary { background: #fff; color: var(--sage-dk); border-color: var(--sage-border); }
 .ppk-btn-secondary:hover { background: var(--sage-pale); }
+
+.ppk-btn-refresh:disabled { opacity: 0.7; cursor: wait; }
+.ppk-refresh-spin {
+    animation: ppkRefreshSpin 0.9s linear infinite;
+    transform-origin: center;
+    display: inline-block;
+}
+@keyframes ppkRefreshSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
 .ppk-btn-danger { background: #fff; color: var(--critical); border-color: #FCA5A5; }
 .ppk-btn-danger:hover { background: var(--critical-bg); }
 .ppk-btn lightning-icon { --slds-c-icon-color-foreground-default: currentColor; }
