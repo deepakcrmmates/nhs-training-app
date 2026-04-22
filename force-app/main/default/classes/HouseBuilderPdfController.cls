@@ -221,10 +221,19 @@ public without sharing class HouseBuilderPdfController {
         BoxFileService.uploadFileToBox(op.House_Builder__c, null, 'Application', recordId, pdfBlob);
     }
 
-    // Create NHS Box folder structure (async via Queueable)
+    // Create NHS Box folder structure synchronously — returns status + message so
+    // the LWC can surface failures instead of silently swallowing them.
+    // Result shape: { status: 'success' | 'skipped' | 'error', folderId, message }
     @AuraEnabled
-    public static void setupFoldersAndGeneratePdf(Id recordId) {
-        System.enqueueJob(new NhsFolderSetupJob(recordId));
+    public static Map<String, String> setupFoldersAndGeneratePdf(Id recordId) {
+        return NhsFolderSetupJob.runFolderSetup(recordId);
+    }
+
+    // Manual retry hook — wired to a button on the Application Detail page
+    // for applications where Box_Folder_Id__c is still null.
+    @AuraEnabled
+    public static Map<String, String> retryBoxFolderSetup(Id recordId) {
+        return NhsFolderSetupJob.runFolderSetup(recordId);
     }
 
     // Generate PDF and upload to the NHS Application subfolder in Box

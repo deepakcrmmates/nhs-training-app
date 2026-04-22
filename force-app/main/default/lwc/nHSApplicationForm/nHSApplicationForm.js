@@ -726,11 +726,20 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
             // STEP 5: CREATE BOX FOLDER STRUCTURE
             this.addResultWithDelay('Progress', 'Creating Box folder structure...', 10);
             try {
-                await setupFoldersAndGeneratePdf({ recordId: this.applicationId });
-                this.addResultWithDelay('Success', 'Box folders created.', 11);
+                const boxResult = await setupFoldersAndGeneratePdf({ recordId: this.applicationId });
+                if (boxResult && boxResult.status === 'success') {
+                    this.addResultWithDelay('Success', 'Box folders created.', 11);
+                } else if (boxResult && boxResult.status === 'skipped') {
+                    this.addResultWithDelay('Success', 'Box folders already existed.', 11);
+                } else {
+                    const msg = (boxResult && boxResult.message) || 'Unknown Box setup error';
+                    console.warn('Box folder setup reported error:', msg);
+                    this.addResultWithDelay('Error', 'Box folder setup failed: ' + msg + ' — use Retry from the Application page.', 11);
+                }
             } catch (boxErr) {
                 console.error('Box folder error:', boxErr);
-                this.addResultWithDelay('Progress', 'Box folder setup queued.', 11);
+                const msg = boxErr?.body?.message || boxErr?.message || 'Unknown error';
+                this.addResultWithDelay('Error', 'Box folder setup failed: ' + msg + ' — use Retry from the Application page.', 11);
             }
 
             // STEP 6: GENERATE PDF AND UPLOAD TO BOX
