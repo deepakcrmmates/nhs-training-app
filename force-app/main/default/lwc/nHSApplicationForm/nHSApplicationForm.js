@@ -95,6 +95,9 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
 
     // Soft-validation state — once the user confirms the warning prompt once, don't ask again this session
     warningsAcknowledged = false;
+    @track showWarningModal = false;
+    @track warningList = [];
+    _warningResolve = null;
 
     @track currentDateTime = new Date().toISOString().split('T')[0];
     marketStatusOptions = [
@@ -671,10 +674,7 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
         if (!this.warningsAcknowledged) {
             const warnings = this.collectSoftWarnings();
             if (warnings.length > 0) {
-                const msg = 'The following recommended fields are not filled in:\n\n• '
-                    + warnings.join('\n• ')
-                    + '\n\nYou can still proceed, but please consider adding these details.\n\nDo you want to continue?';
-                const proceed = window.confirm(msg);
+                const proceed = await this._showWarningModal(warnings);
                 if (!proceed) return;
                 this.warningsAcknowledged = true;
             }
@@ -771,6 +771,27 @@ export default class NHSApplicationForm extends NavigationMixin(LightningElement
 
 
 
+
+    // Show the NHS-branded warning modal and resolve with true (proceed) / false (cancel).
+    _showWarningModal(warnings) {
+        this.warningList = warnings.map((label, i) => ({ key: 'w' + i, label }));
+        this.showWarningModal = true;
+        return new Promise(resolve => { this._warningResolve = resolve; });
+    }
+
+    handleWarningContinue() {
+        this.showWarningModal = false;
+        const resolve = this._warningResolve;
+        this._warningResolve = null;
+        if (resolve) resolve(true);
+    }
+
+    handleWarningCancel() {
+        this.showWarningModal = false;
+        const resolve = this._warningResolve;
+        this._warningResolve = null;
+        if (resolve) resolve(false);
+    }
 
     // Collect recommended-but-not-filled fields. Returns an array of human labels.
     // Submission proceeds regardless — this drives only the pre-submit warning prompt.

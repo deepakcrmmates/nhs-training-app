@@ -315,6 +315,41 @@
         </footer>
     </div>
 
+    <!-- Soft-warning modal — recommended fields not filled -->
+    <template if:true={showWarningModal}>
+        <div class="nhs-warn-overlay">
+            <div class="nhs-warn-modal">
+                <div class="nhs-warn-header">
+                    <div class="nhs-warn-icon">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="nhs-warn-titles">
+                        <h3>Some recommended details are missing</h3>
+                        <p>You can still submit the application, but please consider adding these details before proceeding.</p>
+                    </div>
+                </div>
+                <div class="nhs-warn-body">
+                    <ul class="nhs-warn-list">
+                        <template for:each={warningList} for:item="w">
+                            <li key={w.key}>
+                                <span class="nhs-warn-dot"></span>
+                                <span class="nhs-warn-label">{w.label}</span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <div class="nhs-warn-footer">
+                    <button type="button" class="nhs-warn-btn nhs-warn-btn-secondary" onclick={handleWarningCancel}>
+                        Go Back &amp; Fix
+                    </button>
+                    <button type="button" class="nhs-warn-btn nhs-warn-btn-primary" onclick={handleWarningContinue}>
+                        Continue Anyway
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- Original Modals (Preserved) -->
     <template if:true={isModalOpen}>
         <div class="custom-modal">
