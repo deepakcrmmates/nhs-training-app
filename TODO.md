@@ -24,4 +24,8 @@
 - [ ] Housebuilder Related Lists — Contact, Applications, Preferred Estate Agents, Comms History
 - [ ] Notification system (analyse Chatter option)
 - [ ] Schemes — conditional list (differs per Housebuilder)
-- [ ] Cloudflare Images API integration
+- [ ] **Cloudflare Images integration — PARKED, awaiting Will + Gina approval** (5 upload channels: Box photographer, mobile app future, housebuilder logo, property API, NHS brand one-off)
+  - Proposal: [`docs/PROPERTY_IMAGES_CLOUDFLARE_PROPOSAL.pdf`](docs/PROPERTY_IMAGES_CLOUDFLARE_PROPOSAL.pdf) (16 pages, 15 sections)
+  - Implementation plan: [`docs/CLOUDFLARE_IMAGES_IMPLEMENTATION_PLAN.md`](docs/CLOUDFLARE_IMAGES_IMPLEMENTATION_PLAN.md) (phase-by-phase checklist)
+  - Kanban: TSK-00017
+  - Gates: (1) sign-off from Will + Gina, (2) Cloudflare Images account active, (3) token + account Id saved in NHS Config
