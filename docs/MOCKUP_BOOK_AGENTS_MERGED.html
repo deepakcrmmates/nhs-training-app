@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Book Agents — Merged card mockup</title>
+<style>
+  :root {
+    --brand-dk:      #075F50;
+    --brand-mid:     #4A6B5E;
+    --brand-sage:    #C9D5CB;
+    --brand-pale:    #EAF4EF;
+    --brand-border:  #C5DCCC;
+    --ink:           #0F172A;
+    --muted:         #64748B;
+    --divider:       #E2E8F0;
+    --success:       #10B981;
+    --success-pale:  #DCFCE7;
+    --warn:          #F59E0B;
+    --amber-pale:    #FEF3C7;
+
+    /* per-agent palette (matches the current lower-section card chrome) */
+    --a1-dk:   #075F50;  --a1-pale: #EAF4EF;  --a1-border: #C5DCCC;
+    --a2-dk:   #1E40AF;  --a2-pale: #DBEAFE;  --a2-border: #BFDBFE;
+    --a3-dk:   #6B21A8;  --a3-pale: #F3E8FF;  --a3-border: #E9D5FF;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #F8FAFC; color: var(--ink); font-size: 14px; line-height: 1.4;
+  }
+  .page {
+    max-width: 1200px; margin: 0 auto;
+    background: white; border-radius: 10px; padding: 24px 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  /* ── Mockup banner ──────────────────────────────────────── */
+  .banner {
+    background: linear-gradient(90deg, var(--brand-dk), var(--brand-mid));
+    color: white; padding: 14px 20px; border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  }
+  .banner h1 { margin: 0; font-size: 16px; font-weight: 700; }
+  .banner .meta { font-size: 12px; opacity: 0.9; }
+  .toggle-switch {
+    display: inline-flex; background: rgba(255,255,255,0.15); border-radius: 6px; padding: 3px;
+  }
+  .toggle-switch button {
+    background: transparent; border: 0; color: white; padding: 6px 14px;
+    cursor: pointer; border-radius: 4px; font-size: 12px; font-weight: 600;
+  }
+  .toggle-switch button.active { background: white; color: var(--brand-dk); }
+
+  /* ── Section header (matches NHS form section style) ─── */
+  .section-hd {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--brand-pale);
+    border: 1px solid var(--brand-border); border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    font-weight: 700; color: var(--brand-dk); font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .section-hd .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand-dk); margin-right: 8px; vertical-align: middle; }
+  .section-body {
+    border: 1px solid var(--brand-border); border-top: none; border-radius: 0 0 8px 8px;
+    padding: 16px; background: white; margin-bottom: 20px;
+  }
+  .section-hd .btn {
+    background: white; color: var(--brand-dk); border: 1px solid var(--brand-border);
+    padding: 5px 12px; border-radius: 5px; font-weight: 600; font-size: 11px; cursor: pointer;
+  }
+
+  /* ── Calendar (simplified, same as current) ───────────── */
+  .cal-wrap { margin-bottom: 14px; }
+  .cal-hd { font-size: 12px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid var(--divider);
+    display: flex; justify-content: space-between; align-items: center; }
+  .cal-hd strong { color: var(--ink); }
+  .cal-nav button { background: white; border: 1px solid var(--divider); padding: 4px 10px;
+    border-radius: 4px; font-size: 11px; margin-left: 4px; cursor: pointer; }
+  .cal-nav button.today { background: var(--brand-pale); border-color: var(--brand-border); color: var(--brand-dk); font-weight: 600; }
+  .cal { display: grid; grid-template-columns: 110px repeat(7, 1fr); gap: 0;
+    font-size: 11px; border-radius: 6px; overflow: hidden; border: 1px solid var(--divider); }
+  .cal > div { padding: 6px 8px; border-right: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+  .cal .h { background: #F8FAFC; font-weight: 600; text-align: center; color: var(--muted); }
+  .cal .slot-label { background: #FFF9E6; color: #92400E; font-weight: 600; font-size: 10px; }
+  .cal .slot { display: flex; flex-wrap: wrap; gap: 2px; }
+  .cal .slot span { background: var(--amber-pale); color: #92400E; padding: 2px 5px;
+    border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .cal .empty { color: #CBD5E1; text-align: center; }
+
+  /* ── Merged Agent Cards ───────────────────────────────── */
+  .agents-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .agent-card {
+    border: 1px solid var(--a1-border); border-radius: 10px; overflow: hidden;
+    background: white; transition: all 0.2s;
+  }
+  .agent-card[data-agent="1"] { border-color: var(--a1-border); }
+  .agent-card[data-agent="2"] { border-color: var(--a2-border); }
+  .agent-card[data-agent="3"] { border-color: var(--a3-border); }
+
+  .agent-card.is-desktop { background: var(--a3-pale); }
+  .agent-card[data-agent="1"].is-desktop { background: var(--a1-pale); }
+  .agent-card[data-agent="2"].is-desktop { background: var(--a2-pale); }
+
+  /* Card header */
+  .card-hd {
+    padding: 10px 14px; color: white; font-weight: 700;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .agent-card[data-agent="1"] .card-hd { background: var(--a1-dk); }
+  .agent-card[data-agent="2"] .card-hd { background: var(--a2-dk); }
+  .agent-card[data-agent="3"] .card-hd { background: var(--a3-dk); }
+
+  .card-hd .label { font-size: 10px; opacity: 0.9; font-weight: 600;
+    letter-spacing: 0.4px; text-transform: uppercase; margin-right: 6px; }
+  .card-hd .name { font-size: 13px; flex: 1; }
+  .card-hd .edit { background: rgba(255,255,255,0.18); border: 0; color: white;
+    width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .card-hd .desk-pill {
+    background: white; color: inherit; padding: 3px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .agent-card[data-agent="1"] .card-hd .desk-pill { color: var(--a1-dk); }
+  .agent-card[data-agent="2"] .card-hd .desk-pill { color: var(--a2-dk); }
+  .agent-card[data-agent="3"] .card-hd .desk-pill { color: var(--a3-dk); }
+
+  /* Card body */
+  .card-bd { padding: 12px 14px; }
+  .contact { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px;
+    font-size: 12px; color: var(--ink); }
+  .contact .row { display: flex; align-items: center; gap: 6px; }
+  .contact .ico { color: var(--muted); font-size: 11px; width: 14px; text-align: center; }
+
+  /* ── Desktop Valuation toggle row ──────────── */
+  .dv-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; margin: 8px 0;
+    background: var(--brand-pale); border: 1px solid var(--brand-border);
+    border-radius: 6px;
+  }
+  .dv-row input[type="checkbox"] { width: 16px; height: 16px; margin: 0; cursor: pointer;
+    accent-color: var(--brand-dk); }
+  .dv-row label { font-weight: 600; font-size: 12px; color: var(--brand-dk); cursor: pointer; user-select: none; }
+  .dv-row .hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* ── Appointment row (swaps between booking UI and "No visit required" pill) ── */
+  .appt-block {
+    margin: 10px 0;
+    padding: 10px;
+    background: #F8FAFC;
+    border: 1px dashed var(--divider);
+    border-radius: 6px;
+  }
+  .appt-label { font-size: 10px; text-transform: uppercase; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .appt-book-btn {
+    width: 100%;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+    background: white; color: var(--brand-dk);
+    border: 1px solid var(--brand-border); font-weight: 600; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .appt-book-btn:hover:not([disabled]) { background: var(--brand-pale); }
+  .appt-book-btn[disabled] {
+    opacity: 0.45; cursor: not-allowed;
+    background: #F1F5F9; color: var(--muted);
+    border-style: dashed;
+  }
+  /* Primary "Assign Agent" CTA — solid brand green, sits above Book Appointment */
+  .assign-btn {
+    width: 100%;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+    background: var(--brand-dk); color: white;
+    border: 1px solid var(--brand-dk); font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 2px rgba(7,95,80,0.18);
+  }
+  .assign-btn:hover { background: #064a3f; }
+  .agent-card[data-agent="2"] .assign-btn { background: var(--a2-dk); border-color: var(--a2-dk); }
+  .agent-card[data-agent="2"] .assign-btn:hover { background: #1e3a8a; }
+  .agent-card[data-agent="3"] .assign-btn { background: var(--a3-dk); border-color: var(--a3-dk); }
+  .agent-card[data-agent="3"] .assign-btn:hover { background: #581c87; }
+
+  /* Unassigned state — muted header + placeholder rows, edit icon hidden */
+  .agent-card.is-unassigned .card-hd { background: #94A3B8; }
+  .agent-card.is-unassigned .name { opacity: 0.8; font-style: italic; font-weight: 500; }
+  .agent-card.is-unassigned .edit { display: none; }
+  .contact.muted { color: #CBD5E1; }
+  .dv-row.disabled { opacity: 0.55; }
+  .dv-row.disabled label { cursor: not-allowed; }
+  .appt-booked {
+    background: white; border: 1px solid var(--brand-border); border-radius: 6px;
+    padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--brand-dk);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .appt-booked .clear { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; }
+  .dv-banner {
+    padding: 10px 12px;
+    background: linear-gradient(90deg, var(--a3-pale), white);
+    border: 1px solid var(--a3-border); border-radius: 6px;
+    font-weight: 600; font-size: 12px; color: var(--a3-dk);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .agent-card[data-agent="1"] .dv-banner {
+    background: linear-gradient(90deg, var(--a1-pale), white);
+    border-color: var(--a1-border); color: var(--a1-dk);
+  }
+  .agent-card[data-agent="2"] .dv-banner {
+    background: linear-gradient(90deg, var(--a2-pale), white);
+    border-color: var(--a2-border); color: var(--a2-dk);
+  }
+  .dv-banner::before { content: '🖥'; font-size: 14px; }
+
+  /* Meta rows */
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .meta-field { display: flex; flex-direction: column; gap: 3px; }
+  .meta-field .label { font-size: 10px; text-transform: uppercase; font-weight: 700;
+    color: var(--muted); letter-spacing: 0.5px; }
+  .meta-field .value {
+    background: white; border: 1px solid var(--divider); border-radius: 5px;
+    padding: 6px 8px; font-size: 12px; min-height: 30px;
+  }
+  .meta-field .value.muted { color: var(--muted); font-style: italic; }
+
+  /* ── Comparison: "before" view ─────────────────── */
+  .hidden { display: none !important; }
+  .before-note {
+    background: var(--amber-pale); border-left: 3px solid var(--warn);
+    padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 14px;
+    font-size: 12px; color: #78350F;
+  }
+  .before-note strong { color: #78350F; }
+
+  /* ── "Before" repro ─────────────────────────── */
+  .repro-block { margin-bottom: 18px; }
+  .repro-block .title {
+    font-size: 12px; text-transform: uppercase; font-weight: 700;
+    color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px;
+  }
+  .repro-upper, .repro-lower {
+    border: 1px solid var(--divider); border-radius: 6px; padding: 10px;
+    background: #FAFBFC; margin-bottom: 8px;
+  }
+  .repro-upper-cards, .repro-lower-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .rp-card {
+    padding: 8px 10px; font-size: 11px; border-radius: 5px;
+    border: 1px solid var(--divider); background: white;
+  }
+  .rp-card .hdr { font-weight: 700; font-size: 10px; margin-bottom: 4px;
+    text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
+  .rp-card.dv { background: var(--a3-pale); border-color: var(--a3-border); color: var(--a3-dk); }
+  .arrow { text-align: center; font-size: 18px; color: var(--muted); margin: 8px 0; }
+
+  .legend { font-size: 11px; color: var(--muted); margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--divider); }
+  .legend kbd { background: var(--brand-pale); border: 1px solid var(--brand-border);
+    padding: 1px 6px; border-radius: 3px; font-family: inherit; font-size: 10.5px; color: var(--brand-dk); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Banner / toggle -->
+  <div class="banner">
+    <div>
+      <h1>Book Agents — Merged Card Mockup</h1>
+      <div class="meta">Stage 3 of Application Detail · 555 Tong Road, Leeds LS12 5AT · Proposal preview</div>
+    </div>
+    <div class="toggle-switch">
+      <button id="btn-after"  class="active" onclick="setView('after')">After (merged)</button>
+      <button id="btn-before" onclick="setView('before')">Before (current)</button>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────── BEFORE VIEW ─────────────────────────── -->
+  <div id="view-before" class="hidden">
+    <div class="before-note">
+      <strong>Current layout (before merge)</strong> — two separate sections repeat the same three agents.
+      The <em>Desktop Valuation</em> checkbox lives only in the lower section, but its <em>outcome</em>
+      (the "No visit required" badge) also renders in the upper section. User has to scroll between them.
+    </div>
+
+    <div class="repro-block">
+      <div class="title">1. Book Agents section (upper)</div>
+      <div class="repro-upper">
+        <div class="repro-upper-cards">
+          <div class="rp-card">
+            <div class="hdr" style="color: var(--a1-dk)">Agent 1 · New Home Solutions</div>
+            <div style="color: var(--muted); font-style: italic;">No appointment booked yet.</div>
+          </div>
+          <div class="rp-card">
+            <div class="hdr" style="color: var(--a2-dk)">Agent 2 · Diamond Properties</div>
+            <div style="color: var(--muted); font-style: italic;">No appointment booked yet.</div>
+          </div>
+          <div class="rp-card dv">
+            <div class="hdr">Agent 3 · Monroe Sales and Lettings · Desktop</div>
+            <div>Desktop Valuation — No visit required</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">↓ then the availability calendar ↓ then…</div>
+
+    <div class="repro-block">
+      <div class="title">2. Agent Details / Valuation Figures / Recommendations (lower)</div>
+      <div class="repro-lower">
+        <div class="repro-lower-cards">
+          <div class="rp-card">
+            <div class="hdr" style="color: var(--a1-dk)">Agent 1 · New Home Solutions</div>
+            <div>📧 gina.brookes@newhomesolutions.co.uk<br>📞 03330068058</div>
+            <div style="margin-top:6px">☐ Desktop Valuation</div>
+            <div>Appt: 15 Apr 2026 — 9:00 am</div>
+            <div>Last emailed: 14 Apr 2026 5:24 pm</div>
+            <div>Verbally confirmed: No</div>
+          </div>
+          <div class="rp-card">
+            <div class="hdr" style="color: var(--a2-dk)">Agent 2 · Diamond Properties</div>
+            <div>📧 test50@abc.com<br>📞 0113 278 3333</div>
+            <div style="margin-top:6px">☐ Desktop Valuation</div>
+            <div>Appt: 17 Apr 2026 — 12:15 pm</div>
+            <div>Last emailed: 14 Apr 2026 5:25 pm</div>
+            <div>Verbally confirmed: No</div>
+          </div>
+          <div class="rp-card dv">
+            <div class="hdr">Agent 3 · Monroe Sales and Lettings</div>
+            <div>📧 test34@abc.com<br>📞 0113 350 0866</div>
+            <div style="margin-top:6px">☑ Desktop Valuation</div>
+            <div>Desktop Valuation — No visit required</div>
+            <div>Last emailed: Not emailed</div>
+            <div>Verbally confirmed: No</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 12px; color: var(--muted); margin-top: 12px;">
+      <strong>Problem:</strong> Agents appear twice. Desktop Valuation is toggled at the bottom but its effect is shown at the top. No single place to see and manage an agent.
+    </div>
+  </div>
+
+  <!-- ─────────────────────────── AFTER VIEW ─────────────────────────── -->
+  <div id="view-after">
+
+    <!-- Availability calendar stays as a shared picker above the cards -->
+    <div class="section-hd">
+      <span><span class="dot"></span>BOOK AGENTS</span>
+      <span style="font-weight: 500; font-size: 11px; color: var(--muted); text-transform: none; letter-spacing: 0;">
+        1 of 3 booked · 1 desktop
+      </span>
+      <button class="btn">+ Assign Agent</button>
+    </div>
+    <div class="section-body">
+
+      <!-- Shared availability calendar -->
+      <div class="cal-wrap">
+        <div class="cal-hd">
+          <span><strong>Availability Calendar</strong> · 20 Apr 2026 – 26 Apr 2026</span>
+          <div class="cal-nav">
+            <button>‹ Prev</button>
+            <button class="today">Today</button>
+            <button>Next ›</button>
+          </div>
+        </div>
+        <div class="cal">
+          <div class="h">Time Slot</div>
+          <div class="h">Mon 20</div><div class="h">Tue 21</div><div class="h">Wed 22</div>
+          <div class="h">Thu 23</div><div class="h">Fri 24</div><div class="h">Sat 25</div><div class="h">Sun 26</div>
+
+          <div class="slot-label">Before 9 am</div>
+          <div class="empty">—</div><div class="empty">—</div><div class="empty">—</div><div class="empty">—</div>
+          <div class="slot"><span>08:00</span><span>08:15</span><span>08:30</span><span>08:45</span></div>
+          <div class="slot"><span>08:00</span><span>08:15</span><span>08:30</span><span>08:45</span></div>
+          <div class="empty">—</div>
+
+          <div class="slot-label">9 am – 10 am</div>
+          <div class="empty">—</div><div class="empty">—</div><div class="empty">—</div><div class="empty">—</div>
+          <div class="slot"><span>09:00</span><span>09:15</span><span>09:30</span><span>09:45</span></div>
+          <div class="slot"><span>09:00</span><span>09:15</span><span>09:30</span><span>09:45</span></div>
+          <div class="empty">—</div>
+        </div>
+      </div>
+
+      <!-- Merged agent cards -->
+      <div class="agents-grid">
+
+        <!-- AGENT 1 -->
+        <div class="agent-card" data-agent="1" id="card-1">
+          <div class="card-hd">
+            <span><span class="label">Agent 1</span><span class="name">New Home Solutions</span></span>
+            <button class="edit" title="Edit">✎</button>
+          </div>
+          <div class="card-bd">
+            <div class="contact">
+              <div class="row"><span class="ico">✉</span><span>gina.brookes@newhomesolutions.co.uk</span></div>
+              <div class="row"><span class="ico">☎</span><span>03330068058</span></div>
+            </div>
+
+            <div class="dv-row">
+              <input type="checkbox" id="dv-1" onchange="toggleDesktop(1, this.checked)">
+              <label for="dv-1">Desktop Valuation</label>
+              <span class="hint">Tick if no site visit is required</span>
+            </div>
+
+            <div class="appt-block" id="appt-block-1">
+              <div class="appt-label">Appointment</div>
+              <div class="appt-booked">
+                <span>📅 15 Apr 2026 · 9:00 am</span>
+                <button class="clear" title="Clear">×</button>
+              </div>
+            </div>
+
+            <div class="dv-banner hidden" id="dv-banner-1">Desktop Valuation — No visit required</div>
+
+            <div class="meta-grid">
+              <div class="meta-field">
+                <span class="label">Agent Last Emailed On</span>
+                <span class="value">14 Apr 2026 5:24 pm</span>
+              </div>
+              <div class="meta-field">
+                <span class="label">Verbally Confirmed</span>
+                <span class="value">No</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGENT 2 — unassigned state -->
+        <div class="agent-card is-unassigned" data-agent="2" id="card-2">
+          <div class="card-hd">
+            <span><span class="label">Agent 2</span><span class="name">Not assigned</span></span>
+            <button class="edit" title="Edit">✎</button>
+          </div>
+          <div class="card-bd">
+            <div class="contact muted">
+              <div class="row"><span class="ico">✉</span><span>—</span></div>
+              <div class="row"><span class="ico">☎</span><span>—</span></div>
+            </div>
+
+            <div class="dv-row disabled">
+              <input type="checkbox" id="dv-2" disabled onchange="toggleDesktop(2, this.checked)">
+              <label for="dv-2">Desktop Valuation</label>
+              <span class="hint">Assign an agent first</span>
+            </div>
+
+            <div class="appt-block" id="appt-block-2">
+              <div class="appt-label">Appointment</div>
+              <button class="assign-btn" id="assign-btn-2" onclick="assignAgent(2)">＋ Assign Agent</button>
+              <button class="appt-book-btn" id="book-btn-2" disabled>＋ Book Appointment</button>
+            </div>
+
+            <div class="dv-banner hidden" id="dv-banner-2">Desktop Valuation — No visit required</div>
+
+            <div class="meta-grid">
+              <div class="meta-field">
+                <span class="label">Agent Last Emailed On</span>
+                <span class="value muted">—</span>
+              </div>
+              <div class="meta-field">
+                <span class="label">Verbally Confirmed</span>
+                <span class="value muted">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AGENT 3 — unassigned state -->
+        <div class="agent-card is-unassigned" data-agent="3" id="card-3">
+          <div class="card-hd">
+            <span><span class="label">Agent 3</span><span class="name">Not assigned</span></span>
+            <button class="edit" title="Edit">✎</button>
+          </div>
+          <div class="card-bd">
+            <div class="contact muted">
+              <div class="row"><span class="ico">✉</span><span>—</span></div>
+              <div class="row"><span class="ico">☎</span><span>—</span></div>
+            </div>
+
+            <div class="dv-row disabled">
+              <input type="checkbox" id="dv-3" disabled onchange="toggleDesktop(3, this.checked)">
+              <label for="dv-3">Desktop Valuation</label>
+              <span class="hint">Assign an agent first</span>
+            </div>
+
+            <div class="appt-block" id="appt-block-3">
+              <div class="appt-label">Appointment</div>
+              <button class="assign-btn" id="assign-btn-3" onclick="assignAgent(3)">＋ Assign Agent</button>
+              <button class="appt-book-btn" id="book-btn-3" disabled>＋ Book Appointment</button>
+            </div>
+
+            <div class="dv-banner hidden" id="dv-banner-3">Desktop Valuation — No visit required</div>
+
+            <div class="meta-grid">
+              <div class="meta-field">
+                <span class="label">Agent Last Emailed On</span>
+                <span class="value muted">—</span>
+              </div>
+              <div class="meta-field">
+                <span class="label">Verbally Confirmed</span>
+                <span class="value muted">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /agents-grid -->
+
+      <div class="legend">
+        <strong>Interactions to try:</strong><br>
+        1. Agents 2 &amp; 3 start unassigned — click <kbd>＋ Assign Agent</kbd> to simulate an agent being chosen.
+           The card header fills in, contact rows populate, Desktop Valuation enables, and Book Appointment becomes clickable.<br>
+        2. Tick <kbd>Desktop Valuation</kbd> on any assigned card → booking button disables,
+           the dashed "Appointment" block swaps to the coloured "Desktop Valuation — No visit required" banner,
+           and a DESKTOP pill appears in the header. Untick to restore.<br>
+        3. The <kbd>＋ Book Appointment</kbd> button stays visible-but-disabled when unassigned or desktop — you can see the path you opted out of.
+      </div>
+    </div>
+
+  </div><!-- /view-after -->
+</div>
+
+<script>
+  function setView(v) {
+    document.getElementById('view-after').classList.toggle('hidden', v !== 'after');
+    document.getElementById('view-before').classList.toggle('hidden', v !== 'before');
+    document.getElementById('btn-after').classList.toggle('active', v === 'after');
+    document.getElementById('btn-before').classList.toggle('active', v === 'before');
+  }
+
+  const DEMO_AGENTS = {
+    2: { name: 'Diamond Properties', email: 'test50@abc.com',  phone: '0113 278 3333' },
+    3: { name: 'Monroe Sales and Lettings', email: 'test34@abc.com',  phone: '0113 350 0866' },
+  };
+
+  function assignAgent(n) {
+    const card = document.getElementById(`card-${n}`);
+    const demo = DEMO_AGENTS[n];
+    if (!demo) return;
+
+    card.classList.remove('is-unassigned');
+    card.querySelector('.card-hd .name').textContent = demo.name;
+    card.querySelector('.contact').classList.remove('muted');
+    const rows = card.querySelectorAll('.contact .row span:last-child');
+    rows[0].textContent = demo.email;
+    rows[1].textContent = demo.phone;
+
+    const dvRow = card.querySelector('.dv-row');
+    dvRow.classList.remove('disabled');
+    dvRow.querySelector('input').disabled = false;
+    dvRow.querySelector('.hint').textContent = 'Tick if no site visit is required';
+
+    document.getElementById(`assign-btn-${n}`).remove();
+    document.getElementById(`book-btn-${n}`).disabled = false;
+  }
+
+  function toggleDesktop(n, isDesktop) {
+    const card = document.getElementById(`card-${n}`);
+    const apptBlock = document.getElementById(`appt-block-${n}`);
+    const banner = document.getElementById(`dv-banner-${n}`);
+    const bookBtn = document.getElementById(`book-btn-${n}`);
+
+    card.classList.toggle('is-desktop', isDesktop);
+    apptBlock.classList.toggle('hidden', isDesktop);
+    banner.classList.toggle('hidden', !isDesktop);
+
+    if (bookBtn) bookBtn.disabled = isDesktop;
+
+    // Add/remove DESKTOP pill in the header
+    const hdr = card.querySelector('.card-hd');
+    let pill = hdr.querySelector('.desk-pill');
+    if (isDesktop && !pill) {
+      pill = document.createElement('span');
+      pill.className = 'desk-pill';
+      pill.textContent = 'DESKTOP';
+      // insert right before the edit button
+      const edit = hdr.querySelector('.edit');
+      hdr.insertBefore(pill, edit);
+    } else if (!isDesktop && pill) {
+      pill.remove();
+    }
+  }
+</script>
+</body>
+</html>
