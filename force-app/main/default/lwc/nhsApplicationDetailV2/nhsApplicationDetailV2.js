@@ -187,18 +187,21 @@ const FIELD_MAP = {
     agent1:             AGENT_1_FIELD,
     agent1Emailed:      AGENT_1_EMAILED_FIELD,
     agent1Confirmed:    AGENT_1_VERBALLY_CONFIRMED_FIELD,
+    agent1VerballyConfirmed: AGENT_1_VERBALLY_CONFIRMED_FIELD,
     agent1InitialPrice: AGENT_1_INITIAL_PRICE_FIELD,
     agent1TargetSale:   AGENT_1_TARGET_SALE_FIELD,
     agent1BottomLine:   AGENT_1_BOTTOM_LINE_FIELD,
     agent2:             AGENT_2_FIELD,
     agent2Emailed:      AGENT_2_EMAILED_FIELD,
     agent2Confirmed:    AGENT_2_VERBALLY_CONFIRMED_FIELD,
+    agent2VerballyConfirmed: AGENT_2_VERBALLY_CONFIRMED_FIELD,
     agent2InitialPrice: AGENT_2_INITIAL_PRICE_FIELD,
     agent2TargetSale:   AGENT_2_TARGET_SALE_FIELD,
     agent2BottomLine:   AGENT_2_BOTTOM_LINE_FIELD,
     agent3:             AGENT_3_FIELD,
     agent3Emailed:      AGENT_3_EMAILED_FIELD,
     agent3Confirmed:    AGENT_3_VERBALLY_CONFIRMED_FIELD,
+    agent3VerballyConfirmed: AGENT_3_VERBALLY_CONFIRMED_FIELD,
     agent3InitialPrice: AGENT_3_INITIAL_PRICE_FIELD,
     agent3TargetSale:   AGENT_3_TARGET_SALE_FIELD,
     agent3BottomLine:   AGENT_3_BOTTOM_LINE_FIELD,
@@ -214,9 +217,9 @@ const FIELD_MAP = {
 
 // Boolean fields that store Yes/No in formData but true/false in Salesforce
 const BOOLEAN_FIELDS = new Set([
-    'agent1Emailed', 'agent1Confirmed',
-    'agent2Emailed', 'agent2Confirmed',
-    'agent3Emailed', 'agent3Confirmed'
+    'agent1Emailed', 'agent1Confirmed', 'agent1VerballyConfirmed',
+    'agent2Emailed', 'agent2Confirmed', 'agent2VerballyConfirmed',
+    'agent3Emailed', 'agent3Confirmed', 'agent3VerballyConfirmed'
 ]);
 
 export default class NhsApplicationDetailV2 extends NavigationMixin(LightningElement) {
@@ -244,10 +247,47 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         if (data) {
             this.isLoading = false;
             this.mapDataToForm(data);
+            // Keep the Book Agents card's baBookings in sync with the just-refreshed
+            // formData.agent{n}Appt — so booking/unbooking/reassigning flows update
+            // the card instantly when the wire refires (no browser refresh needed).
+            this._syncBaBookingsFromFormData();
         } else if (error) {
             this.isLoading = false;
             console.error('Error loading record', JSON.stringify(error));
         }
+    }
+
+    // Rebuild baBookings from scratch off formData. Handles BOTH add (new
+    // appointment) AND remove (cleared appointment) — fixes ghost "Booked"
+    // badges lingering after an agent is unassigned or reassigned.
+    _syncBaBookingsFromFormData() {
+        if (!this.formData) return;
+        const next = {};
+        const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        [1, 2, 3].forEach(n => {
+            const appt = this.formData['agent' + n + 'Appt'];
+            if (appt) {
+                const d = new Date(appt);
+                const dateLabel = dayNames[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+                const h = d.getHours();
+                const m = String(d.getMinutes()).padStart(2, '0');
+                const si = h >= 8 ? h - 8 : 0;
+                const slotLabel = si < NhsApplicationDetailV2.BA_SLOT_LABELS.length
+                    ? NhsApplicationDetailV2.BA_SLOT_LABELS[si]
+                    : '';
+                // Preserve subKey from existing entry if it was set by the inline
+                // calendar picker (used for chip matching). Rebuild everything else.
+                const prev = this.baBookings[n] || {};
+                next[n] = {
+                    subKey: prev.subKey || '',
+                    dateLabel,
+                    slotLabel,
+                    time: String(h).padStart(2, '0') + ':' + m
+                };
+            }
+            // else: slot has no appointment → entry is dropped (not copied to next)
+        });
+        this.baBookings = next;
     }
 
     // ── Map Wire Data to formData ──────────────────────────────────────────────
@@ -331,6 +371,17 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get agent1Unassigned() { return !this.formData?.agent1Id; }
     get agent2Unassigned() { return !this.formData?.agent2Id; }
     get agent3Unassigned() { return !this.formData?.agent3Id; }
+
+    get agent1EmailHref() { return this.formData?.agent1Email ? 'mailto:' + this.formData.agent1Email : '#'; }
+    get agent2EmailHref() { return this.formData?.agent2Email ? 'mailto:' + this.formData.agent2Email : '#'; }
+    get agent3EmailHref() { return this.formData?.agent3Email ? 'mailto:' + this.formData.agent3Email : '#'; }
+
+    get isAgent1ConfirmedYes() { return this.formData?.agent1VerballyConfirmed === 'Yes'; }
+    get isAgent1ConfirmedNo()  { return this.formData?.agent1VerballyConfirmed !== 'Yes'; }
+    get isAgent2ConfirmedYes() { return this.formData?.agent2VerballyConfirmed === 'Yes'; }
+    get isAgent2ConfirmedNo()  { return this.formData?.agent2VerballyConfirmed !== 'Yes'; }
+    get isAgent3ConfirmedYes() { return this.formData?.agent3VerballyConfirmed === 'Yes'; }
+    get isAgent3ConfirmedNo()  { return this.formData?.agent3VerballyConfirmed !== 'Yes'; }
 
     // NHS Recommendation still requires all 3 agents assigned (it summarises across them)
     get allAgentsAssigned() {
@@ -631,11 +682,14 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get notFinalChecks() { return this.formData.nhsProcess !== 'Final Checks'; }
     get propCardClass() { return 'card' + (this.showFinalChecks ? ' card-readonly' : ''); }
 
-    // Hide the Agent Details / Valuation Figures / Recommendations card during early stages
-    // where agents haven't been booked yet — showing it confuses the end user.
+    // Agent Details / Valuation Figures / Recommendations card now appears from Stage 4
+    // onwards. On Stage 3 (Agents Booked) the same agent fields (contact, Desktop Valuation,
+    // last emailed, verbally confirmed) are folded into the Book Agents card instead —
+    // one merged card per agent, no duplication.
     get showAgentCard() {
         const p = this.formData.nhsProcess;
-        return p !== 'Application' && p !== 'Vendor Availability' && p !== 'Final Checks';
+        return p !== 'Application' && p !== 'Vendor Availability'
+            && p !== 'Agents Booked' && p !== 'Final Checks';
     }
 
     // Valuation Figures inputs + Valuation Report upload + NHS Recommendations appear only
@@ -1078,6 +1132,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track afEmailSubject = '';
     @track afEmailBody = '';
     @track afEmailTo = '';
+    @track isEditingAfBody = false; // af-email-* wizard: preview vs rich-text edit
     @track afEmailCc = '';
     @track afEmailBcc = '';
     @track afIsLoadingEmail = false;
@@ -1316,6 +1371,23 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     // ── Assign Agent 3-Step Wizard ────────────────────────────────────────────
     @track reassignSlot = null; // null = normal mode, 'agent1'|'agent2'|'agent3' = reassign specific slot
 
+    // Reason-for-change gate: on reassignment, require a reason before the swap
+    // can proceed. Snapshot the previous agent so the auto-Note can reference
+    // what was in place before.
+    @track reasonForChange = '';
+    @track reassignPrevSnapshot = null;
+    @track assigningAgentId = null; // which specific row is mid-assign (spinner)
+
+    // Decorate nearbyAgents for rendering — add per-row isBeingAssigned flag so
+    // the clicked button can show its own spinner without affecting others.
+    get nearbyAgentsForRender() {
+        const busyId = this.assigningAgentId;
+        return (this.nearbyAgents || []).map(a => ({
+            ...a,
+            isBeingAssigned: !!busyId && a.id === busyId
+        }));
+    }
+
     get isReassignMode() { return !!this.reassignSlot; }
     get reassignLabel() {
         if (this.reassignSlot === 'agent1') return 'Agent 1';
@@ -1324,8 +1396,42 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         return '';
     }
 
+    // "Actual" reassignment = slot was ALREADY assigned when the wizard opened.
+    // First-time assignment via the per-card "+ Assign Agent" button reuses
+    // the same wizard (with reassignSlot set) but there is no previous agent
+    // to justify, so we skip the Reason-for-Change gate and the audit Note.
+    get isActualReassignment() {
+        return this.isReassignMode && !!(this.reassignPrevSnapshot && this.reassignPrevSnapshot.name);
+    }
+
+    // Assign buttons in the wizard are blocked until the reason is provided
+    // (only applies to a real reassignment, not a first-time assign).
+    get reassignReasonMissing() {
+        return this.isActualReassignment && !(this.reasonForChange && this.reasonForChange.trim());
+    }
+    get reassignAssignDisabled() {
+        return this.isAssigning || this.reassignReasonMissing;
+    }
+    get reassignAssignTitle() {
+        return this.reassignReasonMissing ? 'Please provide a reason for the change first' : '';
+    }
+
+    handleReasonChange(event) {
+        this.reasonForChange = event.target.value;
+    }
+
     handleEditAgent(event) {
         const slot = event.currentTarget.dataset.slot;
+        const n = slot.slice(-1); // '1' | '2' | '3'
+        // Snapshot the outgoing agent so we can cite specifics in the Note.
+        this.reassignPrevSnapshot = {
+            slot,
+            agentNum: n,
+            name:        this.formData['agent' + n + 'Name']     || '',
+            appointment: this.formData['agent' + n + 'Appt']     || null,
+            lastEmailed: this.formData['lastAgent' + n + 'Emailed'] || null
+        };
+        this.reasonForChange = '';
         this.reassignSlot = slot;
         this.showAssignAgent = true;
         this.assignStep = 1;
@@ -1375,6 +1481,9 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                     const fullAddress = addrParts.join(', ');
                     const mapsQuery = encodeURIComponent(fullAddress || a.name);
 
+                    const showRemoveX = this.reassignSlot === 'agent2' ? !!a.isAgent2
+                                      : this.reassignSlot === 'agent3' ? !!a.isAgent3
+                                      : !!a.isAssigned;
                     return {
                         ...a,
                         fullAddress,
@@ -1384,6 +1493,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                         canAssignAgent3: !a.isAssigned && a.id !== this.formData.agent1Id,
                         assignedLabel: a.isAgent2 ? 'Agent 2' : (a.isAgent3 ? 'Agent 3' : ''),
                         rowClass: 'af-row' + (a.isAssigned ? ' af-assigned' : ''),
+                        showRemoveX,
                         phoneLink: a.phone ? 'tel:' + a.phone.replace(/\s/g, '') : '',
                         mobileLink: a.mobile ? 'tel:' + a.mobile.replace(/\s/g, '') : '',
                         mailtoLink: a.email ? 'mailto:' + a.email : '',
@@ -1409,6 +1519,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         const agentName = event.currentTarget.dataset.name;
         const slot = event.currentTarget.dataset.slot;
         this.isAssigning = true;
+        this.assigningAgentId = agentId;
         try {
             const result = await assignAgent({ opportunityId: this.recordId, agentId: agentId, agentSlot: slot });
             if (result.status === 'success') {
@@ -1429,12 +1540,16 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                         if (a.id === prevAgentId && prevAgentId !== agentId) isA3 = false;
                     }
                     const isAssigned = isA2 || isA3;
+                    const showRemoveX = this.reassignSlot === 'agent2' ? isA2
+                                      : this.reassignSlot === 'agent3' ? isA3
+                                      : isAssigned;
                     return {
                         ...a, isAgent2: isA2, isAgent3: isA3, isAssigned,
                         assignedLabel: isA2 ? 'Agent 2' : (isA3 ? 'Agent 3' : ''),
                         canAssignAgent2: !isAssigned && a.id !== this.formData.agent1Id,
                         canAssignAgent3: !isAssigned && a.id !== this.formData.agent1Id,
-                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '')
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : ''),
+                        showRemoveX
                     };
                 });
 
@@ -1449,16 +1564,29 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed', variant: 'error' }));
         }
         this.isAssigning = false;
+        this.assigningAgentId = null;
     }
 
     async handleReassignToSlot(event) {
         const agentId = event.currentTarget.dataset.id;
         const agentName = event.currentTarget.dataset.name;
         const slot = event.currentTarget.dataset.slot;
+        // Gate: reason-for-change required before the swap can proceed.
+        if (this.reassignReasonMissing) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Reason required',
+                message: 'Please provide a reason for changing ' + this.reassignLabel + ' before assigning.',
+                variant: 'warning'
+            }));
+            return;
+        }
         this.isAssigning = true;
+        this.assigningAgentId = agentId;
         try {
             const result = await assignAgent({ opportunityId: this.recordId, agentId: agentId, agentSlot: slot });
             if (result.status === 'success') {
+                // Audit trail — save Note + clear stale appointment/email fields
+                await this._logReassignmentAndReset(agentName);
                 this.formData = { ...this.formData, [slot + 'Id']: agentId, [slot + 'Name']: agentName };
 
                 // Track assignment for the reassigned slot
@@ -1473,7 +1601,10 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                         ...a,
                         isAssigned,
                         assignedLabel: isThisAgent ? this.reassignLabel : '',
-                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '')
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : ''),
+                        // In reassign mode, only the newly-reassigned agent (i.e. the
+                        // one matching the active reassignSlot) shows the [X].
+                        showRemoveX: isThisAgent
                     };
                 });
 
@@ -1489,6 +1620,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed', variant: 'error' }));
         }
         this.isAssigning = false;
+        this.assigningAgentId = null;
     }
 
     async handleUnassignAgent(event) {
@@ -1496,27 +1628,101 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         const agent = this.nearbyAgents.find(a => a.id === agentId);
         if (!agent) return;
         const slot = agent.isAgent2 ? 'agent2' : 'agent3';
+        const n = slot.slice(-1); // '2' | '3'
         this.isAssigning = true;
         try {
             const result = await assignAgent({ opportunityId: this.recordId, agentId: null, agentSlot: slot });
             if (result.status === 'success') {
-                this.formData = { ...this.formData, [slot + 'Id']: null, [slot + 'Name']: '' };
+                // Also clear the stale appointment + last-emailed on the slot —
+                // otherwise the card shows "Not assigned" + ✓ Booked ghost state
+                const apptField    = ({ '2': AGENT_2_APPT_FIELD,         '3': AGENT_3_APPT_FIELD         })[n];
+                const emailedField = ({ '2': LAST_AGENT_2_EMAILED_FIELD, '3': LAST_AGENT_3_EMAILED_FIELD })[n];
+                if (apptField || emailedField) {
+                    const fields = {};
+                    fields[ID_FIELD.fieldApiName] = this.recordId;
+                    if (apptField)    fields[apptField.fieldApiName]    = null;
+                    if (emailedField) fields[emailedField.fieldApiName] = null;
+                    try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+                }
+                this.formData = {
+                    ...this.formData,
+                    [slot + 'Id']: null,
+                    [slot + 'Name']: '',
+                    ['agent' + n + 'Appt']: null,
+                    ['lastAgent' + n + 'Emailed']: null
+                };
                 if (slot === 'agent2') this.assignedAgent2Name = '';
                 if (slot === 'agent3') this.assignedAgent3Name = '';
                 this.nearbyAgents = this.nearbyAgents.map(a => {
                     let isA2 = a.isAgent2, isA3 = a.isAgent3;
                     if (a.id === agentId) { if (slot === 'agent2') isA2 = false; if (slot === 'agent3') isA3 = false; }
                     const isAssigned = isA2 || isA3;
+                    const showRemoveX = this.reassignSlot === 'agent2' ? isA2
+                                      : this.reassignSlot === 'agent3' ? isA3
+                                      : isAssigned;
                     return { ...a, isAgent2: isA2, isAgent3: isA3, isAssigned,
                         assignedLabel: isA2 ? 'Agent 2' : (isA3 ? 'Agent 3' : ''),
                         canAssignAgent2: !isAssigned, canAssignAgent3: !isAssigned,
-                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : '') };
+                        rowClass: 'af-row' + (isAssigned ? ' af-assigned' : ''),
+                        showRemoveX };
                 });
             }
         } catch (error) {
             this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: error.body?.message || 'Failed', variant: 'error' }));
         }
         this.isAssigning = false;
+    }
+
+    // Write an audit Note + clear stale appointment/email fields on the
+    // slot that just got reassigned. Silent on failure — the reassignment
+    // itself already succeeded; stale data is a second-order concern.
+    // Skipped for first-time assignments (no previous agent to log or clear).
+    async _logReassignmentAndReset(newAgentName) {
+        const snap = this.reassignPrevSnapshot;
+        if (!snap || !snap.name) return;
+        const n = snap.agentNum;
+        const fmt = (iso) => {
+            if (!iso) return 'none';
+            try { return new Date(iso).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+            catch (e) { return String(iso); }
+        };
+        const reason = (this.reasonForChange || '').trim() || '(not provided)';
+        const noteText =
+            `Agent ${n} reassigned.\n` +
+            `• Previous: ${snap.name || '(unassigned)'}\n` +
+            `• New: ${newAgentName}\n` +
+            `• Last booked appointment: ${fmt(snap.appointment)}\n` +
+            `• Last email sent: ${fmt(snap.lastEmailed)}\n` +
+            `• Reason: ${reason}`;
+        try {
+            await saveNote({ noteText, opportunityId: this.recordId });
+        } catch (e) {
+            console.warn('Failed to save reassignment note:', e);
+        }
+        // Clear the outgoing slot's appointment + last-emailed so the new
+        // agent starts from a clean slate
+        const apptField    = ({ '1': AGENT_1_APPT_FIELD,         '2': AGENT_2_APPT_FIELD,         '3': AGENT_3_APPT_FIELD         })[n];
+        const emailedField = ({ '1': LAST_AGENT_1_EMAILED_FIELD, '2': LAST_AGENT_2_EMAILED_FIELD, '3': LAST_AGENT_3_EMAILED_FIELD })[n];
+        const fields = {};
+        fields[ID_FIELD.fieldApiName] = this.recordId;
+        if (apptField)    fields[apptField.fieldApiName]    = null;
+        if (emailedField) fields[emailedField.fieldApiName] = null;
+        try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+        // Reflect the cleared SF fields in local state immediately — the wire
+        // refresh is async and loadBaSlots() runs right after this, reading
+        // formData.agent{n}Appt. If we do not clear locally, baBookings[n]
+        // gets repopulated from the stale cached appointment.
+        this.formData = {
+            ...this.formData,
+            ['agent' + n + 'Appt']:     null,
+            ['lastAgent' + n + 'Emailed']: null
+        };
+        const nextBookings = { ...this.baBookings };
+        delete nextBookings[n];
+        this.baBookings = nextBookings;
+        // Clear the reason + snapshot so a subsequent reassignment starts fresh
+        this.reasonForChange = '';
+        this.reassignPrevSnapshot = null;
     }
 
     // ── Step 3: Booking Calendar (reuses baAvailSlots data) ──
@@ -1640,6 +1846,7 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     // ── Step 4: Load email template ──
     async loadAfEmailTemplate() {
         this.afIsLoadingEmail = true;
+        this.isEditingAfBody = false;
         const agentNum = this.afEmailAgentNum;
         this.afEmailTo = this.formData['agent' + agentNum + 'Email'] || '';
         const templateId = NhsApplicationDetailV2.AGENT_TEMPLATE_IDS[agentNum] || null;
@@ -1659,6 +1866,12 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
 
     handleAfEmailToChange(event) { this.afEmailTo = event.target.value; }
     handleAfEmailSubjectChange(event) { this.afEmailSubject = event.target.value; }
+    handleAfEmailBodyChange(event) { this.afEmailBody = event.target.value; }
+    handleToggleEditAfBody() { this.isEditingAfBody = !this.isEditingAfBody; }
+
+    get editAfBodyToggleLabel() {
+        return this.isEditingAfBody ? '✓ Done Editing' : '✎ Edit';
+    }
     handleAfEmailCcChange(event) { this.afEmailCc = event.target.value; }
     handleAfEmailBccChange(event) { this.afEmailBcc = event.target.value; }
     handleAfBackToStep3() { this.assignStep = 3; }
@@ -1722,6 +1935,18 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
             if (!existing.includes(email.toLowerCase())) this.afEmailCc += ', ' + email;
         } else {
             this.afEmailCc = email;
+        }
+        this.showAfAddressBook = false;
+    }
+
+    handleAfSelectContactBcc(event) {
+        const email = event.currentTarget.dataset.email;
+        if (!email) return;
+        if (this.afEmailBcc) {
+            const existing = this.afEmailBcc.split(',').map(e => e.trim().toLowerCase());
+            if (!existing.includes(email.toLowerCase())) this.afEmailBcc += ', ' + email;
+        } else {
+            this.afEmailBcc = email;
         }
         this.showAfAddressBook = false;
     }
@@ -2071,11 +2296,20 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     @track showEmailAgent = false;
     @track emailAgentNum = null;
     @track emailAgentTo = '';
+    @track emailCc = '';
+    @track emailBcc = '';
     @track emailSubject = '';
     @track emailBody = '';
     @track emailTemplateId = null;
     @track isLoadingEmail = false;
     @track isSendingEmail = false;
+    @track isEditingBody = false;   // ba-email-* modal: preview vs rich-text edit
+    @track emailMode = 'agent';     // 'agent' | 'vendor' — adapts header + send flow
+
+    // Phonebook (address book) shown from the Email Agent modal —
+    // reuses afAddressBookContacts data (same Opportunity contacts).
+    @track showBaEmailAddressBook = false;
+    @track baEmailAddressBookSearch = '';
 
     // Template IDs: 4a = Agent 1, 4b = Agent 2, 4c = Agent 3
     static AGENT_TEMPLATE_IDS = {
@@ -2083,17 +2317,33 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         2: '00XKG00000121bI2AQ', // 04b - Agent 2 Valuation Confirmation
         3: '00XKG00000121bJ2AQ'  // 04c - Agent 3 Valuation Confirmation
     };
+    // Sent to the vendor once all three agents are settled (booked or desktop)
+    static VENDOR_CONFIRMATION_TEMPLATE_ID = '00XKG00000121bN2AQ'; // 05 - Vendor Appointment Confirmation
 
     async handleEmailAgent(event) {
         const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        await this._openEmailAgentForNum(agentNum);
+    }
+
+    // Shared Email Agent modal opener — called by handleEmailAgent (card button)
+    // and by handleBaPickerBook after an Amend so the agent is notified of the
+    // time change.
+    async _openEmailAgentForNum(agentNum) {
+        if (!agentNum) return;
         const agentEmail = this.formData['agent' + agentNum + 'Email'] || '';
 
+        this.emailMode = 'agent';
         this.emailAgentNum = agentNum;
         this.emailAgentTo = agentEmail;
+        this.emailCc = '';
+        this.emailBcc = '';
         this.emailSubject = '';
         this.emailBody = '';
         this.emailTemplateId = NhsApplicationDetailV2.AGENT_TEMPLATE_IDS[agentNum] || null;
         this.showEmailAgent = true;
+        this.showBaEmailAddressBook = false;
+        this.baEmailAddressBookSearch = '';
+        this.isEditingBody = false;
         this.isLoadingEmail = true;
 
         try {
@@ -2108,12 +2358,119 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         this.isLoadingEmail = false;
     }
 
+    // Vendor-mode opener — fired when all three agents are settled and the
+    // user clicks "Send Vendor Email". Reuses the same modal with Template 05
+    // pre-rendered, with the vendor as the primary recipient.
+    async handleSendVendorEmail() {
+        this.emailMode = 'vendor';
+        this.emailAgentNum = 0; // sentinel so Last_Agent_N stamp is skipped on send
+        this.emailAgentTo = this.formData.vendorEmail || '';
+        this.emailCc = '';
+        this.emailBcc = '';
+        this.emailSubject = '';
+        this.emailBody = '';
+        this.emailTemplateId = NhsApplicationDetailV2.VENDOR_CONFIRMATION_TEMPLATE_ID;
+        this.showEmailAgent = true;
+        this.showBaEmailAddressBook = false;
+        this.baEmailAddressBookSearch = '';
+        this.isEditingBody = false;
+        this.isLoadingEmail = true;
+
+        try {
+            const rendered = await getRenderedTemplate({
+                templateId: this.emailTemplateId,
+                opportunityId: this.recordId
+            });
+            this.emailSubject = rendered.subject || 'Your Valuation Appointments — New Home Solutions';
+            this.emailBody = rendered.body || '';
+        } catch (e) {
+            this.emailSubject = 'Your Valuation Appointments — New Home Solutions';
+            this.emailBody = '';
+        }
+        this.isLoadingEmail = false;
+    }
+
     handleAppNotesChange(event) {
         this.formData = { ...this.formData, notes: event.target.value };
     }
 
     handleEmailSubjectChange(event) { this.emailSubject = event.target.value; }
     handleCloseEmailAgent() { this.showEmailAgent = false; }
+
+    // ── Email Agent modal: CC/BCC + phonebook (reuses afAddressBook data) ──
+    handleEmailToChange(event)    { this.emailAgentTo = event.target.value; }
+    handleEmailCcChange(event)    { this.emailCc = event.target.value; }
+    handleEmailBccChange(event)   { this.emailBcc = event.target.value; }
+    handleEmailBodyChange(event)  { this.emailBody = event.target.value; }
+    handleToggleEditBody()        { this.isEditingBody = !this.isEditingBody; }
+
+    get editBodyToggleLabel() {
+        return this.isEditingBody ? '✓ Done Editing' : '✎ Edit';
+    }
+
+    async handleOpenBaEmailAddressBook() {
+        this.showBaEmailAddressBook = true;
+        this.baEmailAddressBookSearch = '';
+        if (!this._afAddressBookLoaded) {
+            try {
+                const results = await getAddressBook({ opportunityId: this.recordId });
+                this.afAddressBookContacts = (results || []).map((c, i) => ({
+                    key: 'afab-' + i, role: c.role, name: c.name, email: c.email, category: c.category
+                }));
+                this._afAddressBookLoaded = true;
+            } catch (e) {
+                const contacts = [];
+                const fd = this.formData;
+                if (fd.vendorEmail)  contacts.push({ key: 'afab-v1', role: 'Vendor 1', name: fd.vendor1Name, email: fd.vendorEmail,  category: 'vendor' });
+                if (fd.vendor2Email) contacts.push({ key: 'afab-v2', role: 'Vendor 2', name: fd.vendor2Name, email: fd.vendor2Email, category: 'vendor' });
+                if (fd.agent1Email)  contacts.push({ key: 'afab-a1', role: 'Agent 1',  name: fd.agent1Name,  email: fd.agent1Email,  category: 'agent'  });
+                if (fd.agent2Email)  contacts.push({ key: 'afab-a2', role: 'Agent 2',  name: fd.agent2Name,  email: fd.agent2Email,  category: 'agent'  });
+                if (fd.agent3Email)  contacts.push({ key: 'afab-a3', role: 'Agent 3',  name: fd.agent3Name,  email: fd.agent3Email,  category: 'agent'  });
+                this.afAddressBookContacts = contacts;
+                this._afAddressBookLoaded = true;
+            }
+        }
+    }
+
+    handleCloseBaEmailAddressBook() { this.showBaEmailAddressBook = false; }
+    handleBaEmailAddressBookSearch(event) { this.baEmailAddressBookSearch = event.target.value; }
+
+    get filteredBaEmailAddressBook() {
+        const q = (this.baEmailAddressBookSearch || '').toLowerCase();
+        const all = this.afAddressBookContacts || [];
+        if (!q) return all;
+        return all.filter(c =>
+            (c.name || '').toLowerCase().includes(q) ||
+            (c.email || '').toLowerCase().includes(q) ||
+            (c.role || '').toLowerCase().includes(q)
+        );
+    }
+
+    get hasBaEmailAddressBookContacts() { return this.filteredBaEmailAddressBook.length > 0; }
+
+    _addEmailToField(fieldKey, email) {
+        if (!email) return;
+        const current = this[fieldKey] || '';
+        if (current) {
+            const existing = current.split(',').map(e => e.trim().toLowerCase());
+            if (!existing.includes(email.toLowerCase())) this[fieldKey] = current + ', ' + email;
+        } else {
+            this[fieldKey] = email;
+        }
+    }
+
+    handleBaEmailSelectContactTo(event) {
+        this._addEmailToField('emailAgentTo', event.currentTarget.dataset.email);
+        this.showBaEmailAddressBook = false;
+    }
+    handleBaEmailSelectContactCc(event) {
+        this._addEmailToField('emailCc', event.currentTarget.dataset.email);
+        this.showBaEmailAddressBook = false;
+    }
+    handleBaEmailSelectContactBcc(event) {
+        this._addEmailToField('emailBcc', event.currentTarget.dataset.email);
+        this.showBaEmailAddressBook = false;
+    }
 
     async handleSendAgentEmail() {
         if (!this.emailAgentTo || !this.emailSubject) {
@@ -2122,24 +2479,31 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         }
         this.isSendingEmail = true;
         try {
-            const result = await sendEmail({
+            const result = await sendEmailComplete({
                 opportunityId: this.recordId,
                 toAddress: this.emailAgentTo,
                 subject: this.emailSubject,
                 body: this.emailBody,
-                ccAddress: '',
-                templateId: this.emailTemplateId
+                ccAddress: this.emailCc || '',
+                bccAddress: this.emailBcc || '',
+                templateId: this.emailTemplateId,
+                contentDocumentIds: []
             });
             if (result.status === 'success') {
-                // Stamp the "Last Agent X Emailed On" field
-                const emailedField = 'Last_Agent_' + this.emailAgentNum + '_Emailed_On__c';
-                const fields = {};
-                fields['Id'] = this.recordId;
-                fields[emailedField] = new Date().toISOString();
-                try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+                // Stamp "Last Agent N Emailed On" only in agent mode
+                if (this.emailMode !== 'vendor' && this.emailAgentNum) {
+                    const emailedField = 'Last_Agent_' + this.emailAgentNum + '_Emailed_On__c';
+                    const fields = {};
+                    fields['Id'] = this.recordId;
+                    fields[emailedField] = new Date().toISOString();
+                    try { await updateRecord({ fields }); } catch (e) { /* silent */ }
+                }
 
                 this.showEmailAgent = false;
-                this.dispatchEvent(new ShowToastEvent({ title: 'Email Sent', message: 'Email sent to Agent ' + this.emailAgentNum, variant: 'success' }));
+                const toastMsg = this.emailMode === 'vendor'
+                    ? 'Vendor confirmation email sent'
+                    : 'Email sent to Agent ' + this.emailAgentNum;
+                this.dispatchEvent(new ShowToastEvent({ title: 'Email Sent', message: toastMsg, variant: 'success' }));
                 refreshApex(this.wiredRecordResult);
             } else {
                 this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));
@@ -2150,8 +2514,23 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         this.isSendingEmail = false;
     }
 
-    get emailAgentTitle() { return 'Email Agent ' + (this.emailAgentNum || ''); }
-    get emailAgentName() { return this.emailAgentNum ? (this.formData['agent' + this.emailAgentNum + 'Name'] || '') : ''; }
+    get emailAgentTitle() {
+        return this.emailMode === 'vendor'
+            ? 'Email Vendor'
+            : 'Email Agent ' + (this.emailAgentNum || '');
+    }
+    get emailAgentName() {
+        if (this.emailMode === 'vendor') {
+            return this.formData?.vendor1Name || this.formData?.applicantName || '';
+        }
+        return this.emailAgentNum ? (this.formData['agent' + this.emailAgentNum + 'Name'] || '') : '';
+    }
+    // Kick line used by the modal header ("✉ Email to Agent 2" vs "✉ Email to Vendor")
+    get emailAgentKick() {
+        return this.emailMode === 'vendor'
+            ? '✉ Email to Vendor'
+            : '✉ Email to Agent ' + (this.emailAgentNum || '');
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ── WILL REPORT UPLOAD (Valuations Ready stage)
@@ -2303,6 +2682,15 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get ba1Booked() { return !!this.baBookings[1]; }
     get ba2Booked() { return !!this.baBookings[2]; }
     get ba3Booked() { return !!this.baBookings[3]; }
+
+    // All three slots "settled" = either booked for a visit OR desktop valuation
+    get allAgentsSettled() {
+        const fd = this.formData || {};
+        const settled1 = this.ba1Booked || !!fd.agent1DesktopVal;
+        const settled2 = this.ba2Booked || !!fd.agent2DesktopVal;
+        const settled3 = this.ba3Booked || !!fd.agent3DesktopVal;
+        return settled1 && settled2 && settled3;
+    }
     get ba1DateDisplay() { return this.baBookings[1]?.dateLabel || ''; }
     get ba1TimeDisplay() { return this.baBookings[1] ? this.baBookings[1].time + ' (' + this.baBookings[1].slotLabel + ')' : ''; }
     get ba2DateDisplay() { return this.baBookings[2]?.dateLabel || ''; }
@@ -2432,6 +2820,59 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     }
 
     handleBaToggleCal() { this.baCalExpanded = !this.baCalExpanded; }
+
+    // Per-agent "Book Appointment" button — opens the 2-step lightbox
+    // (slot picker → email confirmation). On send, the modal persists the
+    // booking and sends the per-agent confirmation template.
+    @track bookApptModalOpen = false;
+    @track bookApptModalAgentSlot = null;
+    @track bookApptModalAgentNum = null;
+    @track bookApptModalAgentName = '';
+    @track bookApptModalAgentEmail = '';
+    @track bookApptModalIsAmend = false;
+    @track bookApptModalPreviousAppt = null;
+
+    handleBookAppointment(event) {
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        if (!agentNum) return;
+        this.bookApptModalAgentNum = agentNum;
+        this.bookApptModalAgentSlot = 'agent' + agentNum;
+        this.bookApptModalAgentName = this.formData['agent' + agentNum + 'Name'] || '';
+        this.bookApptModalAgentEmail = this.formData['agent' + agentNum + 'Email'] || '';
+        this.bookApptModalIsAmend = false;
+        this.bookApptModalPreviousAppt = null;
+        this.bookApptModalOpen = true;
+    }
+
+    handleBookApptModalClose() {
+        this.bookApptModalOpen = false;
+    }
+
+    async handleBookApptModalComplete(event) {
+        const { agentNum } = event.detail || {};
+        this.bookApptModalOpen = false;
+        // Stamp Last_Agent_N_Emailed_On so the card reflects the send
+        try {
+            const emailedField = ({
+                1: LAST_AGENT_1_EMAILED_FIELD,
+                2: LAST_AGENT_2_EMAILED_FIELD,
+                3: LAST_AGENT_3_EMAILED_FIELD
+            })[agentNum];
+            if (emailedField) {
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[emailedField.fieldApiName] = new Date().toISOString();
+                await updateRecord({ fields });
+            }
+        } catch (e) {
+            console.warn('Failed to stamp last-emailed', e);
+        }
+        // Refresh wire so the new booking + email timestamp flow back into formData
+        // (awaited so the card re-renders with the new slot before this handler exits)
+        if (this.wiredRecordResult) {
+            try { await refreshApex(this.wiredRecordResult); } catch (e) { /* silent */ }
+        }
+    }
     handleBaCalNavStop(event) { event.stopPropagation(); }
     handleBaCalPrev() { this.baCalOffset--; }
     handleBaCalNext() { this.baCalOffset++; }
@@ -2457,9 +2898,18 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
     get baPicker3IsDV() { return !!this.formData.agent3DesktopVal; }
 
     handleBaAmend(event) {
-        const agentNum = event.currentTarget.dataset.agent;
-        this.baAmendingAgent = agentNum;
-        this.baCalExpanded = true;
+        const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
+        if (!agentNum) return;
+        // Open the Book Appointment lightbox in Amend mode — same UX as a fresh
+        // booking plus a required Reason-for-Amendment banner at Step 1 which
+        // persists to Vendor Notes.
+        this.bookApptModalAgentNum = agentNum;
+        this.bookApptModalAgentSlot = 'agent' + agentNum;
+        this.bookApptModalAgentName = this.formData['agent' + agentNum + 'Name'] || '';
+        this.bookApptModalAgentEmail = this.formData['agent' + agentNum + 'Email'] || '';
+        this.bookApptModalIsAmend = true;
+        this.bookApptModalPreviousAppt = this.formData['agent' + agentNum + 'Appt'] || null;
+        this.bookApptModalOpen = true;
     }
 
     // Cancel booking — two-step confirmation with reason
@@ -2495,24 +2945,32 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         const reason = this.baCancelReason.trim();
 
         try {
-            // Capture slot info BEFORE deleting
+            // Capture slot info BEFORE clearing
             const booking = this.baBookings[agentNum];
             const slotInfo = booking ? booking.dateLabel + ' ' + booking.time : 'N/A';
 
-            // Clear the appointment
-            await bookAppointment({
-                opportunityId: this.recordId,
-                agentSlot: slot,
-                availabilityId: null,
-                selectedTime: null
-            });
+            // Clear the appointment + last-emailed on the slot. bookAppointment
+            // Apex does NOT handle a null availabilityId cleanly (throws on the
+            // first SOQL bind), so we persist the clear directly via updateRecord.
+            const apptField    = ({ '1': AGENT_1_APPT_FIELD,         '2': AGENT_2_APPT_FIELD,         '3': AGENT_3_APPT_FIELD         })[String(agentNum)];
+            const emailedField = ({ '1': LAST_AGENT_1_EMAILED_FIELD, '2': LAST_AGENT_2_EMAILED_FIELD, '3': LAST_AGENT_3_EMAILED_FIELD })[String(agentNum)];
+            const fields = {};
+            fields[ID_FIELD.fieldApiName] = this.recordId;
+            if (apptField)    fields[apptField.fieldApiName]    = null;
+            if (emailedField) fields[emailedField.fieldApiName] = null;
+            await updateRecord({ fields });
 
             const newBookings = { ...this.baBookings };
             delete newBookings[agentNum];
             this.baBookings = newBookings;
 
-            // Clear appointment from formData immediately for instant UI update
-            this.formData = { ...this.formData, ['agent' + agentNum + 'Appt']: null };
+            // Reflect cleared fields in formData immediately so the card flips
+            // before the wire refresh settles
+            this.formData = {
+                ...this.formData,
+                ['agent' + agentNum + 'Appt']: null,
+                ['lastAgent' + agentNum + 'Emailed']: null
+            };
 
             const noteText = 'BOOKING CANCELLED — ' + agentName + '\nSlot: ' + slotInfo + '\nReason: ' + (reason || 'No reason provided');
             await saveNote({ noteText: noteText, opportunityId: this.recordId });
@@ -2578,6 +3036,9 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
         const agentNum = parseInt(event.currentTarget.dataset.agent, 10);
         if (!this.baPickerSlotRec) return;
 
+        // Capture BEFORE clearing so we know whether to open the email modal
+        const wasAmending = !!this.baAmendingAgent;
+
         try {
             const result = await bookAppointment({
                 opportunityId: this.recordId,
@@ -2594,14 +3055,27 @@ export default class NhsApplicationDetailV2 extends NavigationMixin(LightningEle
                     time: this.baPickerTime
                 }};
                 this.baAmendingAgent = null;
-                this.dispatchEvent(new ShowToastEvent({ title: 'Booked', message: 'Agent ' + agentNum + ' booked at ' + this.baPickerTime + ' on ' + this.baPickerDayLabel, variant: 'success' }));
-                refreshApex(this.wiredRecordResult);
+                this.dispatchEvent(new ShowToastEvent({
+                    title: wasAmending ? 'Booking Amended' : 'Booked',
+                    message: 'Agent ' + agentNum + (wasAmending ? ' moved to ' : ' booked at ') + this.baPickerTime + ' on ' + this.baPickerDayLabel,
+                    variant: 'success'
+                }));
+                // Await wire refresh so the rendered email template picks up the
+                // new Appointment_Date_and_Time_agent{N}__c merge field value
+                try { await refreshApex(this.wiredRecordResult); } catch (e) { /* silent */ }
 
                 // Keep picker open so user can book more agents at same slot
-                // Auto-collapse calendar if all 3 booked
                 if (Object.keys(this.baBookings).length === 3) {
                     this.showBaPicker = false;
                     this.baCalExpanded = false;
+                }
+
+                // Amend flow: auto-open the Email Agent modal so the agent is
+                // notified of the time change. Uses the per-agent booking
+                // confirmation template — the merge field will render the new
+                // time. User can add CC/BCC, edit the body, and send (or discard).
+                if (wasAmending) {
+                    await this._openEmailAgentForNum(agentNum);
                 }
             } else {
                 this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: result.message, variant: 'error' }));

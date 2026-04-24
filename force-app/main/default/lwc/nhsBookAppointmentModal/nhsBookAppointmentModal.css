@@ -1,0 +1,585 @@
+:host {
+    --nhs-dk: #4A6B5E;
+    --nhs-mid: #6B9080;
+    --nhs-pale: #EAF4EF;
+    --nhs-border: #C5DCCC;
+    --nhs-text: #1C2B24;
+    --nhs-text-muted: #6B7280;
+    --navy: #0D1E4A;
+    --font-sans: 'Aptos', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.bam-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13, 30, 74, 0.55);
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    font-family: var(--font-sans);
+    animation: bam-fade-in 0.15s ease-out;
+}
+
+@keyframes bam-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.bam-modal {
+    background: white;
+    width: 960px; max-width: 100%;
+    max-height: calc(100vh - 40px);
+    border-radius: 14px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: bam-pop-in 0.2s ease-out;
+}
+
+@keyframes bam-pop-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* Header */
+.bam-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, var(--nhs-dk), var(--nhs-mid));
+    color: white;
+}
+.bam-title {
+    margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.2px;
+}
+.bam-subtitle {
+    font-size: 12px; opacity: 0.9; margin-top: 2px;
+}
+.bam-step-pill {
+    margin-left: auto;
+    padding: 4px 12px; border-radius: 99px;
+    background: rgba(255, 255, 255, 0.18);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+.bam-close {
+    background: rgba(255, 255, 255, 0.18);
+    border: 0; color: white;
+    width: 28px; height: 28px; border-radius: 6px;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.bam-close:hover { background: rgba(255, 255, 255, 0.32); }
+
+/* Body */
+.bam-body {
+    padding: 18px 20px;
+    overflow-y: auto;
+    flex: 1;
+    color: var(--nhs-text);
+    background:
+        radial-gradient(1200px 320px at 0% 0%, rgba(107, 144, 128, 0.10), transparent 60%),
+        radial-gradient(900px 300px at 100% 100%, rgba(201, 213, 203, 0.35), transparent 55%),
+        linear-gradient(180deg, #F7FBF8 0%, #EAF4EF 100%);
+}
+
+/* Amend Booking — Previous Appointment strip (sits above the Reason banner) */
+.bam-prev-appt {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    background: white;
+    border: 1px solid var(--nhs-border);
+    border-left: 4px solid var(--nhs-dk);
+    border-radius: 6px;
+    font-size: 13px; color: var(--nhs-text);
+}
+.bam-prev-appt::before {
+    content: '🕐'; margin-right: 4px;
+}
+.bam-prev-appt-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--nhs-text-muted);
+}
+.bam-prev-appt-value {
+    font-weight: 700; color: var(--nhs-dk);
+    letter-spacing: 0.2px;
+}
+
+/* Amend Booking — Reason-for-Amendment banner */
+.bam-amend-banner {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #FFF8E7 0%, #FFFAEE 100%);
+    border: 1.5px solid #E5C07B;
+    border-left: 4px solid #D97706;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.12);
+}
+.bam-amend-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+}
+.bam-amend-title {
+    font-size: 13px; font-weight: 700; color: #78350F;
+    letter-spacing: 0.2px;
+}
+.bam-amend-required {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+    color: white; background: #D97706;
+    padding: 3px 8px; border-radius: 99px;
+}
+.bam-amend-input {
+    width: 100%; min-height: 64px; resize: vertical;
+    padding: 8px 10px;
+    border: 1px solid #E5C07B; border-radius: 6px;
+    font-family: var(--font-sans); font-size: 13px; color: var(--nhs-text);
+    background: white;
+    outline: none; box-sizing: border-box;
+}
+.bam-amend-input:focus {
+    border-color: #D97706;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.15);
+}
+.bam-amend-hint {
+    margin-top: 6px;
+    font-size: 11px; color: #8C6B1F; line-height: 1.45;
+}
+
+/* Toolbar — instruction on the left, calendar toggle icon on the right */
+.bam-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+}
+.bam-instruction {
+    margin: 0; flex: 1;
+    padding: 10px 14px;
+    font-size: 13px; color: var(--nhs-dk);
+    background: white;
+    border: 1px solid var(--nhs-border); border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(74, 107, 94, 0.06);
+}
+.bam-instruction::before {
+    content: '📋'; margin-right: 8px;
+}
+.bam-cal-toggle {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: white;
+    border: 1px solid var(--nhs-border); border-radius: 8px;
+    cursor: pointer;
+    color: var(--nhs-dk);
+    transition: all 0.15s;
+    box-shadow: 0 1px 2px rgba(74, 107, 94, 0.06);
+}
+.bam-cal-toggle:hover {
+    background: var(--nhs-pale);
+    border-color: var(--nhs-dk);
+}
+.bam-cal-toggle-open {
+    background: var(--nhs-dk); border-color: var(--nhs-dk);
+}
+.bam-cal-toggle-open lightning-icon { --slds-c-icon-color-foreground-default: white; }
+.bam-cal-toggle lightning-icon { --slds-c-icon-color-foreground-default: var(--nhs-dk); }
+
+/* Mini calendar panel */
+.bam-cal-panel {
+    background: white;
+    border: 1px solid var(--nhs-border); border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(74, 107, 94, 0.10);
+}
+.bam-cal-head {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px;
+}
+.bam-cal-nav {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    background: white;
+    border: 1px solid var(--nhs-border); border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px; color: var(--nhs-dk); line-height: 1;
+}
+.bam-cal-nav:hover { background: var(--nhs-pale); }
+.bam-cal-month {
+    font-size: 13px; font-weight: 700; color: var(--nhs-dk);
+    flex: 1; text-align: center;
+}
+.bam-cal-clear {
+    background: var(--nhs-pale); border: 1px solid var(--nhs-border);
+    color: var(--nhs-dk);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 99px;
+    cursor: pointer;
+    margin-left: auto;
+}
+.bam-cal-clear:hover { background: var(--nhs-dk); color: white; border-color: var(--nhs-dk); }
+.bam-cal-dow {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+    font-size: 10px; font-weight: 700;
+    color: var(--nhs-text-muted);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    text-align: center;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--nhs-border);
+    margin-bottom: 4px;
+}
+.bam-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+}
+.bam-cal-day {
+    position: relative;
+    height: 32px;
+    background: transparent;
+    border: 1px solid transparent; border-radius: 6px;
+    font-size: 12px; font-weight: 500;
+    color: var(--nhs-text);
+    cursor: pointer; font-family: var(--font-sans);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 0.12s;
+}
+.bam-cal-day:disabled { cursor: default; color: #CBD5CE; }
+.bam-cal-day-other { opacity: 0.35; }
+.bam-cal-day-has {
+    color: var(--nhs-dk); font-weight: 700;
+    background: var(--nhs-pale); border-color: var(--nhs-border);
+}
+.bam-cal-day-has:hover:not(:disabled) {
+    background: var(--nhs-mid); color: white; border-color: var(--nhs-dk);
+    transform: translateY(-1px);
+}
+.bam-cal-day-selected {
+    background: var(--nhs-dk) !important; color: white !important;
+    border-color: var(--nhs-dk) !important;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.35);
+}
+.bam-cal-daynum { line-height: 1; }
+.bam-cal-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--nhs-dk);
+    margin-top: 2px;
+}
+.bam-cal-day-selected .bam-cal-dot { background: white; }
+.bam-cal-legend {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--nhs-text-muted);
+    padding-top: 8px; margin-top: 6px;
+    border-top: 1px dashed var(--nhs-border);
+}
+.bam-cal-dot-demo {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--nhs-dk);
+    display: inline-block;
+}
+
+/* Filter pill — shown when a date is picked */
+.bam-filter-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(90deg, var(--nhs-dk) 0%, var(--nhs-mid) 100%);
+    color: white; font-size: 12px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.28);
+}
+.bam-filter-pill strong { font-weight: 700; }
+.bam-filter-clear {
+    background: rgba(255, 255, 255, 0.25);
+    border: 0; color: white;
+    width: 18px; height: 18px; border-radius: 50%;
+    cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+}
+.bam-filter-clear:hover { background: rgba(255, 255, 255, 0.45); }
+
+.bam-loading, .bam-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--nhs-text-muted);
+    font-size: 13px;
+}
+.bam-empty {
+    background: #FFF8E7; border: 1px dashed #E5C07B; border-radius: 8px;
+    color: #78350F;
+}
+
+.bam-spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--nhs-border);
+    border-top-color: var(--nhs-dk);
+    border-radius: 50%;
+    animation: bam-spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+@keyframes bam-spin { to { transform: rotate(360deg); } }
+
+/* Slot cards — elevated on the tinted body background */
+.bam-slots {
+    display: flex; flex-direction: column; gap: 12px;
+}
+.bam-day-card {
+    border: 1px solid var(--nhs-border);
+    border-left: 4px solid var(--nhs-mid);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: white;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.08);
+    transition: all 0.15s;
+}
+.bam-day-card:hover {
+    box-shadow: 0 4px 12px rgba(74, 107, 94, 0.14);
+    border-left-color: var(--nhs-dk);
+}
+.bam-day-card-selected {
+    border-color: var(--nhs-dk);
+    border-left-color: var(--nhs-dk);
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--nhs-pale) 100%);
+    box-shadow: 0 4px 14px rgba(74, 107, 94, 0.18);
+}
+/* Date header — bold sage chip sitting at the top of each day card */
+.bam-day-head {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    background: linear-gradient(90deg, var(--nhs-dk) 0%, var(--nhs-mid) 100%);
+    border-radius: 99px;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.28);
+}
+.bam-day-name {
+    font-size: 13px; font-weight: 800; color: white;
+    letter-spacing: 0.3px;
+}
+.bam-day-date {
+    font-size: 12px; font-weight: 700; color: white;
+    opacity: 0.92;
+    padding-left: 10px;
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+}
+/* Morning / Afternoon sections — tinted strips to differentiate */
+.bam-period {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+.bam-period-am {
+    background: linear-gradient(180deg, #FFF8E7 0%, #FFFAEE 100%);
+    border: 1px solid #F1E0B8;
+}
+.bam-period-pm {
+    background: linear-gradient(180deg, #E8F0FB 0%, #EFF5FC 100%);
+    border: 1px solid #C7DAEE;
+}
+.bam-period-label {
+    font-size: 10px; text-transform: uppercase; font-weight: 700;
+    letter-spacing: 0.5px;
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-bottom: 6px;
+}
+.bam-period-am .bam-period-label { color: #8C6B1F; }
+.bam-period-pm .bam-period-label { color: #2C5581; }
+.bam-period-am .bam-period-label::before { content: '☀'; font-size: 12px; }
+.bam-period-pm .bam-period-label::before { content: '🌤'; font-size: 12px; }
+
+.bam-time-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 6px;
+}
+.bam-time {
+    background: white;
+    border: 1px solid var(--nhs-border);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    color: var(--nhs-text);
+    font-family: var(--font-sans);
+    transition: all 0.12s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.bam-period-am .bam-time { border-color: #E5CE93; }
+.bam-period-pm .bam-time { border-color: #B9CEE4; }
+.bam-time:hover {
+    background: var(--nhs-pale);
+    border-color: var(--nhs-dk);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(74, 107, 94, 0.15);
+}
+.bam-time-selected {
+    background: var(--nhs-dk);
+    color: white;
+    border-color: var(--nhs-dk);
+    box-shadow: 0 3px 8px rgba(74, 107, 94, 0.40);
+    transform: translateY(-1px);
+}
+.bam-period-am .bam-time-selected,
+.bam-period-pm .bam-time-selected {
+    border-color: var(--nhs-dk);
+}
+
+/* Step 2 — email form
+   All label columns are 70px so TO / CC / BCC / SUBJECT line up vertically.
+   All rows reserve a trailing 34px slot (phonebook button width) so inputs
+   end at the same right edge whether or not a button is present. */
+.bam-email-form { display: flex; flex-direction: column; gap: 10px; }
+.bam-field-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 34px;
+    align-items: center; gap: 8px;
+}
+.bam-field-label {
+    font-size: 11px; text-transform: uppercase; font-weight: 700;
+    color: var(--nhs-text-muted); letter-spacing: 0.4px;
+}
+.bam-field-input {
+    padding: 8px 10px; font-size: 13px;
+    border: 1px solid var(--nhs-border); border-radius: 6px;
+    font-family: var(--font-sans); color: var(--nhs-text);
+    background: white;
+    width: 100%; box-sizing: border-box;
+}
+.bam-field-input:focus {
+    outline: 2px solid var(--nhs-dk); outline-offset: -1px;
+    border-color: var(--nhs-dk);
+}
+.bam-preview-label {
+    font-size: 11px; text-transform: uppercase; font-weight: 700;
+    color: var(--nhs-text-muted); letter-spacing: 0.4px;
+    margin-top: 6px;
+}
+.bam-email-preview {
+    background: #FAFBFC;
+    border: 1px solid var(--nhs-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px; line-height: 1.5;
+    max-height: 320px; overflow-y: auto;
+    color: var(--nhs-text);
+}
+
+/* To row keeps the same 3-column grid; the phonebook button fills the trailing slot. */
+.bam-ab-trigger {
+    background: var(--nhs-pale);
+    border: 1px solid var(--nhs-border);
+    color: var(--nhs-dk);
+    width: 34px; height: 32px; border-radius: 6px;
+    cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.bam-ab-trigger svg { width: 16px; height: 16px; }
+.bam-ab-trigger:hover { background: var(--nhs-dk); color: white; border-color: var(--nhs-dk); }
+
+/* CC/BCC split row — right-pad matches phonebook column (34px) + base gap (8px)
+   so both halves' right edge lines up with the TO/SUBJECT inputs above/below. */
+.bam-field-row-split {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding-right: 42px;
+}
+.bam-field-half {
+    grid-template-columns: 70px 1fr !important;
+    gap: 8px;
+}
+
+/* Rich-text editor (edit mode) */
+.bam-email-editor {
+    border: 1.5px solid var(--nhs-dk);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(74, 107, 94, 0.08);
+}
+
+/* Address Book overlay — nested above the modal */
+.bam-ab-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13, 30, 74, 0.35);
+    z-index: 10001;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 80px;
+}
+.bam-ab-panel {
+    background: white; border-radius: 10px;
+    width: 520px; max-width: 90%; max-height: 72vh;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+.bam-ab-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--nhs-pale) 0%, #F4F9F6 100%);
+    border-bottom: 1px solid var(--nhs-border);
+}
+.bam-ab-header h4 { font-size: 14px; font-weight: 700; color: var(--nhs-dk); margin: 0; }
+.bam-ab-close {
+    background: none; border: none; font-size: 20px; color: var(--nhs-text-muted);
+    cursor: pointer; line-height: 1; padding: 0 4px;
+}
+.bam-ab-close:hover { color: var(--nhs-dk); }
+.bam-ab-search { padding: 10px 14px; border-bottom: 1px solid #E5E7EB; }
+.bam-ab-search .bam-field-input { width: 100%; }
+.bam-ab-list { overflow-y: auto; flex: 1; padding: 4px 0; }
+.bam-ab-entry {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #F3F5F2;
+    transition: background 0.12s;
+}
+.bam-ab-entry:last-child { border-bottom: none; }
+.bam-ab-entry:hover { background: #F9FBFA; }
+.bam-ab-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bam-ab-name { font-size: 13px; font-weight: 700; color: var(--nhs-text); }
+.bam-ab-role {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    color: var(--nhs-dk); background: var(--nhs-pale);
+    padding: 2px 7px; border-radius: 99px; letter-spacing: 0.3px;
+}
+.bam-ab-email { font-size: 12px; color: var(--nhs-text-muted); }
+.bam-ab-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.bam-ab-add-btn {
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1.5px solid; transition: all 0.15s;
+    font-family: var(--font-sans);
+}
+.bam-ab-add-to  { background: var(--nhs-dk); border-color: var(--nhs-dk); color: white; }
+.bam-ab-add-to:hover  { background: #3D5A4F; border-color: #3D5A4F; }
+.bam-ab-add-cc  { background: white; border-color: var(--nhs-border); color: var(--nhs-text-mid); }
+.bam-ab-add-cc:hover  { background: var(--nhs-pale); border-color: var(--nhs-dk); color: var(--nhs-dk); }
+.bam-ab-add-bcc { background: white; border-color: var(--nhs-border); color: var(--nhs-text-muted); }
+.bam-ab-add-bcc:hover { background: #F3F4F6; border-color: var(--nhs-text-mid); color: var(--nhs-text); }
+.bam-ab-empty { padding: 28px 14px; text-align: center; font-size: 13px; color: var(--nhs-text-muted); }
+
+/* Footer */
+.bam-footer {
+    display: flex; gap: 8px; justify-content: flex-end;
+    padding: 12px 20px;
+    border-top: 1px solid var(--nhs-border);
+    background: #FAFBFC;
+}
+.bam-btn {
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: var(--font-sans);
+    transition: all 0.15s;
+    border: 1px solid transparent;
+}
+.bam-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.bam-btn-ghost {
+    background: white; color: var(--nhs-text-muted);
+    border-color: var(--nhs-border);
+}
+.bam-btn-ghost:hover:not(:disabled) {
+    background: var(--nhs-pale); color: var(--nhs-dk); border-color: var(--nhs-dk);
+}
+.bam-btn-primary {
+    background: var(--nhs-dk); color: white; border-color: var(--nhs-dk);
+}
+.bam-btn-primary:hover:not(:disabled) { filter: brightness(0.94); }

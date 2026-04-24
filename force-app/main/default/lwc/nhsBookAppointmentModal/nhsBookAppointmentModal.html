@@ -1,0 +1,242 @@
+<template>
+  <div class="bam-overlay" onclick={handleOverlayClick}>
+    <div class="bam-modal" onclick={handleModalClick}>
+
+      <!-- Header -->
+      <div class="bam-header">
+        <div>
+          <h3 class="bam-title">{modalTitle}</h3>
+          <div class="bam-subtitle">{subtitle}</div>
+        </div>
+        <div class="bam-step-pill">{stepIndicator}</div>
+        <button class="bam-close" onclick={handleClose} title="Close">&times;</button>
+      </div>
+
+      <!-- Step 1 — Pick a slot from vendor availability -->
+      <template if:true={step1Active}>
+        <div class="bam-body">
+          <!-- Reason-for-Amendment gate (visible only when isAmend) -->
+          <template if:true={hasPreviousAppt}>
+            <div class="bam-prev-appt">
+              <span class="bam-prev-appt-label">Previous Appointment:</span>
+              <span class="bam-prev-appt-value">{previousApptDisplay}</span>
+            </div>
+          </template>
+          <template if:true={isAmend}>
+            <div class="bam-amend-banner">
+              <div class="bam-amend-head">
+                <span class="bam-amend-title">Reason for amending the appointment</span>
+                <span class="bam-amend-required">REQUIRED</span>
+              </div>
+              <textarea
+                  class="bam-amend-input"
+                  placeholder="Why is this appointment being changed? e.g. vendor requested a different time, agent unavailable, traffic issue..."
+                  value={amendReason}
+                  oninput={handleAmendReasonChange}></textarea>
+              <div class="bam-amend-hint">
+                A note will be auto-added to this application capturing the previous appointment, the new slot, and this reason — whether or not you send the confirmation email on Step 2.
+              </div>
+            </div>
+          </template>
+
+          <div class="bam-toolbar">
+            <p class="bam-instruction">Choose an available date and time from the vendor's diary.</p>
+            <button class={calendarIconCls} onclick={handleToggleCalendar} title="Jump to date">
+              <lightning-icon icon-name="utility:event" size="x-small"></lightning-icon>
+            </button>
+          </div>
+
+          <template if:true={calendarOpen}>
+            <div class="bam-cal-panel">
+              <div class="bam-cal-head">
+                <button class="bam-cal-nav" onclick={handleCalPrev} title="Previous month">‹</button>
+                <span class="bam-cal-month">{calMonthLabel}</span>
+                <button class="bam-cal-nav" onclick={handleCalNext} title="Next month">›</button>
+                <template if:true={filterActive}>
+                  <button class="bam-cal-clear" onclick={handleClearFilter} title="Clear filter">× Show all</button>
+                </template>
+              </div>
+              <div class="bam-cal-dow">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+              <div class="bam-cal-grid">
+                <template for:each={calDays} for:item="day">
+                  <button key={day.key} class={day.cls} data-iso={day.iso} disabled={day.disabled} onclick={handleCalDayClick}>
+                    <span class="bam-cal-daynum">{day.day}</span>
+                    <template if:true={day.hasSlots}>
+                      <span class="bam-cal-dot"></span>
+                    </template>
+                  </button>
+                </template>
+              </div>
+              <div class="bam-cal-legend">
+                <span class="bam-cal-dot-demo"></span> Available
+              </div>
+            </div>
+          </template>
+
+          <template if:true={filterActive}>
+            <div class="bam-filter-pill">
+              Showing: <strong>{filterLabel}</strong>
+              <button class="bam-filter-clear" onclick={handleClearFilter}>×</button>
+            </div>
+          </template>
+
+          <template if:true={loadingSlots}>
+            <div class="bam-loading">
+              <span class="bam-spinner"></span> Loading vendor availability...
+            </div>
+          </template>
+
+          <template if:true={noSlots}>
+            <div class="bam-empty">
+              The vendor has not submitted any availability yet. Ask them to complete Stage 2 (Vendor Availability) before booking an agent.
+            </div>
+          </template>
+
+          <template if:true={noFilteredSlots}>
+            <div class="bam-empty">
+              No availability on the selected date. Pick another date or clear the filter.
+            </div>
+          </template>
+
+          <template if:true={hasSlots}>
+            <div class="bam-slots">
+              <template for:each={slotsForRender} for:item="slot">
+                <div key={slot.id} class={slot.cardCls}>
+                  <div class="bam-day-head">
+                    <span class="bam-day-name">{slot.dayName}</span>
+                    <span class="bam-day-date">{slot.dateFormatted}</span>
+                  </div>
+                  <template if:true={slot.am}>
+                    <div class="bam-period bam-period-am">
+                      <span class="bam-period-label">Morning</span>
+                      <div class="bam-time-grid">
+                        <template for:each={slot.amTimes} for:item="t">
+                          <button key={t.key} class={t.cls} data-slot={t.slotId} data-time={t.time} onclick={handleTimeClick}>{t.label}</button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                  <template if:true={slot.pm}>
+                    <div class="bam-period bam-period-pm">
+                      <span class="bam-period-label">Afternoon</span>
+                      <div class="bam-time-grid">
+                        <template for:each={slot.pmTimes} for:item="t">
+                          <button key={t.key} class={t.cls} data-slot={t.slotId} data-time={t.time} onclick={handleTimeClick}>{t.label}</button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="bam-footer">
+          <button class="bam-btn bam-btn-ghost" onclick={handleClose}>Cancel</button>
+          <button class="bam-btn bam-btn-primary" onclick={handleNext} disabled={nextDisabled}>
+            <template if:true={sending}>Saving...</template>
+            <template if:false={sending}>Next — Preview Email →</template>
+          </button>
+        </div>
+      </template>
+
+      <!-- Step 2 — Preview and send booking confirmation email -->
+      <template if:true={step2Active}>
+        <div class="bam-body">
+          <template if:true={loadingEmail}>
+            <div class="bam-loading">
+              <span class="bam-spinner"></span> Loading email template...
+            </div>
+          </template>
+
+          <template if:false={loadingEmail}>
+            <div class="bam-email-form">
+              <div class="bam-field-row bam-field-row-to">
+                <label class="bam-field-label">To</label>
+                <input type="email" class="bam-field-input" value={emailTo} onchange={handleToChange}/>
+                <button class="bam-ab-trigger" onclick={handleOpenAddressBook} title="Address Book">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </button>
+              </div>
+              <div class="bam-field-row-split">
+                <div class="bam-field-row bam-field-half">
+                  <label class="bam-field-label">CC</label>
+                  <input type="text" class="bam-field-input" value={emailCc} onchange={handleCcChange} placeholder="cc@example.com (optional)"/>
+                </div>
+                <div class="bam-field-row bam-field-half">
+                  <label class="bam-field-label">BCC</label>
+                  <input type="text" class="bam-field-input" value={emailBcc} onchange={handleBccChange} placeholder="bcc@example.com (optional)"/>
+                </div>
+              </div>
+              <div class="bam-field-row">
+                <label class="bam-field-label">Subject</label>
+                <input type="text" class="bam-field-input" value={emailSubject} onchange={handleSubjectChange}/>
+              </div>
+              <div class="bam-preview-label">Email Body</div>
+              <template if:false={isEditingBody}>
+                <div class="bam-email-preview">
+                  <lightning-formatted-rich-text value={emailBody}></lightning-formatted-rich-text>
+                </div>
+              </template>
+              <template if:true={isEditingBody}>
+                <div class="bam-email-editor">
+                  <lightning-input-rich-text value={emailBody} onchange={handleBodyChange} placeholder="Compose your email..." label="Email body"></lightning-input-rich-text>
+                </div>
+              </template>
+            </div>
+
+            <!-- Address Book overlay — contacts from this Opportunity -->
+            <template if:true={showAddressBook}>
+              <div class="bam-ab-overlay" onclick={handleCloseAddressBook}>
+                <div class="bam-ab-panel" onclick={handleModalClick}>
+                  <div class="bam-ab-header">
+                    <h4>📇 Address Book</h4>
+                    <button class="bam-ab-close" onclick={handleCloseAddressBook}>&times;</button>
+                  </div>
+                  <div class="bam-ab-search">
+                    <input type="text" class="bam-field-input" placeholder="Search by name, email, or role..." value={addressBookSearch} oninput={handleAddressBookSearch}/>
+                  </div>
+                  <div class="bam-ab-list">
+                    <template if:true={hasAddressBookContacts}>
+                      <template for:each={filteredAddressBook} for:item="contact">
+                        <div key={contact.key} class="bam-ab-entry">
+                          <div class="bam-ab-info">
+                            <span class="bam-ab-name">{contact.name}</span>
+                            <span class="bam-ab-role">{contact.role}</span>
+                            <span class="bam-ab-email">{contact.email}</span>
+                          </div>
+                          <div class="bam-ab-btns">
+                            <button class="bam-ab-add-btn bam-ab-add-to"  data-email={contact.email} onclick={handleSelectContactTo}>To</button>
+                            <button class="bam-ab-add-btn bam-ab-add-cc"  data-email={contact.email} onclick={handleSelectContactCc}>CC</button>
+                            <button class="bam-ab-add-btn bam-ab-add-bcc" data-email={contact.email} onclick={handleSelectContactBcc}>BCC</button>
+                          </div>
+                        </div>
+                      </template>
+                    </template>
+                    <template if:false={hasAddressBookContacts}>
+                      <div class="bam-ab-empty">No contacts match your search.</div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </template>
+        </div>
+
+        <div class="bam-footer">
+          <button class="bam-btn bam-btn-ghost" onclick={handleBack}>← Back to slot</button>
+          <button class="bam-btn bam-btn-ghost" onclick={handleClose}>Discard</button>
+          <button class="bam-btn bam-btn-ghost" onclick={handleToggleEditBody}>{editBodyToggleLabel}</button>
+          <button class="bam-btn bam-btn-primary" onclick={handleSend} disabled={sendDisabled}>
+            <template if:true={sending}>Sending...</template>
+            <template if:false={sending}>Send ✉️</template>
+          </button>
+        </div>
+      </template>
+
+    </div>
+  </div>
+</template>

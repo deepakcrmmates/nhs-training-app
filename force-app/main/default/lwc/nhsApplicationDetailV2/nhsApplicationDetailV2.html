@@ -430,7 +430,6 @@
           <div class="card-header">
             <h2 class="card-title"><span class="card-title-dot"></span>Book Agents</h2>
             <span class="ba-count">{bookingCountLabel}</span>
-            <button class="btn-assign-agent-sm" onclick={handleOpenAssignAgent}>+ Assign Agent</button>
           </div>
 
           <!-- 3 Agent Status Cards -->
@@ -442,12 +441,19 @@
                   <span class="ba-num ba-num-1">1</span>
                   <div>
                     <div class="ba-agent-label">Agent 1</div>
-                    <div class="ba-agent-name">{formData.agent1Name}</div>
+                    <template if:false={agent1Unassigned}>
+                      <div class="ba-agent-name">{formData.agent1Name}</div>
+                    </template>
+                    <template if:true={agent1Unassigned}>
+                      <div class="ba-agent-name ba-agent-name-empty">Not assigned</div>
+                    </template>
                   </div>
                 </div>
-                <button class="ba-edit-btn" data-slot="agent1" onclick={handleEditAgent} title="Reassign Agent 1">
-                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
-                </button>
+                <template if:false={agent1Unassigned}>
+                  <button class="ba-edit-btn" data-slot="agent1" onclick={handleEditAgent} title="Reassign Agent 1">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
+                </template>
                 <template if:true={formData.agent1DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -457,47 +463,95 @@
                   </template>
                 </template>
               </div>
-              <template if:true={formData.agent1DesktopVal}>
-                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+
+              <!-- Unassigned: prominent Assign Agent CTA, disabled Book button -->
+              <template if:true={agent1Unassigned}>
+                <button class="ba-assign-cta ba-assign-cta-1" data-slot="agent1" onclick={handleEditAgent}>
+                  + Assign Agent
+                </button>
+                <button class="ba-book-btn" disabled>+ Book Appointment</button>
               </template>
-              <template if:false={formData.agent1DesktopVal}>
-              <div class="ba-appt-box ba-appt-1">
-                <template if:true={ba1Booked}>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba1DateDisplay}</div></div></div>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba1TimeDisplay}</div></div></div>
-                </template>
-                <template if:false={ba1Booked}>
-                  <div class="ba-appt-empty">No appointment booked yet.</div>
-                </template>
-              </div>
-              <template if:true={ba1Booked}>
-                <div class="ba-action-btns">
-                  <button class="ba-amend-btn" data-agent="1" onclick={handleBaAmend}>✏️ Amend Booking</button>
-                  <button class="ba-cancel-btn" data-agent="1" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+
+              <!-- Assigned: full merged card -->
+              <template if:false={agent1Unassigned}>
+                <!-- Contact -->
+                <div class="ba-contact">
+                  <a href={agent1EmailHref} class="ba-contact-link">
+                    <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                    <span>{formData.agent1Email}</span>
+                  </a>
+                  <span class="ba-contact-phone">
+                    <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                    {formData.agent1Phone}
+                  </span>
                 </div>
-                <button class="ba-email-btn ba-email-1" data-agent="1" onclick={handleEmailAgent}>✉️ Email Agent 1</button>
-                <template if:true={showBaCancel1}>
-                  <div class="ba-cancel-confirm">
-                    <template if:true={isBaCancelStep1}>
-                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 1?</div>
-                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
-                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
-                      </div>
-                    </template>
-                    <template if:true={isBaCancelStep2}>
-                      <div class="ba-cc-title">📝 Cancellation Reason</div>
-                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
-                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
-                      </div>
-                    </template>
-                  </div>
+
+                <!-- Desktop Valuation toggle (moved up from lower section) -->
+                <label class="ba-dv-toggle">
+                  <input type="checkbox" checked={formData.agent1DesktopVal} data-agent="agent1" onchange={handleDesktopValToggle}/>
+                  <span class="ba-dv-label">Desktop Valuation</span>
+                  <span class="ba-dv-hint">Tick if no site visit is required</span>
+                </label>
+
+                <!-- Desktop state -->
+                <template if:true={formData.agent1DesktopVal}>
+                  <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+                  <button class="ba-book-btn" disabled>+ Book Appointment</button>
                 </template>
-              </template>
-              </template><!-- /notDesktopVal agent1 -->
+
+                <!-- Booking state -->
+                <template if:false={formData.agent1DesktopVal}>
+                  <template if:true={ba1Booked}>
+                    <div class="ba-appt-box ba-appt-1">
+                      <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba1DateDisplay}</div></div></div>
+                      <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba1TimeDisplay}</div></div></div>
+                    </div>
+                    <div class="ba-action-btns">
+                      <button class="ba-amend-btn" data-agent="1" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                      <button class="ba-cancel-btn" data-agent="1" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                    </div>
+                    <button class="ba-email-btn ba-email-1" data-agent="1" onclick={handleEmailAgent}>✉️ Email Agent 1</button>
+                    <template if:true={showBaCancel1}>
+                      <div class="ba-cancel-confirm">
+                        <template if:true={isBaCancelStep1}>
+                          <div class="ba-cc-title">⚠️ Cancel appointment for Agent 1?</div>
+                          <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                            <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                          </div>
+                        </template>
+                        <template if:true={isBaCancelStep2}>
+                          <div class="ba-cc-title">📝 Cancellation Reason</div>
+                          <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                            <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                          </div>
+                        </template>
+                      </div>
+                    </template>
+                  </template>
+                  <template if:false={ba1Booked}>
+                    <button class="ba-book-btn ba-book-btn-primary" data-agent="1" onclick={handleBookAppointment}>+ Book Appointment</button>
+                  </template>
+                </template>
+
+                <!-- Meta: Last Emailed + Verbally Confirmed -->
+                <div class="ba-meta-grid">
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Last Emailed On</span>
+                    <span class="ba-meta-val">{agent1EmailedDisplay}</span>
+                  </div>
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Verbally Confirmed</span>
+                    <select class="ba-verbally-select" data-field="agent1VerballyConfirmed" onchange={handleFieldChange}>
+                      <option value="No" selected={isAgent1ConfirmedNo}>No</option>
+                      <option value="Yes" selected={isAgent1ConfirmedYes}>Yes</option>
+                    </select>
+                  </div>
+                </div>
+              </template><!-- /assigned agent1 -->
             </div>
 
             <!-- Agent 2 -->
@@ -507,12 +561,19 @@
                   <span class="ba-num ba-num-2">2</span>
                   <div>
                     <div class="ba-agent-label">Agent 2</div>
-                    <div class="ba-agent-name">{formData.agent2Name}</div>
+                    <template if:false={agent2Unassigned}>
+                      <div class="ba-agent-name">{formData.agent2Name}</div>
+                    </template>
+                    <template if:true={agent2Unassigned}>
+                      <div class="ba-agent-name ba-agent-name-empty">Not assigned</div>
+                    </template>
                   </div>
                 </div>
-                <button class="ba-edit-btn" data-slot="agent2" onclick={handleEditAgent} title="Reassign Agent 2">
-                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
-                </button>
+                <template if:false={agent2Unassigned}>
+                  <button class="ba-edit-btn" data-slot="agent2" onclick={handleEditAgent} title="Reassign Agent 2">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
+                </template>
                 <template if:true={formData.agent2DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -522,47 +583,88 @@
                   </template>
                 </template>
               </div>
-              <template if:true={formData.agent2DesktopVal}>
-                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+
+              <template if:true={agent2Unassigned}>
+                <button class="ba-assign-cta ba-assign-cta-2" data-slot="agent2" onclick={handleEditAgent}>
+                  + Assign Agent
+                </button>
+                <button class="ba-book-btn" disabled>+ Book Appointment</button>
               </template>
-              <template if:false={formData.agent2DesktopVal}>
-              <div class="ba-appt-box ba-appt-2">
-                <template if:true={ba2Booked}>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba2DateDisplay}</div></div></div>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba2TimeDisplay}</div></div></div>
-                </template>
-                <template if:false={ba2Booked}>
-                  <div class="ba-appt-empty">No appointment booked yet.</div>
-                </template>
-              </div>
-              <template if:true={ba2Booked}>
-                <div class="ba-action-btns">
-                  <button class="ba-amend-btn" data-agent="2" onclick={handleBaAmend}>✏️ Amend Booking</button>
-                  <button class="ba-cancel-btn" data-agent="2" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+
+              <template if:false={agent2Unassigned}>
+                <div class="ba-contact">
+                  <a href={agent2EmailHref} class="ba-contact-link">
+                    <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                    <span>{formData.agent2Email}</span>
+                  </a>
+                  <span class="ba-contact-phone">
+                    <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                    {formData.agent2Phone}
+                  </span>
                 </div>
-                <button class="ba-email-btn ba-email-2" data-agent="2" onclick={handleEmailAgent}>✉️ Email Agent 2</button>
-                <template if:true={showBaCancel2}>
-                  <div class="ba-cancel-confirm">
-                    <template if:true={isBaCancelStep1}>
-                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 2?</div>
-                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
-                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
-                      </div>
-                    </template>
-                    <template if:true={isBaCancelStep2}>
-                      <div class="ba-cc-title">📝 Cancellation Reason</div>
-                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
-                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
-                      </div>
-                    </template>
-                  </div>
+
+                <label class="ba-dv-toggle">
+                  <input type="checkbox" checked={formData.agent2DesktopVal} data-agent="agent2" onchange={handleDesktopValToggle}/>
+                  <span class="ba-dv-label">Desktop Valuation</span>
+                  <span class="ba-dv-hint">Tick if no site visit is required</span>
+                </label>
+
+                <template if:true={formData.agent2DesktopVal}>
+                  <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+                  <button class="ba-book-btn" disabled>+ Book Appointment</button>
                 </template>
-              </template>
-              </template><!-- /notDesktopVal agent2 -->
+
+                <template if:false={formData.agent2DesktopVal}>
+                  <template if:true={ba2Booked}>
+                    <div class="ba-appt-box ba-appt-2">
+                      <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba2DateDisplay}</div></div></div>
+                      <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba2TimeDisplay}</div></div></div>
+                    </div>
+                    <div class="ba-action-btns">
+                      <button class="ba-amend-btn" data-agent="2" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                      <button class="ba-cancel-btn" data-agent="2" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                    </div>
+                    <button class="ba-email-btn ba-email-2" data-agent="2" onclick={handleEmailAgent}>✉️ Email Agent 2</button>
+                    <template if:true={showBaCancel2}>
+                      <div class="ba-cancel-confirm">
+                        <template if:true={isBaCancelStep1}>
+                          <div class="ba-cc-title">⚠️ Cancel appointment for Agent 2?</div>
+                          <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                            <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                          </div>
+                        </template>
+                        <template if:true={isBaCancelStep2}>
+                          <div class="ba-cc-title">📝 Cancellation Reason</div>
+                          <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                            <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                          </div>
+                        </template>
+                      </div>
+                    </template>
+                  </template>
+                  <template if:false={ba2Booked}>
+                    <button class="ba-book-btn ba-book-btn-primary" data-agent="2" onclick={handleBookAppointment}>+ Book Appointment</button>
+                  </template>
+                </template>
+
+                <div class="ba-meta-grid">
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Last Emailed On</span>
+                    <span class="ba-meta-val">{agent2EmailedDisplay}</span>
+                  </div>
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Verbally Confirmed</span>
+                    <select class="ba-verbally-select" data-field="agent2VerballyConfirmed" onchange={handleFieldChange}>
+                      <option value="No" selected={isAgent2ConfirmedNo}>No</option>
+                      <option value="Yes" selected={isAgent2ConfirmedYes}>Yes</option>
+                    </select>
+                  </div>
+                </div>
+              </template><!-- /assigned agent2 -->
             </div>
 
             <!-- Agent 3 -->
@@ -572,12 +674,19 @@
                   <span class="ba-num ba-num-3">3</span>
                   <div>
                     <div class="ba-agent-label">Agent 3</div>
-                    <div class="ba-agent-name">{formData.agent3Name}</div>
+                    <template if:false={agent3Unassigned}>
+                      <div class="ba-agent-name">{formData.agent3Name}</div>
+                    </template>
+                    <template if:true={agent3Unassigned}>
+                      <div class="ba-agent-name ba-agent-name-empty">Not assigned</div>
+                    </template>
                   </div>
                 </div>
-                <button class="ba-edit-btn" data-slot="agent3" onclick={handleEditAgent} title="Reassign Agent 3">
-                  <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
-                </button>
+                <template if:false={agent3Unassigned}>
+                  <button class="ba-edit-btn" data-slot="agent3" onclick={handleEditAgent} title="Reassign Agent 3">
+                    <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                  </button>
+                </template>
                 <template if:true={formData.agent3DesktopVal}>
                   <span class="ba-dv-badge">Desktop</span>
                 </template>
@@ -587,49 +696,101 @@
                   </template>
                 </template>
               </div>
-              <template if:true={formData.agent3DesktopVal}>
-                <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+
+              <template if:true={agent3Unassigned}>
+                <button class="ba-assign-cta ba-assign-cta-3" data-slot="agent3" onclick={handleEditAgent}>
+                  + Assign Agent
+                </button>
+                <button class="ba-book-btn" disabled>+ Book Appointment</button>
               </template>
-              <template if:false={formData.agent3DesktopVal}>
-              <div class="ba-appt-box ba-appt-3">
-                <template if:true={ba3Booked}>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba3DateDisplay}</div></div></div>
-                  <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba3TimeDisplay}</div></div></div>
-                </template>
-                <template if:false={ba3Booked}>
-                  <div class="ba-appt-empty">No appointment booked yet.</div>
-                </template>
-              </div>
-              <template if:true={ba3Booked}>
-                <div class="ba-action-btns">
-                  <button class="ba-amend-btn" data-agent="3" onclick={handleBaAmend}>✏️ Amend Booking</button>
-                  <button class="ba-cancel-btn" data-agent="3" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+
+              <template if:false={agent3Unassigned}>
+                <div class="ba-contact">
+                  <a href={agent3EmailHref} class="ba-contact-link">
+                    <lightning-icon icon-name="utility:email" size="xx-small"></lightning-icon>
+                    <span>{formData.agent3Email}</span>
+                  </a>
+                  <span class="ba-contact-phone">
+                    <lightning-icon icon-name="utility:call" size="xx-small"></lightning-icon>
+                    {formData.agent3Phone}
+                  </span>
                 </div>
-                <button class="ba-email-btn ba-email-3" data-agent="3" onclick={handleEmailAgent}>✉️ Email Agent 3</button>
-                <template if:true={showBaCancel3}>
-                  <div class="ba-cancel-confirm">
-                    <template if:true={isBaCancelStep1}>
-                      <div class="ba-cc-title">⚠️ Cancel appointment for Agent 3?</div>
-                      <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
-                        <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
-                      </div>
-                    </template>
-                    <template if:true={isBaCancelStep2}>
-                      <div class="ba-cc-title">📝 Cancellation Reason</div>
-                      <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
-                      <div class="ba-cc-btns">
-                        <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
-                        <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
-                      </div>
-                    </template>
-                  </div>
+
+                <label class="ba-dv-toggle">
+                  <input type="checkbox" checked={formData.agent3DesktopVal} data-agent="agent3" onchange={handleDesktopValToggle}/>
+                  <span class="ba-dv-label">Desktop Valuation</span>
+                  <span class="ba-dv-hint">Tick if no site visit is required</span>
+                </label>
+
+                <template if:true={formData.agent3DesktopVal}>
+                  <div class="ba-dv-box">Desktop Valuation — No visit required</div>
+                  <button class="ba-book-btn" disabled>+ Book Appointment</button>
                 </template>
-              </template>
-              </template><!-- /notDesktopVal agent3 -->
+
+                <template if:false={formData.agent3DesktopVal}>
+                  <template if:true={ba3Booked}>
+                    <div class="ba-appt-box ba-appt-3">
+                      <div class="ba-appt-row"><span class="ba-appt-icon">📅</span><div><div class="ba-appt-label">Date</div><div class="ba-appt-val">{ba3DateDisplay}</div></div></div>
+                      <div class="ba-appt-row"><span class="ba-appt-icon">🕐</span><div><div class="ba-appt-label">Time</div><div class="ba-appt-val">{ba3TimeDisplay}</div></div></div>
+                    </div>
+                    <div class="ba-action-btns">
+                      <button class="ba-amend-btn" data-agent="3" onclick={handleBaAmend}>✏️ Amend Booking</button>
+                      <button class="ba-cancel-btn" data-agent="3" onclick={handleBaCancel}>🗑 Cancel Booking</button>
+                    </div>
+                    <button class="ba-email-btn ba-email-3" data-agent="3" onclick={handleEmailAgent}>✉️ Email Agent 3</button>
+                    <template if:true={showBaCancel3}>
+                      <div class="ba-cancel-confirm">
+                        <template if:true={isBaCancelStep1}>
+                          <div class="ba-cc-title">⚠️ Cancel appointment for Agent 3?</div>
+                          <div class="ba-cc-text">This will remove the booking for <strong>{baCancelAgentName}</strong>. This cannot be undone.</div>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Keep Booking</button>
+                            <button class="ba-cc-yes" onclick={handleBaCancelProceed}>Yes, Cancel</button>
+                          </div>
+                        </template>
+                        <template if:true={isBaCancelStep2}>
+                          <div class="ba-cc-title">📝 Cancellation Reason</div>
+                          <textarea class="ba-cc-reason" placeholder="Please provide a reason for cancelling..." onchange={handleBaCancelReasonChange}></textarea>
+                          <div class="ba-cc-btns">
+                            <button class="ba-cc-keep" onclick={handleBaCancelKeep}>Go Back</button>
+                            <button class="ba-cc-confirm" onclick={handleBaCancelConfirm}>✕ Confirm Cancel</button>
+                          </div>
+                        </template>
+                      </div>
+                    </template>
+                  </template>
+                  <template if:false={ba3Booked}>
+                    <button class="ba-book-btn ba-book-btn-primary" data-agent="3" onclick={handleBookAppointment}>+ Book Appointment</button>
+                  </template>
+                </template>
+
+                <div class="ba-meta-grid">
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Last Emailed On</span>
+                    <span class="ba-meta-val">{agent3EmailedDisplay}</span>
+                  </div>
+                  <div class="ba-meta-field">
+                    <span class="ba-meta-label">Verbally Confirmed</span>
+                    <select class="ba-verbally-select" data-field="agent3VerballyConfirmed" onchange={handleFieldChange}>
+                      <option value="No" selected={isAgent3ConfirmedNo}>No</option>
+                      <option value="Yes" selected={isAgent3ConfirmedYes}>Yes</option>
+                    </select>
+                  </div>
+                </div>
+              </template><!-- /assigned agent3 -->
             </div>
           </div>
+
+          <!-- Vendor confirmation email CTA — appears when all three agents are settled -->
+          <template if:true={allAgentsSettled}>
+            <div class="ba-vendor-email-row">
+              <button class="ba-vendor-email-btn" onclick={handleSendVendorEmail}>
+                <lightning-icon icon-name="utility:email" size="x-small"></lightning-icon>
+                <span>Send Vendor Email</span>
+                <span class="ba-vendor-email-hint">All 3 agents settled · uses Template 05 — Vendor Appointment Confirmation</span>
+              </button>
+            </div>
+          </template>
 
           <!-- Availability Calendar Toggle -->
           <div class="ba-cal-toggle" onclick={handleBaToggleCal}>
@@ -795,8 +956,10 @@
             <div class="ba-email-overlay" onclick={handleCloseEmailAgent}>
               <div class="ba-email-modal" onclick={handleBaPickerStop}>
                 <div class="ba-email-header">
-                  <h3>{emailAgentTitle}</h3>
-                  <span class="ba-email-agent-name">{emailAgentName}</span>
+                  <div class="ba-email-header-text">
+                    <div class="ba-email-kick">{emailAgentKick}</div>
+                    <div class="ba-email-agent-title">{emailAgentName}</div>
+                  </div>
                   <button class="af-close" onclick={handleCloseEmailAgent}>&times;</button>
                 </div>
                 <template if:true={isLoadingEmail}>
@@ -806,18 +969,78 @@
                   <div class="ba-email-fields">
                     <div class="ba-email-field-row">
                       <span class="ba-email-label">To</span>
-                      <input type="text" class="ba-email-input" value={emailAgentTo}/>
+                      <input type="text" class="ba-email-input" value={emailAgentTo} onchange={handleEmailToChange}/>
+                      <button class="ba-ab-trigger" onclick={handleOpenBaEmailAddressBook} title="Address Book">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                      </button>
+                    </div>
+                    <div class="ba-email-field-row ba-email-row-split">
+                      <div class="ba-email-half">
+                        <span class="ba-email-label">CC</span>
+                        <input type="text" class="ba-email-input" value={emailCc} onchange={handleEmailCcChange} placeholder="cc@example.com (optional)"/>
+                      </div>
+                      <div class="ba-email-half">
+                        <span class="ba-email-label">BCC</span>
+                        <input type="text" class="ba-email-input" value={emailBcc} onchange={handleEmailBccChange} placeholder="bcc@example.com (optional)"/>
+                      </div>
                     </div>
                     <div class="ba-email-field-row">
                       <span class="ba-email-label">Subject</span>
                       <input type="text" class="ba-email-input" value={emailSubject} onchange={handleEmailSubjectChange}/>
                     </div>
-                    <div class="ba-email-preview">
-                      <lightning-formatted-rich-text value={emailBody}></lightning-formatted-rich-text>
+                    <div class="ba-email-body-head">
+                      <span class="ba-email-body-title">Email Body</span>
                     </div>
+                    <template if:false={isEditingBody}>
+                      <div class="ba-email-preview">
+                        <lightning-formatted-rich-text value={emailBody}></lightning-formatted-rich-text>
+                      </div>
+                    </template>
+                    <template if:true={isEditingBody}>
+                      <div class="ba-email-editor">
+                        <lightning-input-rich-text value={emailBody} onchange={handleEmailBodyChange} placeholder="Compose your email..." label="Email body"></lightning-input-rich-text>
+                      </div>
+                    </template>
                   </div>
+
+                  <!-- Address Book overlay — contacts from this Opportunity -->
+                  <template if:true={showBaEmailAddressBook}>
+                    <div class="ba-ab-overlay" onclick={handleCloseBaEmailAddressBook}>
+                      <div class="ba-ab-panel" onclick={handleBaPickerStop}>
+                        <div class="ba-ab-header">
+                          <h4>📇 Address Book</h4>
+                          <button class="ba-ab-close" onclick={handleCloseBaEmailAddressBook}>&times;</button>
+                        </div>
+                        <div class="ba-ab-search">
+                          <input type="text" class="ba-email-input" placeholder="Search by name, email, or role..." value={baEmailAddressBookSearch} oninput={handleBaEmailAddressBookSearch}/>
+                        </div>
+                        <div class="ba-ab-list">
+                          <template if:true={hasBaEmailAddressBookContacts}>
+                            <template for:each={filteredBaEmailAddressBook} for:item="contact">
+                              <div key={contact.key} class="ba-ab-entry">
+                                <div class="ba-ab-info">
+                                  <span class="ba-ab-name">{contact.name}</span>
+                                  <span class="ba-ab-role">{contact.role}</span>
+                                  <span class="ba-ab-email">{contact.email}</span>
+                                </div>
+                                <div class="ba-ab-btns">
+                                  <button class="ba-ab-add-btn ba-ab-add-to"  data-email={contact.email} onclick={handleBaEmailSelectContactTo}>To</button>
+                                  <button class="ba-ab-add-btn ba-ab-add-cc"  data-email={contact.email} onclick={handleBaEmailSelectContactCc}>CC</button>
+                                  <button class="ba-ab-add-btn ba-ab-add-bcc" data-email={contact.email} onclick={handleBaEmailSelectContactBcc}>BCC</button>
+                                </div>
+                              </div>
+                            </template>
+                          </template>
+                          <template if:false={hasBaEmailAddressBookContacts}>
+                            <div class="ba-ab-empty">No contacts match your search.</div>
+                          </template>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
                   <div class="ba-email-footer">
-                    <button class="ba-cc-keep" onclick={handleCloseEmailAgent}>Discard</button>
+                    <button class="ba-email-discard" onclick={handleCloseEmailAgent}>Discard</button>
+                    <button class="ba-body-edit-btn" onclick={handleToggleEditBody}>{editBodyToggleLabel}</button>
                     <button class="ba-email-send" onclick={handleSendAgentEmail} disabled={isSendingEmail}>
                       <template if:true={isSendingEmail}>Sending...</template>
                       <template if:false={isSendingEmail}>Send ✉️</template>
@@ -1761,8 +1984,11 @@
         <div class="af-header-top">
           <div class="af-header-title">
             <h3>
-              <template if:true={isReassignMode}>Reassign {reassignLabel}</template>
-              <template if:false={isReassignMode}>Assign Agent</template>
+              <template if:true={isActualReassignment}>Reassign {reassignLabel}</template>
+              <template if:false={isActualReassignment}>
+                <template if:true={isReassignMode}>Assign {reassignLabel}</template>
+                <template if:false={isReassignMode}>Assign Agent</template>
+              </template>
             </h3>
             <button class="af-close" onclick={handleCloseAssignAgent}>&times;</button>
           </div>
@@ -1801,6 +2027,25 @@
         <!-- Step 1: Search -->
         <template if:true={isStep1}>
           <div class="af-body">
+            <!-- Reason-for-Change gate — captured up front so the user cannot
+                 advance to the agent search without providing a justification.
+                 Only shown on a true reassignment (slot was previously assigned). -->
+            <template if:true={isActualReassignment}>
+              <div class="af-reason-banner">
+                <div class="af-reason-head">
+                  <span class="af-reason-title">Reason for changing {reassignLabel}</span>
+                  <span class="af-reason-required">REQUIRED</span>
+                </div>
+                <textarea
+                    class="af-reason-input"
+                    placeholder="Why is this agent being changed? e.g. agent unresponsive, vendor request, availability issue, poor valuation..."
+                    value={reasonForChange}
+                    oninput={handleReasonChange}></textarea>
+                <div class="af-reason-hint">
+                  A note will be auto-added to this application capturing the previous agent, last booked appointment, last email sent, and this reason. The old appointment and email timestamp will be cleared so the new agent starts clean.
+                </div>
+              </div>
+            </template>
             <div class="af-prop-card">
               <div class="af-prop-label">Property Address</div>
               <div class="af-prop-addr">{formData.propertyAddress}</div>
@@ -1811,13 +2056,21 @@
             </div>
             <div class="af-actions">
               <button class="af-btn-cancel" onclick={handleCloseAssignAgent}>Cancel</button>
-              <button class="af-btn-next" onclick={handleSearchAgents}>Search Agents</button>
+              <button class="af-btn-next" onclick={handleSearchAgents} disabled={reassignReasonMissing} title={reassignAssignTitle}>Search Agents</button>
             </div>
           </div>
         </template>
 
         <!-- Step 2: Agent List -->
         <template if:true={isStep2}>
+          <!-- Reason captured up front in Step 1 (shown as a read-only chip for context).
+               Only renders on a true reassignment — a fresh assign has no reason. -->
+          <template if:true={isActualReassignment}>
+            <div class="af-reason-chip">
+              <span class="af-reason-chip-label">Reason:</span>
+              <span class="af-reason-chip-value">{reasonForChange}</span>
+            </div>
+          </template>
           <template if:true={assignAgentInfo}>
             <div class="af-info-bar">
               <span class="af-info">{assignAgentInfo}</span>
@@ -1866,7 +2119,7 @@
             <template if:true={isListView}>
             <template if:true={hasNearbyAgents}>
               <div class="af-list">
-                <template for:each={nearbyAgents} for:item="agent">
+                <template for:each={nearbyAgentsForRender} for:item="agent">
                   <div class={agent.rowClass} key={agent.id}>
                     <div class="af-agent-info">
                       <div class="af-agent-name">{agent.name}</div>
@@ -1891,15 +2144,32 @@
                     <div class="af-agent-actions">
                       <template if:true={agent.isAssigned}>
                         <span class="af-assigned-badge">{agent.assignedLabel}</span>
-                        <button class="af-unassign-btn" data-id={agent.id} onclick={handleUnassignAgent}>✕</button>
+                        <template if:true={agent.showRemoveX}>
+                          <button class="af-unassign-btn" data-id={agent.id} onclick={handleUnassignAgent}>✕</button>
+                        </template>
                       </template>
                       <template if:false={agent.isAssigned}>
                         <template if:true={isReassignMode}>
-                          <button class="af-assign-btn af-btn-reassign" data-id={agent.id} data-name={agent.name} data-slot={reassignSlot} onclick={handleReassignToSlot} disabled={isAssigning}>Assign as {reassignLabel}</button>
+                          <button class="af-assign-btn af-btn-reassign" data-id={agent.id} data-name={agent.name} data-slot={reassignSlot} onclick={handleReassignToSlot} disabled={reassignAssignDisabled} title={reassignAssignTitle}>
+                            <template if:true={agent.isBeingAssigned}>
+                              <span class="af-btn-spinner"></span>Assigning...
+                            </template>
+                            <template if:false={agent.isBeingAssigned}>Assign as {reassignLabel}</template>
+                          </button>
                         </template>
                         <template if:false={isReassignMode}>
-                          <button class="af-assign-btn af-btn-a2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 2</button>
-                          <button class="af-assign-btn af-btn-a3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>Agent 3</button>
+                          <button class="af-assign-btn af-btn-a2" data-id={agent.id} data-name={agent.name} data-slot="agent2" onclick={handleAssignToSlot} disabled={isAssigning}>
+                            <template if:true={agent.isBeingAssigned}>
+                              <span class="af-btn-spinner"></span>…
+                            </template>
+                            <template if:false={agent.isBeingAssigned}>Agent 2</template>
+                          </button>
+                          <button class="af-assign-btn af-btn-a3" data-id={agent.id} data-name={agent.name} data-slot="agent3" onclick={handleAssignToSlot} disabled={isAssigning}>
+                            <template if:true={agent.isBeingAssigned}>
+                              <span class="af-btn-spinner"></span>…
+                            </template>
+                            <template if:false={agent.isBeingAssigned}>Agent 3</template>
+                          </button>
                         </template>
                       </template>
                     </div>
@@ -2023,15 +2293,25 @@
                   <input type="text" class="af-email-input" value={afEmailSubject} onchange={handleAfEmailSubjectChange}>
                 </div>
                 <div class="af-email-row">
-                  <label class="af-email-label">EMAIL PREVIEW</label>
-                  <div class="af-email-preview">
-                    <lightning-formatted-rich-text value={afEmailBody}></lightning-formatted-rich-text>
+                  <div class="af-email-body-head">
+                    <label class="af-email-label">EMAIL BODY</label>
                   </div>
+                  <template if:false={isEditingAfBody}>
+                    <div class="af-email-preview">
+                      <lightning-formatted-rich-text value={afEmailBody}></lightning-formatted-rich-text>
+                    </div>
+                  </template>
+                  <template if:true={isEditingAfBody}>
+                    <div class="af-email-editor">
+                      <lightning-input-rich-text value={afEmailBody} onchange={handleAfEmailBodyChange} placeholder="Compose your email..." label="Email body"></lightning-input-rich-text>
+                    </div>
+                  </template>
                 </div>
               </div>
             </template>
             <div class="af-actions">
               <button class="af-btn-cancel" onclick={handleAfBackToStep3}>Back</button>
+              <button class="af-body-edit-btn" onclick={handleToggleEditAfBody}>{editAfBodyToggleLabel}</button>
               <button class="af-btn-next" onclick={handleAfStep4Next}>Select and Go Next</button>
             </div>
 
@@ -2056,8 +2336,9 @@
                             <span class="af-ab-email">{contact.email}</span>
                           </div>
                           <div class="af-ab-btns">
-                            <button class="af-ab-add-btn af-ab-add-to" data-email={contact.email} onclick={handleAfSelectContactTo}>To</button>
-                            <button class="af-ab-add-btn af-ab-add-cc" data-email={contact.email} onclick={handleAfSelectContactCc}>CC</button>
+                            <button class="af-ab-add-btn af-ab-add-to"  data-email={contact.email} onclick={handleAfSelectContactTo}>To</button>
+                            <button class="af-ab-add-btn af-ab-add-cc"  data-email={contact.email} onclick={handleAfSelectContactCc}>CC</button>
+                            <button class="af-ab-add-btn af-ab-add-bcc" data-email={contact.email} onclick={handleAfSelectContactBcc}>BCC</button>
                           </div>
                         </div>
                       </template>
@@ -2099,6 +2380,21 @@
         </template>
       </div>
     </div>
+  </template>
+
+  <!-- Book Appointment lightbox (2-step slot picker + email preview) -->
+  <template if:true={bookApptModalOpen}>
+    <c-nhs-book-appointment-modal
+        record-id={recordId}
+        agent-slot={bookApptModalAgentSlot}
+        agent-num={bookApptModalAgentNum}
+        agent-name={bookApptModalAgentName}
+        agent-email={bookApptModalAgentEmail}
+        is-amend={bookApptModalIsAmend}
+        previous-appt={bookApptModalPreviousAppt}
+        onclose={handleBookApptModalClose}
+        onbookingcomplete={handleBookApptModalComplete}>
+    </c-nhs-book-appointment-modal>
   </template>
 
 </template>

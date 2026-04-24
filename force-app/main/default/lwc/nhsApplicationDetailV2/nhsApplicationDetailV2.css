@@ -1367,6 +1367,135 @@
 .ba-email-3 { color: var(--agent3-header); border: 1.5px solid var(--agent3-border); }
 .ba-email-3:hover { background: var(--agent3-bg); }
 
+/* Send Vendor Email — shown below the 3-agent grid when every slot is settled */
+.ba-vendor-email-row {
+    display: flex; justify-content: center;
+    padding: 14px 16px;
+    background: linear-gradient(90deg, var(--nhs-pale) 0%, #F4F9F6 50%, var(--nhs-pale) 100%);
+    border-top: 1px solid var(--nhs-border);
+    border-bottom: 1px solid var(--nhs-border);
+}
+.ba-vendor-email-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    background: var(--nhs-dk); color: white;
+    border: 1px solid var(--nhs-dk); border-radius: 8px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(74, 107, 94, 0.28);
+    transition: all 0.15s;
+}
+.ba-vendor-email-btn:hover {
+    background: #3D5A4F; border-color: #3D5A4F;
+    box-shadow: 0 4px 12px rgba(74, 107, 94, 0.36);
+    transform: translateY(-1px);
+}
+.ba-vendor-email-btn lightning-icon { --slds-c-icon-color-foreground-default: white; }
+.ba-vendor-email-hint {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+    opacity: 0.82; padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.35);
+}
+
+/* ── Merged per-agent card — contact, DV toggle, meta, Book Appointment ── */
+.ba-agent-name-empty { color: #9CA3AF; font-style: italic; font-weight: 500; }
+
+.ba-contact {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 8px 0; margin-bottom: 6px;
+    border-bottom: 1px dashed var(--nhs-border);
+    font-size: 12px;
+}
+.ba-contact-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--nhs-text); text-decoration: none; font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ba-contact-link:hover { text-decoration: underline; color: var(--nhs-dk); }
+.ba-contact-phone {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--nhs-text-muted); font-weight: 500;
+}
+.ba-contact lightning-icon { --slds-c-icon-color-foreground-default: var(--nhs-text-muted); }
+
+/* Desktop Valuation toggle (merged card version) */
+.ba-dv-toggle {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 8px 10px; margin: 8px 0 10px;
+    background: var(--nhs-pale); border: 1px solid var(--nhs-border);
+    border-radius: 6px; cursor: pointer; user-select: none;
+}
+.ba-dv-toggle input[type="checkbox"] {
+    width: 16px; height: 16px; margin: 0;
+    accent-color: var(--nhs-dk); cursor: pointer;
+}
+.ba-dv-label { font-weight: 700; font-size: 12px; color: var(--nhs-dk); }
+.ba-dv-hint { font-size: 11px; color: var(--nhs-text-muted); margin-left: auto; }
+
+/* Primary "Assign Agent" CTA — shown when the agent slot is empty */
+.ba-assign-cta {
+    width: 100%; padding: 10px 12px; margin-top: 8px; margin-bottom: 6px;
+    border-radius: 6px; cursor: pointer;
+    color: white; font-weight: 700; font-size: 12px;
+    border: 1px solid transparent;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: var(--font-sans);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    transition: filter 0.15s;
+}
+.ba-assign-cta:hover { filter: brightness(0.94); }
+.ba-assign-cta-1 { background: var(--agent1-header); border-color: var(--agent1-header); }
+.ba-assign-cta-2 { background: var(--agent2-header); border-color: var(--agent2-header); }
+.ba-assign-cta-3 { background: var(--agent3-header); border-color: var(--agent3-header); }
+
+/* Secondary "Book Appointment" button — disabled state when unassigned or desktop */
+.ba-book-btn {
+    width: 100%; padding: 9px 12px;
+    border-radius: 6px; cursor: pointer;
+    background: white; color: var(--nhs-dk);
+    border: 1px dashed var(--nhs-border); font-weight: 600; font-size: 12px;
+    font-family: var(--font-sans);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s;
+    margin-bottom: 6px;
+}
+.ba-book-btn:hover:not([disabled]) {
+    background: var(--nhs-pale); border-style: solid;
+}
+.ba-book-btn[disabled] {
+    opacity: 0.5; cursor: not-allowed;
+    background: #F3F4F6; color: #9CA3AF;
+}
+.ba-book-btn-primary {
+    border-style: solid; border-color: var(--nhs-dk);
+}
+.ba-status-1 .ba-book-btn-primary:not([disabled]) { color: var(--agent1-header); border-color: var(--agent1-border); }
+.ba-status-2 .ba-book-btn-primary:not([disabled]) { color: var(--agent2-header); border-color: var(--agent2-border); }
+.ba-status-3 .ba-book-btn-primary:not([disabled]) { color: var(--agent3-header); border-color: var(--agent3-border); }
+
+/* Meta grid — Last Emailed + Verbally Confirmed */
+.ba-meta-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px dashed var(--nhs-border);
+}
+.ba-meta-field { display: flex; flex-direction: column; gap: 3px; }
+.ba-meta-label {
+    font-size: 9px; text-transform: uppercase; font-weight: 700;
+    color: var(--nhs-text-muted); letter-spacing: 0.4px;
+}
+.ba-meta-val {
+    background: white; border: 1px solid var(--nhs-border); border-radius: 4px;
+    padding: 5px 7px; font-size: 11px; min-height: 24px;
+    color: var(--nhs-text);
+}
+.ba-verbally-select {
+    background: white; border: 1px solid var(--nhs-border); border-radius: 4px;
+    padding: 4px 6px; font-size: 11px; min-height: 24px;
+    color: var(--nhs-text); font-family: var(--font-sans);
+    cursor: pointer;
+}
+.ba-verbally-select:focus { outline: 2px solid var(--nhs-dk); outline-offset: -1px; }
+
 /* Email compose modal */
 .ba-email-overlay {
     position: fixed; inset: 0; background: rgba(13,30,74,0.5);
@@ -1375,15 +1504,29 @@
 }
 .ba-email-modal {
     background: #fff; border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,0.2);
-    max-width: 600px; width: 92%; max-height: 85vh; display: flex;
+    max-width: 960px; width: 92%; max-height: 90vh; display: flex;
     flex-direction: column; overflow: hidden;
 }
 .ba-email-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 20px; border-bottom: 2px solid var(--nhs-dk); background: var(--nhs-pale);
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 2px solid var(--nhs-dk);
+    background: linear-gradient(135deg, var(--nhs-pale) 0%, #F4F9F6 100%);
 }
-.ba-email-header h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin: 0; }
-.ba-email-agent-name { font-size: 12px; color: var(--nhs-text-muted); flex: 1; }
+.ba-email-header-text {
+    flex: 1; display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+}
+.ba-email-kick {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+    color: var(--nhs-dk); text-transform: uppercase;
+    opacity: 0.75;
+}
+.ba-email-agent-title {
+    font-size: 17px; font-weight: 800; color: var(--navy);
+    line-height: 1.2;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .ba-email-loading { padding: 40px; text-align: center; font-size: 13px; color: var(--nhs-text-muted); }
 .ba-email-fields { display: flex; flex-direction: column; border: 1px solid #E5E7EB; margin: 14px; border-radius: 8px; overflow: hidden; }
 .ba-email-field-row {
@@ -1396,7 +1539,7 @@
     background: transparent; font-family: var(--font-sans);
 }
 .ba-email-preview {
-    min-height: 350px; max-height: 500px; overflow-y: auto;
+    min-height: 420px; max-height: 60vh; overflow-y: auto;
     background: #fff; border-top: 1px solid #EDF1ED;
 }
 .ba-email-preview lightning-formatted-rich-text {
@@ -1414,6 +1557,157 @@
 }
 .ba-email-send:hover:not(:disabled) { background: #3D5A4F; }
 .ba-email-send:disabled { opacity: 0.6; cursor: default; }
+/* Email-body header row (label + Edit button) for both ba-email-* and af-email-* */
+.ba-email-body-head,
+.af-email-body-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px 0;
+    margin-top: 6px;
+}
+.ba-email-body-title {
+    font-size: 11px; font-weight: 700; color: var(--nhs-text-muted);
+    letter-spacing: 0.4px;
+}
+/* Edit button — sized to match its sibling footer buttons in both dialogs
+   (.ba-email-send / .af-btn-next are padding: 8px 18-20px, font-size: 13px). */
+.ba-body-edit-btn,
+.af-body-edit-btn {
+    background: white;
+    border: 1.5px solid var(--nhs-border);
+    color: var(--nhs-dk);
+    font-size: 13px; font-weight: 700;
+    padding: 8px 16px; border-radius: 8px;
+    cursor: pointer; font-family: var(--font-sans);
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: all 0.15s;
+}
+.ba-body-edit-btn:hover,
+.af-body-edit-btn:hover {
+    background: var(--nhs-pale); border-color: var(--nhs-dk); color: var(--nhs-dk);
+}
+
+/* Rich-text editor container — visible only when in edit mode */
+.ba-email-editor,
+.af-email-editor {
+    margin: 6px 12px 10px;
+    border: 1.5px solid var(--nhs-dk);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(74, 107, 94, 0.08);
+}
+.ba-email-editor lightning-input-rich-text,
+.af-email-editor lightning-input-rich-text {
+    display: block;
+}
+
+/* Phonebook icon button next to To field */
+.ba-ab-trigger {
+    flex-shrink: 0;
+    background: var(--nhs-pale);
+    border: 1px solid var(--nhs-border);
+    color: var(--nhs-dk);
+    width: 32px; height: 28px; border-radius: 5px;
+    cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+}
+.ba-ab-trigger svg { width: 15px; height: 15px; }
+.ba-ab-trigger:hover { background: var(--nhs-dk); color: white; border-color: var(--nhs-dk); }
+
+/* CC/BCC split row — two halves sharing one row */
+.ba-email-row-split { padding: 0 !important; }
+.ba-email-row-split .ba-email-half {
+    flex: 1; display: flex; align-items: center; padding: 8px 12px; gap: 8px;
+    min-width: 0;
+}
+.ba-email-row-split .ba-email-half + .ba-email-half {
+    border-left: 1px solid #EDF1ED;
+}
+
+/* Address Book overlay — scoped inside the email modal, z-index above it */
+.ba-ab-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13, 30, 74, 0.35);
+    z-index: 10001;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 80px;
+    animation: baFadeIn 0.12s ease-out;
+}
+@keyframes baFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.ba-ab-panel {
+    background: white; border-radius: 10px; width: 520px; max-width: 90%;
+    max-height: 72vh; box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+    display: flex; flex-direction: column; overflow: hidden;
+}
+.ba-ab-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--nhs-pale) 0%, #F4F9F6 100%);
+    border-bottom: 1px solid var(--nhs-border);
+}
+.ba-ab-header h4 {
+    font-size: 14px; font-weight: 700; color: var(--nhs-dk); margin: 0;
+}
+.ba-ab-close {
+    background: none; border: none; font-size: 20px; color: var(--nhs-text-muted);
+    cursor: pointer; line-height: 1; padding: 0 4px;
+}
+.ba-ab-close:hover { color: var(--nhs-dk); }
+.ba-ab-search { padding: 10px 14px; border-bottom: 1px solid #E5E7EB; }
+.ba-ab-search .ba-email-input {
+    border: 1px solid var(--nhs-border); border-radius: 6px;
+    padding: 6px 10px; width: 100%;
+    background: white;
+}
+.ba-ab-list { overflow-y: auto; flex: 1; padding: 4px 0; }
+.ba-ab-entry {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #F3F5F2;
+    transition: background 0.12s;
+}
+.ba-ab-entry:last-child { border-bottom: none; }
+.ba-ab-entry:hover { background: #F9FBFA; }
+.ba-ab-info {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.ba-ab-name { font-size: 13px; font-weight: 700; color: var(--nhs-text); }
+.ba-ab-role {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    color: var(--nhs-dk); background: var(--nhs-pale);
+    padding: 2px 7px; border-radius: 99px; letter-spacing: 0.3px;
+}
+.ba-ab-email { font-size: 12px; color: var(--nhs-text-muted); }
+.ba-ab-btns { display: flex; gap: 4px; flex-shrink: 0; }
+.ba-ab-add-btn {
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1.5px solid; transition: all 0.15s;
+    font-family: var(--font-sans);
+}
+.ba-ab-add-to  { background: var(--nhs-dk); border-color: var(--nhs-dk); color: white; }
+.ba-ab-add-to:hover  { background: #3D5A4F; border-color: #3D5A4F; }
+.ba-ab-add-cc  { background: white; border-color: var(--nhs-border); color: var(--nhs-text-mid); }
+.ba-ab-add-cc:hover  { background: var(--nhs-pale); border-color: var(--nhs-dk); color: var(--nhs-dk); }
+.ba-ab-add-bcc { background: white; border-color: var(--nhs-border); color: var(--nhs-text-muted); }
+.ba-ab-add-bcc:hover { background: #F3F4F6; border-color: var(--nhs-text-mid); color: var(--nhs-text); }
+.ba-ab-empty {
+    padding: 28px 14px; text-align: center;
+    font-size: 13px; color: var(--nhs-text-muted);
+}
+
+/* Discard — neutral button, sized to content (NOT flex:1 like .ba-cc-keep) */
+.ba-email-discard {
+    padding: 8px 18px; border-radius: 8px;
+    background: #fff; color: var(--nhs-text-mid);
+    border: 1px solid var(--nhs-border);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: var(--font-sans);
+    transition: all 0.15s;
+}
+.ba-email-discard:hover { background: #F1F5F3; border-color: var(--nhs-dk); color: var(--nhs-dk); }
 
 /* Cancel confirmation panel */
 .ba-cancel-confirm {
@@ -2106,39 +2400,45 @@
     backdrop-filter: blur(2px);
 }
 .af-modal {
-    background: #fff; border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,0.2);
-    width: 820px; height: 680px; display: flex;
-    flex-direction: column; overflow: hidden;
+    background: #fff; border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+    width: 960px; max-width: 100%; max-height: calc(100vh - 40px);
+    display: flex; flex-direction: column; overflow: hidden;
+    animation: af-pop-in 0.2s ease-out;
+}
+@keyframes af-pop-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
 }
 
-/* Header: Title + Close */
+/* Header: Title + Close — sage gradient band (matches bam-modal) */
 .af-header-top {
-    border-bottom: 1px solid #E5E7EB;
+    background: linear-gradient(90deg, var(--nhs-dk), var(--nhs-mid));
+    color: white;
 }
 .af-header-title {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px 0;
 }
-.af-header-title h3 { font-size: 18px; font-weight: 800; color: var(--navy); margin: 0; }
+.af-header-title h3 { font-size: 17px; font-weight: 800; color: white; margin: 0; letter-spacing: 0.2px; }
 
-/* Context bar: Property | Housebuilder | Vendor */
+/* Context bar: Property | Housebuilder | Vendor — on the green band */
 .af-header-context {
-    display: flex; align-items: center; gap: 0; padding: 10px 20px 12px;
+    display: flex; align-items: center; gap: 0; padding: 10px 20px 14px;
 }
 .af-ctx-item { flex: 1; }
 .af-ctx-label {
     display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: #9CA3AF; margin-bottom: 2px;
+    text-transform: uppercase; color: rgba(255, 255, 255, 0.75); margin-bottom: 2px;
 }
 .af-ctx-value {
-    font-size: 13px; font-weight: 600; color: var(--navy);
+    font-size: 13px; font-weight: 700; color: white;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .af-ctx-divider {
-    width: 1px; height: 28px; background: #E5E7EB; margin: 0 16px; flex-shrink: 0;
+    width: 1px; height: 28px; background: rgba(255, 255, 255, 0.30); margin: 0 16px; flex-shrink: 0;
 }
 
-/* Step indicators bar */
+/* Step indicators bar — sits between the gradient header and the tinted body */
 .af-header-steps {
     display: flex; justify-content: center; padding: 10px 20px;
     background: var(--nhs-pale); border-bottom: 2px solid var(--nhs-dk);
@@ -2149,6 +2449,7 @@
     width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--nhs-border);
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700; color: var(--nhs-text-muted);
+    background: white;
 }
 .af-step-text { font-size: 11px; font-weight: 600; color: var(--nhs-text-muted); }
 .af-step-active .af-step-num { background: var(--nhs-dk); border-color: var(--nhs-dk); color: #fff; }
@@ -2156,16 +2457,33 @@
 .af-step-done .af-step-num { background: var(--nhs-dk); border-color: var(--nhs-dk); color: #fff; }
 .af-step-done .af-step-text { color: var(--nhs-dk); }
 .af-step-line { width: 16px; height: 2px; background: var(--nhs-border); }
-.af-close {
-    width: 32px; height: 32px; border: none; background: none; font-size: 22px;
-    color: var(--nhs-text-muted); cursor: pointer; border-radius: 6px;
-}
-.af-close:hover { background: #f3f4f6; }
 
-.af-body { padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+/* Close button: white-on-sage pill like bam-close */
+.af-close {
+    width: 28px; height: 28px; border: none; font-size: 18px;
+    background: rgba(255, 255, 255, 0.18); color: white;
+    cursor: pointer; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.af-close:hover { background: rgba(255, 255, 255, 0.32); }
+
+/* Tinted body — soft sage gradient canvas with radial highlights */
+.af-body {
+    padding: 20px; flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column;
+    background:
+        radial-gradient(1200px 320px at 0% 0%, rgba(107, 144, 128, 0.10), transparent 60%),
+        radial-gradient(900px 300px at 100% 100%, rgba(201, 213, 203, 0.35), transparent 55%),
+        linear-gradient(180deg, #F7FBF8 0%, #EAF4EF 100%);
+    color: var(--nhs-text);
+}
 .af-prop-card {
-    background: var(--nhs-pale); border: 1px solid var(--agent1-border);
+    background: white;
+    border: 1px solid var(--nhs-border);
+    border-left: 4px solid var(--nhs-mid);
     border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.08);
 }
 .af-prop-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--nhs-dk); margin-bottom: 4px; }
 .af-prop-addr { font-size: 14px; font-weight: 700; color: var(--navy); }
@@ -2174,7 +2492,8 @@
 
 .af-actions {
     display: flex; align-items: center; gap: 10px;
-    padding: 14px 20px; border-top: 1px solid var(--nhs-border);
+    padding: 12px 20px; border-top: 1px solid var(--nhs-border);
+    background: #FAFBFC;
     margin-top: auto; justify-content: flex-end;
 }
 .af-btn-cancel {
@@ -2270,16 +2589,38 @@
 .af-legend-agent    { background: #2563EB; }
 .af-legend-assigned { background: #D97706; }
 
-.af-list { max-height: 400px; overflow-y: auto; }
+/* Each agent row is its own elevated card on the tinted body (matches bam-day-card style).
+   Horizontal padding matches .af-info-bar + .af-reason-chip (20px) so every band
+   inside Step 2 lines up vertically. */
+.af-list {
+    max-height: 400px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 8px 20px 16px;
+    background: transparent;
+}
 .af-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 20px; border-bottom: 1px solid #f0f0f0;
+    padding: 12px 16px;
+    background: white;
+    border: 1px solid var(--nhs-border);
+    border-left: 4px solid var(--nhs-mid);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(74, 107, 94, 0.08);
+    transition: all 0.15s;
 }
-.af-row:hover { background: #fafafa; }
+.af-row:hover {
+    box-shadow: 0 4px 12px rgba(74, 107, 94, 0.14);
+    border-left-color: var(--nhs-dk);
+}
 .af-assigned {
-    background: #ECFDF5; border-left: 4px solid #16a34a;
+    background: #ECFDF5;
+    border-color: #BBF0C9;
+    border-left-color: #16a34a;
 }
-.af-assigned:hover { background: #D8F5E7; }
+.af-assigned:hover {
+    background: #D8F5E7;
+    border-left-color: #0F8036;
+}
 .af-agent-name { font-size: 13px; font-weight: 700; color: var(--navy); }
 .af-agent-meta { font-size: 11px; color: var(--nhs-text-muted); margin-top: 2px; display: flex; gap: 8px; }
 .af-distance { color: var(--nhs-dk); font-weight: 600; }
@@ -2288,13 +2629,34 @@
 .af-assign-btn {
     padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
     cursor: pointer; font-family: var(--font-sans); border: none; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: transform 0.08s ease-out, background 0.15s, box-shadow 0.15s;
 }
+.af-assign-btn:hover:not(:disabled) {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+.af-assign-btn:active:not(:disabled) {
+    transform: scale(0.94);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) inset;
+}
+.af-assign-btn:disabled { cursor: default; opacity: 0.7; }
 .af-btn-a2 { background: var(--agent2-header); }
-.af-btn-a2:hover { background: #143F64; }
+.af-btn-a2:hover:not(:disabled) { background: #143F64; }
 .af-btn-a3 { background: var(--agent3-header); }
-.af-btn-a3:hover { background: #4A2E70; }
+.af-btn-a3:hover:not(:disabled) { background: #4A2E70; }
 .af-btn-reassign { background: var(--nhs-dk); font-size: 12px; padding: 6px 16px; }
-.af-btn-reassign:hover { background: #3A5A4E; }
+.af-btn-reassign:hover:not(:disabled) { background: #3A5A4E; }
+
+/* In-flight spinner shown inside the specific row's assign button */
+.af-btn-spinner {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: af-btn-spin 0.7s linear infinite;
+}
+@keyframes af-btn-spin { to { transform: rotate(360deg); } }
 .af-assigned-badge {
     font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 12px;
     background: var(--nhs-dk); color: #fff;
@@ -2357,6 +2719,59 @@
 }
 .af-email-input:focus { border-color: var(--nhs-mid); }
 .af-email-input::placeholder { color: #9CA3AF; }
+
+/* Reason-for-Change banner — gate for reassignment in the wizard
+   (matches .af-prop-card width: no horizontal margin, sits inside .af-body padding) */
+.af-reason-banner {
+    margin: 0 0 16px 0;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #FFF8E7 0%, #FFFAEE 100%);
+    border: 1.5px solid #E5C07B;
+    border-left: 4px solid #D97706;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.12);
+}
+.af-reason-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+}
+.af-reason-title {
+    font-size: 13px; font-weight: 700; color: #78350F;
+    letter-spacing: 0.2px;
+}
+.af-reason-required {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+    color: white; background: #D97706;
+    padding: 3px 8px; border-radius: 99px;
+}
+.af-reason-input {
+    width: 100%; min-height: 64px; resize: vertical;
+    padding: 8px 10px;
+    border: 1px solid #E5C07B; border-radius: 6px;
+    font-family: var(--font-sans); font-size: 13px; color: var(--nhs-text);
+    background: white;
+    outline: none; box-sizing: border-box;
+}
+.af-reason-input:focus {
+    border-color: #D97706;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.15);
+}
+.af-reason-hint {
+    margin-top: 6px;
+    font-size: 11px; color: #8C6B1F; line-height: 1.45;
+}
+/* Compact read-only chip shown in Step 2, summarising the reason captured in Step 1 */
+.af-reason-chip {
+    margin: 10px 20px;
+    padding: 6px 12px;
+    background: #FFF8E7; border: 1px solid #E5C07B;
+    border-left: 3px solid #D97706;
+    border-radius: 6px;
+    font-size: 12px; color: #78350F;
+    display: flex; align-items: baseline; gap: 8px;
+}
+.af-reason-chip-label { font-weight: 700; font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; }
+.af-reason-chip-value { font-style: italic; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .af-email-input-group { display: flex; gap: 0; }
 .af-email-input-with-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none; }
@@ -2426,6 +2841,8 @@
 .af-ab-add-to:hover { background: #3A5A4E; }
 .af-ab-add-cc { background: #fff; border-color: #D1D5DB; color: #6B7280; }
 .af-ab-add-cc:hover { background: #F3F4F6; }
+.af-ab-add-bcc { background: #fff; border-color: #D1D5DB; color: #9CA3AF; }
+.af-ab-add-bcc:hover { background: #F3F4F6; color: #6B7280; border-color: #9CA3AF; }
 .af-ab-empty { padding: 24px 14px; text-align: center; font-size: 13px; color: #9CA3AF; }
 
 /* Step 5: Summary */
